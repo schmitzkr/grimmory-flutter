@@ -54,3 +54,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/icon/icon.png"
+  # Adaptive icon (Android 8+): background color + a transparent-background
+  # foreground glyph inset in the safe zone, composited by the launcher —
+  # NOT the same flat square used for image_path, which bakes the
+  # background into the art itself (fine for the legacy/fallback icon, but
+  # would double up the background if reused as the adaptive foreground).
+  adaptive_icon_background: "#6200EA"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"

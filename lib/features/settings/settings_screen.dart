@@ -21,6 +21,13 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.battery_alert_outlined),
+            title: const Text('Background playback getting interrupted?'),
+            subtitle: const Text('Exclude Grimmory from battery optimization'),
+            onTap: () => _showBatteryOptimizationDialog(context),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Change server / sign out'),
             onTap: () async {
@@ -32,4 +39,34 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Background audio playback (a foreground service, same mechanism every
+/// audio/podcast app uses) can still get killed by some manufacturers'
+/// aggressive battery management, cutting playback when the screen is off
+/// or the app is backgrounded. No plugin dependency added just for a deep
+/// link into system settings — the exact path varies enough by
+/// manufacturer (stock Android vs. Samsung/Xiaomi/OnePlus battery
+/// managers) that a plain explanation is more reliable than guessing at
+/// one intent.
+void _showBatteryOptimizationDialog(BuildContext context) {
+  showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Background playback'),
+      content: const Text(
+        'If playback stops unexpectedly when the screen is off or the '
+        'app is in the background, your device may be aggressively '
+        "battery-optimizing Grimmory. To fix it, find Grimmory in your "
+        'phone\'s Settings → Apps → Battery (the exact wording varies by '
+        'manufacturer) and set it to "Unrestricted" or "Not optimized".',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Got it'),
+        ),
+      ],
+    ),
+  );
 }
