@@ -24,6 +24,12 @@ class ApiClient {
 
   String? get token => _token;
 
+  /// For requests made outside this class's own [_dio] instance (e.g. an
+  /// image widget fetching cover art directly) — Grimmory's cover/stream
+  /// endpoints require the same bearer auth as everything else.
+  Map<String, String> get authHeaders =>
+      _token == null ? {} : {'Authorization': 'Bearer $_token'};
+
   ApiClient(this._prefs, this._secureStorage, {String? initialToken}) {
     _token = initialToken;
 
