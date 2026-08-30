@@ -1,0 +1,147 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver version, e.g. 0.2.0 (no leading v)"
+        required: true
+        type: string
+      release_notes:
+        description: "Optional release notes. Leave blank to auto-generate from commits since the last tag."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  analyze-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install native-asset build tools
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - run: flutter test
+
+  build-and-release:
+    needs: analyze-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute tag and notes
+        id: meta
+        run: |
+          set -euo pipefail
+          TAG="v${{ inputs.version }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ -n "${{ inputs.release_notes }}" ]; then
+            NOTES="${{ inputs.release_notes }}"
+          else
+            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$LAST_TAG" ]; then
+              NOTES=$(git log "${LAST_TAG}..HEAD" --pretty=format:'- %s')
+            else
+              NOTES=$(git log --pretty=format:'- %s')
+            fi
+          fi
+          {
+            echo "notes<<NOTES_EOF"
+            echo "$NOTES"
+            echo "NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Bump pubspec version
+        run: sed -i "s/^version: .*/version: ${{ inputs.version }}+${{ github.run_number }}/" pubspec.yaml
+
+      - name: Install native-asset build tools
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/android-sdk
+          key: android-sdk-35-buildtools-35.0.0
+
+      - name: Set up Android SDK
+        run: |
+          SDK_DIR="/opt/hostedtoolcache/android-sdk"
+          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "$SDK_DIR/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
+          if [ ! -f "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ]; then
+            mkdir -p "$SDK_DIR/cmdline-tools"
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
+            unzip -q cmdline-tools.zip -d "$SDK_DIR/cmdline-tools"
+            mv "$SDK_DIR/cmdline-tools/cmdline-tools" "$SDK_DIR/cmdline-tools/latest"
+            yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+            "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          fi
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/app/build.gradle*', 'android/build.gradle*', 'pubspec.lock') }}
+
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$HOME/grimmory.jks"
+          echo "KEYSTORE_PATH=$HOME/grimmory.jks" >> "$GITHUB_ENV"
+
+      - name: Build APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          flutter build apk --release --split-per-abi \
+            --target-platform android-arm64 \
+            --obfuscate --split-debug-info=build/debug_info
+
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/grimmory.apk
+
+      - name: Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.meta.outputs.tag }}" -m "${{ steps.meta.outputs.tag }}"
+          git push origin "${{ steps.meta.outputs.tag }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.tag }}
+          body: ${{ steps.meta.outputs.notes }}
+          files: build/app/outputs/flutter-apk/grimmory.apk
