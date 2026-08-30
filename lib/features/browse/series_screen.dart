@@ -6,35 +6,37 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 
-final librariesProvider = FutureProvider<List<Library>>((ref) async {
-  return ref.read(apiClientProvider).getLibraries();
+final seriesListProvider = FutureProvider<List<Series>>((ref) async {
+  return ref.read(apiClientProvider).getSeries();
 });
 
-/// Body of the "Libraries" tab on [HomeScreen] — the AppBar/BottomNavigationBar
-/// live on the shell, not here.
-class LibrariesTab extends ConsumerWidget {
-  const LibrariesTab({super.key});
+/// Body of the "Series" tab on [HomeScreen].
+class SeriesTab extends ConsumerWidget {
+  const SeriesTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final libraries = ref.watch(librariesProvider);
+    final series = ref.watch(seriesListProvider);
 
-    return libraries.when(
+    return series.when(
       data: (items) {
         if (items.isEmpty) {
-          return const Center(child: Text('No libraries found.'));
+          return const Center(child: Text('No series found.'));
         }
         return RefreshIndicator(
-          onRefresh: () => ref.refresh(librariesProvider.future),
+          onRefresh: () => ref.refresh(seriesListProvider.future),
           child: ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
-              final library = items[index];
+              final s = items[index];
               return ListTile(
-                leading: const Icon(Icons.headphones),
-                title: Text(library.name),
-                subtitle: library.type != null ? Text(library.type!) : null,
-                onTap: () => context.push('/libraries/${library.id}'),
+                leading: const Icon(Icons.collections_bookmark_outlined),
+                title: Text(s.name),
+                subtitle: Text(
+                  '${s.bookCount} ${s.bookCount == 1 ? 'book' : 'books'}',
+                ),
+                onTap: () =>
+                    context.push('/series/${Uri.encodeComponent(s.name)}'),
               );
             },
           ),
@@ -50,7 +52,7 @@ class LibrariesTab extends ConsumerWidget {
               Text(friendlyApiError(error)),
               const SizedBox(height: 12),
               FilledButton(
-                onPressed: () => ref.invalidate(librariesProvider),
+                onPressed: () => ref.invalidate(seriesListProvider),
                 child: const Text('Retry'),
               ),
             ],

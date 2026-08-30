@@ -6,7 +6,10 @@ import '../core/providers.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/sso_settings_screen.dart';
-import '../features/library/libraries_screen.dart';
+import '../features/book/book_detail_screen.dart';
+import '../features/browse/series_detail_screen.dart';
+import '../features/library/home_screen.dart';
+import '../features/library/library_detail_screen.dart';
 import '../features/onboarding/server_url_screen.dart';
 import '../features/settings/settings_screen.dart';
 
@@ -65,7 +68,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/libraries',
-        builder: (context, state) => const LibrariesScreen(),
+        builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: '/libraries/:id',
+        builder: (context, state) => LibraryDetailScreen(
+          libraryId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/series/:name',
+        builder: (context, state) => SeriesDetailScreen(
+          seriesName: state.pathParameters['name']!,
+        ),
+      ),
+      GoRoute(
+        path: '/books/:id',
+        builder: (context, state) => BookDetailScreen(
+          bookId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: '/settings',
