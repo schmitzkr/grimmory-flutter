@@ -27,10 +27,16 @@ class ApiClient {
   ApiClient(this._prefs, this._secureStorage, {String? initialToken}) {
     _token = initialToken;
 
-    final baseUrl = _prefs.getString('server_url') ?? '';
+    final serverUrl = _prefs.getString('server_url');
+    // A relative-only baseUrl (e.g. '/api/v1' with no server configured yet)
+    // is rejected by Dio on non-web platforms, so leave it empty until
+    // updateBaseUrl() is called from onboarding.
+    final baseUrl = (serverUrl == null || serverUrl.isEmpty)
+        ? ''
+        : '$serverUrl/api/v1';
     _dio = Dio(
       BaseOptions(
-        baseUrl: '$baseUrl/api/v1',
+        baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 20),
       ),
