@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../auth/auth_provider.dart';
@@ -33,6 +34,15 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () async {
               await ref.read(authProvider.notifier).logout();
               await ref.read(sharedPrefsProvider).remove('server_url');
+              // Same reasoning as server_url_screen.dart's post-save
+              // navigation: logout() fires authProvider's state change
+              // (which the router DOES react to), but that happens before
+              // server_url is actually removed, and nothing re-triggers the
+              // redirect a second time afterward — without this, the app
+              // lands on /login (correct reaction to the logout alone) and
+              // gets stuck there instead of proceeding to /onboarding, even
+              // though there's no server configured anymore.
+              if (context.mounted) context.go('/onboarding');
             },
           ),
         ],
