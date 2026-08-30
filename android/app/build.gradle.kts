@@ -20,7 +20,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "is.schmitzkr.grimmory"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -28,6 +27,18 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Required by the oidc package's Android implementation (AppAuth) —
+        // it declares a manifest placeholder for the OAuth redirect's custom
+        // URI scheme; the manifest merger fails without it, even though this
+        // app doesn't actually use AppAuth's own redirect activity (OIDC
+        // login is handled via app_links + DeepLinkOidcUserManager instead,
+        // see lib/features/auth/). Must match the scheme used for the OIDC
+        // redirect URI (is.schmitzkr.grimmory://oidc-callback) — do NOT also
+        // register this scheme as an intent-filter on MainActivity, which
+        // would create a disambiguation dialog against AppAuth's own
+        // (unused) RedirectUriReceiverActivity.
+        manifestPlaceholders["appAuthRedirectScheme"] = "is.schmitzkr.grimmory"
     }
 
     buildTypes {

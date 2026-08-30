@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install native-asset build tools
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
@@ -25,3 +25,59 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - run: flutter test
+
+  debug-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install native-asset build tools
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/android-sdk
+          key: android-sdk-35-buildtools-35.0.0
+
+      - name: Set up Android SDK
+        run: |
+          SDK_DIR="/opt/hostedtoolcache/android-sdk"
+          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "$SDK_DIR/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
+          if [ ! -f "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ]; then
+            mkdir -p "$SDK_DIR/cmdline-tools"
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
+            unzip -q cmdline-tools.zip -d "$SDK_DIR/cmdline-tools"
+            mv "$SDK_DIR/cmdline-tools/cmdline-tools" "$SDK_DIR/cmdline-tools/latest"
+            yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+            "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          fi
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/app/build.gradle*', 'android/build.gradle*', 'pubspec.lock') }}
+
+      # Debug build only — no signing secrets needed, just proves the
+      # Android/Gradle build actually compiles. Release builds are verified
+      # separately by release.yml/dev-build.yml once signing is set up (M4).
+      - run: flutter build apk --debug --target-platform android-arm64
