@@ -11,6 +11,7 @@ import '../features/browse/series_detail_screen.dart';
 import '../features/library/home_screen.dart';
 import '../features/library/library_detail_screen.dart';
 import '../features/onboarding/server_url_screen.dart';
+import '../features/player/player_screen.dart';
 import '../features/settings/settings_screen.dart';
 
 /// Single app-wide router, redirect-gated on [authProvider] and whether a
@@ -87,6 +88,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => BookDetailScreen(
           bookId: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/player',
+        builder: (context, state) => const PlayerScreen(),
       ),
       GoRoute(
         path: '/settings',

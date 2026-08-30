@@ -1,4 +1,5 @@
 import 'package:app_links/app_links.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,6 +9,8 @@ import 'app/router.dart';
 import 'core/api/api_client.dart';
 import 'core/providers.dart';
 import 'features/auth/oidc_login_controller.dart';
+import 'features/player/audio_handler.dart';
+import 'features/player/playback_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +20,22 @@ void main() async {
   final initialToken = await secureStorage.read(key: 'access_token');
   final apiClient = ApiClient(prefs, secureStorage, initialToken: initialToken);
 
+  final audioHandler = await AudioService.init(
+    builder: () => GrimmoryAudioHandler(apiClient),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'is.schmitzkr.grimmory.audio',
+      androidNotificationChannelName: 'Audiobook playback',
+      androidNotificationOngoing: true,
+    ),
+  );
+
   runApp(
     ProviderScope(
       overrides: [
         sharedPrefsProvider.overrideWithValue(prefs),
         secureStorageProvider.overrideWithValue(secureStorage),
         apiClientProvider.overrideWithValue(apiClient),
+        audioHandlerProvider.overrideWithValue(audioHandler),
       ],
       child: const GrimmoryApp(),
     ),

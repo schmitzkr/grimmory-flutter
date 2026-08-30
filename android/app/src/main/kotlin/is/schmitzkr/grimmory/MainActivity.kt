@@ -1,5 +1,8 @@
 package `is`.schmitzkr.grimmory
 
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 
-class MainActivity : FlutterActivity()
+// AudioServiceActivity (not plain FlutterActivity) reuses the FlutterEngine
+// that audio_service's background service manages, so playback survives
+// this activity being destroyed/recreated (e.g. backgrounding the app).
+class MainActivity : AudioServiceActivity()
