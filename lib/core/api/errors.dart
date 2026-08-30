@@ -2,10 +2,13 @@ import 'package:dio/dio.dart';
 
 /// Maps a [DioException] to a short, user-facing message.
 ///
-/// Grimmory's actual error response shapes haven't been confirmed against a
-/// live instance yet (M0) — this only handles the generic HTTP-status cases
-/// every REST API shares. Extend with Grimmory-specific error bodies once
-/// confirmed; don't assume any other self-hosted app's error branches apply.
+/// Confirmed against a live instance (grimmory.mael.is, 2026-08-30): a 400
+/// validation error has the shape
+/// `{"details": ["field: message", ...], "message": "Validation error",
+/// "status": 400, "timestamp": ...}`, while other error statuses (401, and
+/// presumably 403/404/5xx, not individually confirmed) use plain Spring
+/// Boot's default `{"timestamp", "status", "error", "path"}` — no `message`/
+/// `details` to surface there, hence the generic per-status text below.
 String friendlyApiError(Object error) {
   if (error is! DioException) return 'Something went wrong. Please try again.';
 
@@ -22,6 +25,10 @@ String friendlyApiError(Object error) {
       return 'Request cancelled.';
     case DioExceptionType.badResponse:
       switch (error.response?.statusCode) {
+        case 400:
+          final details = _validationDetails(error.response?.data);
+          if (details != null) return details;
+          return 'That request was invalid. Please check your input and try again.';
         case 401:
           return 'Your session has expired. Please sign in again.';
         case 403:
@@ -39,4 +46,18 @@ String friendlyApiError(Object error) {
     default:
       return 'Something went wrong. Please try again.';
   }
+}
+
+/// Extracts the human-readable part of a confirmed validation-error body —
+/// each entry in `details` is already "field: message" (e.g. "username:
+/// Username must not be blank"), so joining them is enough without further
+/// parsing.
+String? _validationDetails(Object? data) {
+  if (data is! Map) return null;
+  final details = data['details'];
+  if (details is List && details.isNotEmpty) {
+    return details.whereType<String>().join('\n');
+  }
+  final message = data['message'];
+  return message is String ? message : null;
 }

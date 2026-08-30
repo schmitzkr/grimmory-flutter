@@ -39,9 +39,6 @@ jobs:
           echo "Disk space after cleanup:"
           df -h /
 
-      - name: Install native-asset build tools
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
-
       - uses: actions/setup-java@v5
         with:
           distribution: temurin

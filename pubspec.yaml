@@ -23,9 +23,13 @@ dependencies:
   flutter_secure_storage: ^10.3.1
   shared_preferences: ^2.5.2
 
-  # OIDC login (Authentik or any IdP a self-hosted Grimmory instance is wired to)
+  # OIDC login (Authentik or any IdP a self-hosted Grimmory instance is wired
+  # to) — only oidc_core's low-level PKCE/request utilities are used (via
+  # `oidc`, which re-exports oidc_core), not the full OidcUserManager, since
+  # Grimmory's /auth/oidc/callback wants the raw PKCE result rather than a
+  # pre-exchanged token. No oidc_default_store — that's only needed to back
+  # OidcUserManager's own session/token store, unused here.
   oidc: ^0.13.0
-  oidc_default_store: ^0.5.0
   app_links: ^6.4.1
   url_launcher: ^6.3.0
 

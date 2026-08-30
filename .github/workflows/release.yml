@@ -26,9 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install native-asset build tools
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
-
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.41.9'
@@ -92,9 +89,6 @@ jobs:
       - name: Bump pubspec version
         run: |
           sed -i "s/^version: .*/version: ${{ inputs.version }}+${{ github.run_number }}/" pubspec.yaml
-
-      - name: Install native-asset build tools
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
 
       - uses: actions/setup-java@v5
         with:
