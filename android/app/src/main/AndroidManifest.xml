@@ -24,6 +24,16 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- OIDC login redirect (app_links + DeepLinkOidcUserManager,
+                 see lib/features/auth/). Deliberately a distinct scheme from
+                 the appAuthRedirectScheme placeholder in build.gradle.kts —
+                 see the comment there for why they must not collide. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="is.schmitzkr.grimmory" android:host="oidc-callback"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

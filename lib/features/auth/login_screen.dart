@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
 import 'auth_provider.dart';
+import 'oidc_login_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -28,16 +30,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .login(_emailController.text.trim(), _passwordController.text);
   }
 
+  Future<void> _signInWithSso() async {
+    final configured = ref.read(oidcConfigProvider) != null;
+    if (!configured) {
+      await context.push('/sso-settings');
+      return;
+    }
+    await ref.read(oidcLoginControllerProvider.notifier).login();
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final isLoading = authState.isLoading;
+    final oidcState = ref.watch(oidcLoginControllerProvider);
+    final oidcConfigured = ref.watch(oidcConfigProvider) != null;
+    final isLoading = authState.isLoading || oidcState.isLoading;
 
     ref.listen(authProvider, (previous, next) {
       final error = next.error;
       if (error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(friendlyApiError(error))),
+        );
+      }
+    });
+
+    ref.listen(oidcLoginControllerProvider, (previous, next) {
+      final error = next.error;
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('SSO sign-in failed: $error')),
         );
       }
     });
@@ -71,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: isLoading ? null : _login,
-              child: isLoading
+              child: authState.isLoading
                   ? const SizedBox(
                       height: 20,
                       width: 20,
@@ -80,14 +102,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   : const Text('Sign in'),
             ),
             const SizedBox(height: 8),
-            // OIDC login is deliberately not wired up yet — the redirect
-            // contract Grimmory's /auth/oidc/* endpoints actually expect is
-            // an open question pending M0 (see the project plan). Wiring a
-            // DeepLinkOidcUserManager here now would just be guessing at an
-            // unconfirmed wire format.
-            OutlinedButton(
-              onPressed: null,
-              child: const Text('Sign in with SSO (coming soon)'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: isLoading ? null : _signInWithSso,
+                    child: oidcState.isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            oidcConfigured
+                                ? 'Sign in with SSO'
+                                : 'Set up SSO',
+                          ),
+                  ),
+                ),
+                if (oidcConfigured)
+                  IconButton(
+                    tooltip: 'SSO settings',
+                    icon: const Icon(Icons.settings),
+                    onPressed: () => context.push('/sso-settings'),
+                  ),
+              ],
             ),
           ],
         ),
