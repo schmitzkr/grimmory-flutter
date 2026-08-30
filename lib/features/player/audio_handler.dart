@@ -51,6 +51,86 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     });
   }
 
+  // ── Browse tree (Android Auto) ────────────────────────────────────────
+  //
+  // audio_service's Android backend already implements MediaBrowserService;
+  // this is the one method that surface actually needs. No custom Kotlin
+  // required. Static per-call (not pushed/subscribed) — BaseAudioHandler's
+  // default subscribeToChildren is fine for content that doesn't need to
+  // update while the user is browsing it.
+  //
+  // "Continue listening" (books with in-progress playback, most recent
+  // first) was in the original plan for this tree but isn't implemented —
+  // there's no confirmed or even guessable Grimmory endpoint for "list of
+  // books with saved progress across the whole library" (only
+  // per-book GET .../progress, itself already a guess). Revisit once a
+  // real endpoint is confirmed against a live instance (M0); an empty,
+  // permanently-stuck root menu item would be worse than not having one.
+  static const _rootLibraries = 'root:libraries';
+  static const _rootSeries = 'root:series';
+
+  @override
+  Future<List<MediaItem>> getChildren(
+    String parentMediaId, [
+    Map<String, dynamic>? options,
+  ]) async {
+    switch (parentMediaId) {
+      case AudioService.browsableRootId:
+        return const [
+          MediaItem(id: _rootLibraries, title: 'Libraries', playable: false),
+          MediaItem(id: _rootSeries, title: 'Series', playable: false),
+        ];
+      case _rootLibraries:
+        final libraries = await _apiClient.getLibraries();
+        return [
+          for (final library in libraries)
+            MediaItem(
+              id: 'lib:${library.id}',
+              title: library.name,
+              playable: false,
+            ),
+        ];
+      case _rootSeries:
+        final series = await _apiClient.getSeries();
+        return [
+          for (final s in series)
+            MediaItem(
+              id: 'series:${Uri.encodeComponent(s.name)}',
+              title: s.name,
+              playable: false,
+            ),
+        ];
+      default:
+        if (parentMediaId.startsWith('lib:')) {
+          final books = await _apiClient.getLibraryBooks(
+            parentMediaId.substring(4),
+          );
+          return books.map(_mediaItemForBrowse).toList();
+        }
+        if (parentMediaId.startsWith('series:')) {
+          final seriesName = Uri.decodeComponent(
+            parentMediaId.substring('series:'.length),
+          );
+          final books = await _apiClient.getSeriesBooks(seriesName);
+          return books.map(_mediaItemForBrowse).toList();
+        }
+        return const [];
+    }
+  }
+
+  /// A playable leaf in the browse tree — id is the bare book id (no track
+  /// suffix), so tapping it in Android Auto calls [playFromMediaId] exactly
+  /// the same way the phone UI's Play button does.
+  MediaItem _mediaItemForBrowse(Book book) => MediaItem(
+    id: book.id,
+    title: book.title,
+    artist: book.author,
+    artUri: Uri.parse(_apiClient.coverUrl(book.id)),
+    artHeaders: _apiClient.authHeaders,
+    playable: true,
+    extras: {'bookId': book.id},
+  );
+
   @override
   Future<void> playFromMediaId(String mediaId, [Map<String, dynamic>? extras]) async {
     await loadBook(mediaId);
