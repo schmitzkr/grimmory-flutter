@@ -5,6 +5,22 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Release signing: CI (release.yml/dev-build.yml) decodes a keystore from
+// the KEYSTORE_BASE64 repo secret and exports these four env vars before
+// building. Falls back to the debug keystore when they're unset (e.g. local
+// `flutter run --release` on a dev machine without the real keystore) —
+// that fallback must NEVER be used for an actual published release, since
+// Android requires every update to an app be signed with the same key.
+val envKeystorePath: String? = System.getenv("KEYSTORE_PATH")
+val envKeystorePassword: String? = System.getenv("KEYSTORE_PASSWORD")
+val envKeyAlias: String? = System.getenv("KEY_ALIAS")
+val envKeyPassword: String? = System.getenv("KEY_PASSWORD")
+val hasReleaseSigning =
+    !envKeystorePath.isNullOrBlank() &&
+        !envKeystorePassword.isNullOrBlank() &&
+        !envKeyAlias.isNullOrBlank() &&
+        !envKeyPassword.isNullOrBlank()
+
 android {
     namespace = "is.schmitzkr.grimmory"
     compileSdk = flutter.compileSdkVersion
@@ -47,11 +63,26 @@ android {
         manifestPlaceholders["appAuthRedirectScheme"] = "is.schmitzkr.grimmory.unused"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(envKeystorePath!!)
+                storePassword = envKeystorePassword
+                keyAlias = envKeyAlias
+                keyPassword = envKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                // Local `flutter run --release` on a dev machine without the
+                // real keystore — never used by CI, which always has it.
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
