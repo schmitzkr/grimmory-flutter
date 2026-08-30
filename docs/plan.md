@@ -107,7 +107,10 @@ REST API under `/api/v1`, docs at `https://grimmory.org/api/` (and `/api/openapi
 - Optional `.github/workflows/dev-build.yml`: same signed-build steps minus tagging/release, `actions/upload-artifact@v4` for sideload testing — schmlist's own equivalent proves this loop is worth having.
 - No ntfy/Komodo/OpenBao/`/api/app-release` integration — this repo has no backend of its own; updates ship via the GitHub Releases page.
 
-## 3.9 Commit workflow
+## 3.9 UX/terminology parity with Grimmory
+The goal is for this app to feel like a native extension of Grimmory, not a generic third-party client — match its own terminology, browse structure, and metadata presentation rather than inventing our own vocabulary (e.g. whatever Grimmory's web UI calls a "library" vs. "shelf," how it groups/orders series, which metadata fields it surfaces and in what order). Concrete matching only becomes possible once there's a live instance to click through (M0+) — until then, screens use best-guess generic terms and should be revisited against the real web UI as soon as one is available, rather than treated as final. Revisit at the start of M1's UI work and again during M3 testing.
+
+## 3.10 Commit workflow
 Commit regularly and incrementally as work progresses (e.g. per logical chunk within a milestone), not just once per milestone — using **Conventional Commits** format (`feat:`, `fix:`, `chore:`, `docs:`, etc.), same convention as the rest of this workspace. Every commit gets a trailer crediting Claude Code as assisting author:
 ```
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
