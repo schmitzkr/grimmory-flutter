@@ -6,9 +6,18 @@ import 'models.dart';
 
 /// Talks to a self-hosted Grimmory server's `/api/v1` REST API.
 ///
-/// Endpoint paths and response field names below follow this project's plan
-/// (see docs/) and are pending confirmation against a live instance or its
-/// OpenAPI spec (M0) — Grimmory's API is explicitly marked unstable.
+/// Endpoint *paths* below are confirmed against a live instance
+/// (grimmory.mael.is, 2026-08-30) — every path this client uses returns a
+/// real 401 (not the Angular SPA's catch-all HTML fallback), meaning the
+/// route exists and just requires auth. Response *body shapes* for
+/// authenticated endpoints are still unconfirmed, since Spring Security's
+/// filter chain rejects unauthenticated requests before `@Valid` body
+/// validation ever runs — only the public auth endpoints (login/refresh/
+/// oidc-callback) yielded real field-name validation errors. The API uses
+/// camelCase JSON throughout (confirmed via `refreshToken` and the OIDC
+/// callback's five required fields), so fields on authenticated endpoints
+/// are written camelCase by inference from that confirmed pattern, not
+/// individually verified.
 class ApiClient {
   late final Dio _dio;
   final SharedPreferences _prefs;
@@ -130,7 +139,9 @@ class ApiClient {
     try {
       final resp = await _dio.post(
         '/auth/refresh',
-        data: {'refresh_token': refreshToken},
+        // Confirmed via a live validation error: the field is camelCase
+        // "refreshToken", not "refresh_token" as originally guessed.
+        data: {'refreshToken': refreshToken},
         options: Options(headers: {'Authorization': null}),
       );
       final tokens = AuthTokens.fromJson(resp.data as Map<String, dynamic>);
@@ -154,22 +165,43 @@ class ApiClient {
 
   // ── Auth ───────────────────────────────────────────────────────────────
 
-  Future<void> login(String email, String password) async {
+  /// [username] — confirmed via a live validation error: Grimmory logs in
+  /// with a username, not an email address (the field is literally named
+  /// "username" and its message is "Username must not be blank").
+  Future<void> login(String username, String password) async {
     final resp = await _dio.post(
       '/auth/login',
-      data: {'email': email, 'password': password},
+      data: {'username': username, 'password': password},
     );
     await _storeTokens(AuthTokens.fromJson(resp.data as Map<String, dynamic>));
   }
 
-  /// Exchanges an ID token from a completed OIDC authorization-code flow
-  /// (see features/auth/) for a Grimmory-issued token pair. Endpoint path
-  /// and payload shape are unconfirmed pending M0 — see the plan's OIDC
-  /// section for the two possible contracts this might actually need.
-  Future<void> loginWithOidc(String idToken) async {
+  /// Confirmed via a live validation error that this endpoint's contract is
+  /// NOT "hand me a completed ID token" (the original guess) — it's "hand
+  /// me the raw PKCE authorization result and let the server exchange it
+  /// with the IdP itself": required fields are exactly `code`, `state`,
+  /// `codeVerifier`, `nonce`, `redirectUri`. This is why OIDC login doesn't
+  /// use the `oidc` package's full OidcUserManager (which performs its own
+  /// code-for-token exchange against the IdP and would never hand over a
+  /// raw, unexchanged authorization code) — see
+  /// features/auth/oidc_login_controller.dart, which runs the
+  /// authorize-request half of the flow by hand instead.
+  Future<void> loginWithOidc({
+    required String code,
+    required String state,
+    required String codeVerifier,
+    required String nonce,
+    required String redirectUri,
+  }) async {
     final resp = await _dio.post(
       '/auth/oidc/callback',
-      data: {'id_token': idToken},
+      data: {
+        'code': code,
+        'state': state,
+        'codeVerifier': codeVerifier,
+        'nonce': nonce,
+        'redirectUri': redirectUri,
+      },
     );
     await _storeTokens(AuthTokens.fromJson(resp.data as Map<String, dynamic>));
   }
@@ -178,7 +210,7 @@ class ApiClient {
     final refreshToken = await _secureStorage.read(key: 'refresh_token');
     if (refreshToken != null) {
       try {
-        await _dio.post('/auth/logout', data: {'refresh_token': refreshToken});
+        await _dio.post('/auth/logout', data: {'refreshToken': refreshToken});
       } catch (_) {}
     }
     _token = null;
@@ -226,12 +258,10 @@ class ApiClient {
 
   // ── Progress ───────────────────────────────────────────────────────────
 
-  /// Endpoint path/response shape unconfirmed pending M0 — there's no
-  /// documented "get progress for a book" endpoint in the API list this
-  /// project has verified so far (only save/reset). Guessed by analogy with
-  /// the confirmed save/reset paths; returns null on 404 so callers can
-  /// treat "no saved progress" and "endpoint doesn't exist yet" the same
-  /// way (start from the beginning) rather than crashing.
+  /// Path confirmed live (returns a real 401, not the SPA fallback) —
+  /// response body shape is still unverified since that requires an
+  /// authenticated request. Returns null on 404 so callers can treat "no
+  /// saved progress" the same way as "nothing to resume from".
   Future<Progress?> getProgress(String bookId) async {
     try {
       final resp = await _dio.get('/books/$bookId/progress');
@@ -247,7 +277,7 @@ class ApiClient {
   }
 
   Future<void> resetProgress(String bookId) async {
-    await _dio.post('/books/reset-progress', data: {'book_id': bookId});
+    await _dio.post('/books/reset-progress', data: {'bookId': bookId});
   }
 
   // ── Series ─────────────────────────────────────────────────────────────
@@ -283,7 +313,10 @@ class ApiClient {
   // ── Bookmarks ──────────────────────────────────────────────────────────
 
   Future<List<Bookmark>> getBookmarks(String bookId) async {
-    final resp = await _dio.get('/bookmarks', queryParameters: {'book_id': bookId});
+    final resp = await _dio.get(
+      '/bookmarks',
+      queryParameters: {'bookId': bookId},
+    );
     return (resp.data as List)
         .map((b) => Bookmark.fromJson(b as Map<String, dynamic>))
         .toList();
@@ -297,8 +330,8 @@ class ApiClient {
     final resp = await _dio.post(
       '/bookmarks',
       data: {
-        'book_id': bookId,
-        'position_seconds': positionSeconds,
+        'bookId': bookId,
+        'positionSeconds': positionSeconds,
         'note': ?note,
       },
     );

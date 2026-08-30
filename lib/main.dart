@@ -59,10 +59,10 @@ class _GrimmoryAppState extends ConsumerState<GrimmoryApp> {
   }
 
   /// Feeds an incoming OIDC redirect (is.schmitzkr.grimmory://oidc-callback)
-  /// to the active DeepLinkOidcUserManager — both the cold-start case (app
-  /// wasn't running) and the warm case (app was backgrounded mid-login). See
-  /// DeepLinkOidcUserManager's doc comment for why the redirect has to be
-  /// owned this way rather than left to AppAuth's own activity.
+  /// to [OidcLoginController.completeRedirect] — both the cold-start case
+  /// (app wasn't running) and the warm case (app was backgrounded
+  /// mid-login). See OidcLoginController's doc comment for why the redirect
+  /// has to be owned this way rather than left to AppAuth's own activity.
   Future<void> _listenForOidcRedirect() async {
     _appLinks.uriLinkStream.listen(_handleUri);
 
@@ -75,7 +75,7 @@ class _GrimmoryAppState extends ConsumerState<GrimmoryApp> {
         uri.host != oidcRedirectUri.host) {
       return;
     }
-    ref.read(oidcUserManagerProvider)?.completeLogin(uri);
+    ref.read(oidcLoginControllerProvider.notifier).completeRedirect(uri);
   }
 
   @override
