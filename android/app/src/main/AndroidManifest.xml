@@ -56,6 +56,14 @@
             </intent-filter>
         </receiver>
 
+        <!-- Declares this app as an Android Auto media app — required for
+             Android Auto to show it at all, separately from the
+             MediaBrowserService intent-filter above which handles the
+             actual browse/playback protocol. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
