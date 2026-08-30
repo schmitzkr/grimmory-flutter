@@ -45,6 +45,28 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h /
+          # This job installs its own separate Android SDK/NDK at
+          # /opt/hostedtoolcache/android-sdk (a stable, cacheable path
+          # across runs) — the runner image's preinstalled SDK at
+          # /usr/local/lib/android is never used, just wasted disk. Freeing
+          # it plus a few other large preinstalled toolchains this build
+          # doesn't touch reliably recovers 15-20GB. Needed: a real run
+          # ran the disk down to 47MB free and failed two cache-save steps
+          # with "No space left on device" (Android SDK platforms/NDK +
+          # Gradle + Flutter SDK + build output + several caches tar'ing up
+          # at once exceeded the runner's default free space).
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          echo "Disk space after cleanup:"
+          df -h /
+
       - name: Compute tag and notes
         id: meta
         run: |
@@ -74,13 +96,13 @@ jobs:
       - name: Install native-asset build tools
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Cache Android SDK
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /opt/hostedtoolcache/android-sdk
           key: android-sdk-35-buildtools-35.0.0
@@ -109,7 +131,7 @@ jobs:
       - run: flutter pub get
 
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
