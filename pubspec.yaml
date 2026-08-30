@@ -1,0 +1,56 @@
+name: grimmory
+description: "Audiobook client for self-hosted Grimmory servers"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^3.3.2
+
+  # Navigation
+  go_router: ^17.3.0
+
+  # HTTP
+  dio: ^5.8.0+1
+
+  # Token / server-URL storage
+  flutter_secure_storage: ^10.3.1
+  shared_preferences: ^2.5.2
+
+  # OIDC login (Authentik or any IdP a self-hosted Grimmory instance is wired to)
+  oidc: ^0.13.0
+  oidc_default_store: ^0.5.0
+  app_links: ^6.4.1
+  url_launcher: ^6.3.0
+
+  # Models
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # Background audio + Android Auto (MediaBrowserService) surface
+  audio_service: ^0.18.15
+  just_audio: ^0.9.42
+  audio_session: ^0.1.21
+
+  # Misc
+  package_info_plus: ^10.2.0
+  cached_network_image: ^3.4.1
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+  build_runner: ^2.4.14
+  freezed: ^3.1.0
+  json_serializable: ^6.9.3
+
+flutter:
+  uses-material-design: true

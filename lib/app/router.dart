@@ -1,0 +1,75 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../core/providers.dart';
+import '../features/auth/auth_provider.dart';
+import '../features/auth/login_screen.dart';
+import '../features/library/libraries_screen.dart';
+import '../features/onboarding/server_url_screen.dart';
+import '../features/settings/settings_screen.dart';
+
+/// Single app-wide router, redirect-gated on [authProvider] and whether a
+/// server URL has been configured yet — mirrors schmlist-flutter's
+/// router.dart pattern (see the project plan, §2/§3.5).
+final routerProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    initialLocation: '/',
+    refreshListenable: GoRouterRefreshStream(ref),
+    redirect: (context, state) {
+      final prefs = ref.read(sharedPrefsProvider);
+      final serverUrl = prefs.getString('server_url');
+      final authState = ref.read(authProvider);
+
+      final onOnboarding = state.matchedLocation == '/onboarding';
+      final onLogin = state.matchedLocation == '/login';
+
+      if (serverUrl == null || serverUrl.isEmpty) {
+        return onOnboarding ? null : '/onboarding';
+      }
+
+      // Don't redirect while auth state is still loading — avoids bouncing
+      // to /login mid cold-start before the stored refresh token has been
+      // checked.
+      if (authState.isLoading) return null;
+
+      final loggedIn = authState.value ?? false;
+      if (!loggedIn) {
+        return onLogin ? null : '/login';
+      }
+      if (onOnboarding || onLogin) return '/libraries';
+
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: '/',
+        redirect: (context, state) => '/libraries',
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const ServerUrlScreen(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/libraries',
+        builder: (context, state) => const LibrariesScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+    ],
+  );
+});
+
+/// Bridges Riverpod's [authProvider] into a [Listenable] so GoRouter
+/// re-evaluates `redirect` whenever auth state changes.
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Ref ref) {
+    ref.listen(authProvider, (previous, next) => notifyListeners());
+  }
+}
