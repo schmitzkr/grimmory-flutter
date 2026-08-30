@@ -117,7 +117,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 ```
 No `Claude-Session` link in commits for this repo (user preference, 2026-08-29 — differs from this workspace's other repos).
 
-Since this repo lives on GitHub (not Gitea), still follow this workspace's default branch → PR → merge flow rather than pushing straight to `main` (per global git-command preferences) — batch each milestone's commits onto one branch and open a PR at natural checkpoints, asking before merging. Exception: the very first scaffold commit bootstraps the repo directly on `main` (no prior history to protect), same as commonly done for a new project's initial commit.
+Since this repo lives on GitHub (not Gitea), still follow this workspace's default branch → PR → merge flow rather than pushing straight to `main` (per global git-command preferences) — batch each milestone's commits onto one branch and open a PR at natural checkpoints, asking before merging. **No exceptions going forward (2026-08-30)**: treat `main` as if branch protection were enforced even though it isn't (private repo, no GitHub Pro) — every change, however small, goes through a PR. The very first scaffold commit was bootstrapped directly on `main` before this was tightened; that's a one-time historical exception, not a standing one.
 
 ## 4. Milestones (for later GitHub issue seeding)
 

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/providers.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
+import '../features/auth/sso_settings_screen.dart';
 import '../features/library/libraries_screen.dart';
 import '../features/onboarding/server_url_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -23,6 +24,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final onOnboarding = state.matchedLocation == '/onboarding';
       final onLogin = state.matchedLocation == '/login';
+      // Pre-login screen (configuring SSO before the user has signed in at
+      // all) — exempt it the same way /login is exempt, or every visit
+      // would immediately bounce back to /login.
+      final onSsoSettings = state.matchedLocation == '/sso-settings';
 
       if (serverUrl == null || serverUrl.isEmpty) {
         return onOnboarding ? null : '/onboarding';
@@ -35,7 +40,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final loggedIn = authState.value ?? false;
       if (!loggedIn) {
-        return onLogin ? null : '/login';
+        return (onLogin || onSsoSettings) ? null : '/login';
       }
       if (onOnboarding || onLogin) return '/libraries';
 
@@ -53,6 +58,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/sso-settings',
+        builder: (context, state) => const SsoSettingsScreen(),
       ),
       GoRoute(
         path: '/libraries',
