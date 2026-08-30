@@ -116,6 +116,14 @@ class ApiClient {
     return _refreshFuture!;
   }
 
+  /// Public entry point for callers outside this class's own [_dio]
+  /// instance — e.g. the audio player, whose HTTP requests for stream bytes
+  /// go through just_audio's own client, not [_dio], so a 401 mid-stream
+  /// never passes through the interceptor above and needs to trigger a
+  /// refresh explicitly. Shares the same single-flight guard as the
+  /// interceptor's own refresh calls.
+  Future<bool> refreshToken() => _refreshToken();
+
   Future<bool> _doRefresh() async {
     final refreshToken = await _secureStorage.read(key: 'refresh_token');
     if (refreshToken == null) return false;
@@ -217,6 +225,22 @@ class ApiClient {
       '${_dio.options.baseUrl}/audiobooks/$bookId/cover';
 
   // ── Progress ───────────────────────────────────────────────────────────
+
+  /// Endpoint path/response shape unconfirmed pending M0 — there's no
+  /// documented "get progress for a book" endpoint in the API list this
+  /// project has verified so far (only save/reset). Guessed by analogy with
+  /// the confirmed save/reset paths; returns null on 404 so callers can
+  /// treat "no saved progress" and "endpoint doesn't exist yet" the same
+  /// way (start from the beginning) rather than crashing.
+  Future<Progress?> getProgress(String bookId) async {
+    try {
+      final resp = await _dio.get('/books/$bookId/progress');
+      return Progress.fromJson(resp.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
 
   Future<void> saveProgress(Progress progress) async {
     await _dio.post('/books/progress', data: progress.toJson());

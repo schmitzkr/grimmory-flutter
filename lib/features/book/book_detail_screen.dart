@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_cover.dart';
+import '../player/playback_provider.dart';
 
 final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), String>(
   (ref, bookId) async {
@@ -17,8 +19,6 @@ final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), String>(
   },
 );
 
-/// Metadata-only for now — playback (M2) and Android Auto (M3) aren't wired
-/// up yet, see the project plan.
 class BookDetailScreen extends ConsumerWidget {
   const BookDetailScreen({required this.bookId, super.key});
 
@@ -72,11 +72,17 @@ class BookDetailScreen extends ConsumerWidget {
                 ),
               const SizedBox(height: 24),
               FilledButton.icon(
-                // Playback isn't implemented yet (M2) — this is a visible
-                // placeholder rather than a silent dead end.
-                onPressed: null,
+                onPressed: () {
+                  // Fire-and-forget: navigate immediately rather than
+                  // blocking the tap on the full load (fetch metadata,
+                  // build the audio source, start playing) — the player
+                  // screen reflects loading/now-playing state reactively
+                  // via the audio handler's own streams.
+                  ref.read(audioHandlerProvider).playFromMediaId(bookId);
+                  context.push('/player');
+                },
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Play (coming soon)'),
+                label: const Text('Play'),
               ),
               if (info.tracks.isNotEmpty) ...[
                 const SizedBox(height: 24),
