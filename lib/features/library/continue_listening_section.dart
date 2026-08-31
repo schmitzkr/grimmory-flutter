@@ -22,7 +22,7 @@ class ContinueListeningSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final books = ref.watch(continueListeningProvider).valueOrNull ?? [];
+    final books = ref.watch(continueListeningProvider).value ?? [];
     if (books.isEmpty) return const SizedBox.shrink();
 
     return Column(
