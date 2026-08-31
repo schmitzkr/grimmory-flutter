@@ -31,12 +31,13 @@ class SeriesTab extends ConsumerWidget {
               final s = items[index];
               return ListTile(
                 leading: const Icon(Icons.collections_bookmark_outlined),
-                title: Text(s.name),
+                title: Text(s.seriesName),
                 subtitle: Text(
                   '${s.bookCount} ${s.bookCount == 1 ? 'book' : 'books'}',
                 ),
-                onTap: () =>
-                    context.push('/series/${Uri.encodeComponent(s.name)}'),
+                onTap: () => context.push(
+                  '/series/${Uri.encodeComponent(s.seriesName)}',
+                ),
               );
             },
           ),

@@ -53,9 +53,9 @@ class BookGridTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          if (book.author != null)
+          if (book.authors.isNotEmpty)
             Text(
-              book.author!,
+              book.authors.join(', '),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall,

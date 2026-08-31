@@ -6,7 +6,7 @@ import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
 
-final libraryBooksProvider = FutureProvider.family<List<Book>, String>((
+final libraryBooksProvider = FutureProvider.family<List<Book>, int>((
   ref,
   libraryId,
 ) async {
@@ -16,7 +16,7 @@ final libraryBooksProvider = FutureProvider.family<List<Book>, String>((
 class LibraryDetailScreen extends ConsumerWidget {
   const LibraryDetailScreen({required this.libraryId, super.key});
 
-  final String libraryId;
+  final int libraryId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

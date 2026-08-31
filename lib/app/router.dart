@@ -74,7 +74,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/libraries/:id',
         builder: (context, state) => LibraryDetailScreen(
-          libraryId: state.pathParameters['id']!,
+          libraryId: int.parse(state.pathParameters['id']!),
         ),
       ),
       GoRoute(
@@ -86,7 +86,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/books/:id',
         builder: (context, state) => BookDetailScreen(
-          bookId: state.pathParameters['id']!,
+          bookId: int.parse(state.pathParameters['id']!),
         ),
       ),
       GoRoute(

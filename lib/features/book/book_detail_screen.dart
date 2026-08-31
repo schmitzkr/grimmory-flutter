@@ -8,7 +8,7 @@ import '../../core/providers.dart';
 import '../../core/widgets/book_cover.dart';
 import '../player/playback_provider.dart';
 
-final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), String>(
+final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), int>(
   (ref, bookId) async {
     final apiClient = ref.read(apiClientProvider);
     final results = await Future.wait([
@@ -22,7 +22,7 @@ final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), String>(
 class BookDetailScreen extends ConsumerWidget {
   const BookDetailScreen({required this.bookId, super.key});
 
-  final String bookId;
+  final int bookId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,6 +33,7 @@ class BookDetailScreen extends ConsumerWidget {
       body: detail.when(
         data: (data) {
           final (book, info) = data;
+          final narrator = info.narrator ?? book.narrator;
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -49,15 +50,15 @@ class BookDetailScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              if (book.author != null)
+              if (book.authors.isNotEmpty)
                 Text(
-                  book.author!,
+                  book.authors.join(', '),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
-              if (info.narrator != null)
+              if (narrator != null)
                 Text(
-                  'Narrated by ${info.narrator}',
+                  'Narrated by $narrator',
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -78,13 +79,15 @@ class BookDetailScreen extends ConsumerWidget {
                   // build the audio source, start playing) — the player
                   // screen reflects loading/now-playing state reactively
                   // via the audio handler's own streams.
-                  ref.read(audioHandlerProvider).playFromMediaId(bookId);
+                  ref
+                      .read(audioHandlerProvider)
+                      .playFromMediaId(bookId.toString());
                   context.push('/player');
                 },
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Play'),
               ),
-              if (info.tracks.isNotEmpty) ...[
+              if (info.folderBased && info.tracks.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Text('Tracks', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
@@ -93,7 +96,21 @@ class BookDetailScreen extends ConsumerWidget {
                     contentPadding: EdgeInsets.zero,
                     leading: Text('${track.index + 1}'),
                     title: Text(track.title),
-                    trailing: Text(_formatDuration(track.durationSeconds)),
+                    trailing: Text(_formatDurationMs(track.durationMs)),
+                  ),
+              ] else if (info.chapters.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Text(
+                  'Chapters',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                for (final chapter in info.chapters)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Text('${chapter.index + 1}'),
+                    title: Text(chapter.title),
+                    trailing: Text(_formatDurationMs(chapter.durationMs)),
                   ),
               ],
             ],
@@ -121,8 +138,8 @@ class BookDetailScreen extends ConsumerWidget {
   }
 }
 
-String _formatDuration(double seconds) {
-  final duration = Duration(seconds: seconds.round());
+String _formatDurationMs(int ms) {
+  final duration = Duration(milliseconds: ms);
   final hours = duration.inHours;
   final minutes = duration.inMinutes.remainder(60);
   if (hours > 0) {
