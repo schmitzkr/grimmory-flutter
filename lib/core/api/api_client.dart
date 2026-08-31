@@ -300,7 +300,23 @@ class ApiClient {
   String trackStreamUrl(int bookId, int trackIndex) =>
       '${_dio.options.baseUrl}/audiobooks/$bookId/track/$trackIndex/stream';
 
-  String coverUrl(int bookId) => '${_dio.options.baseUrl}/audiobooks/$bookId/cover';
+  /// Not `/audiobooks/{bookId}/cover` (`AudiobookReaderController`) — that
+  /// endpoint extracts embedded ID3/tag art from the audio file itself and
+  /// 404s for the vast majority of files, which don't carry embedded art.
+  /// Confirmed against Grimmory's real source and its own frontend
+  /// (`UrlHelperService.getAudiobookCoverUrl`) that the actual served cover
+  /// — generated during library scan, or set via the cover
+  /// upload/regenerate endpoints — lives in a separate controller
+  /// (`BookMediaController`) under `/media/book/{bookId}/audiobook-cover`.
+  String coverUrl(int bookId) =>
+      '${_dio.options.baseUrl}/media/book/$bookId/audiobook-cover';
+
+  /// Fallback for a book with no audiobook-specific cover generated yet —
+  /// the general book cover `BookMediaController` also serves, which the
+  /// real frontend falls back to the same way (`UrlHelperService
+  /// .getCoverUrl`, used when `audiobookCoverUpdatedOn` is unset).
+  String fallbackCoverUrl(int bookId) =>
+      '${_dio.options.baseUrl}/media/book/$bookId/cover';
 
   // ── Progress (AppBookController — GET/PUT .../progress) ───────────────
 

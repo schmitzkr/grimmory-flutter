@@ -33,7 +33,18 @@ class BookCover extends ConsumerWidget {
         height: height,
         fit: BoxFit.cover,
         placeholder: (context, url) => _placeholder(context),
-        errorWidget: (context, url, error) => _placeholder(context),
+        // Not every book has an audiobook-specific cover generated yet —
+        // fall back to the general book cover before giving up, same order
+        // Grimmory's own frontend uses (UrlHelperService).
+        errorWidget: (context, url, error) => CachedNetworkImage(
+          imageUrl: apiClient.fallbackCoverUrl(bookId),
+          httpHeaders: apiClient.authHeaders,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => _placeholder(context),
+          errorWidget: (context, url, error) => _placeholder(context),
+        ),
       ),
     );
   }
