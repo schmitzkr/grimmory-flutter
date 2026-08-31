@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  just_audio needs custom HTTP headers (bearer auth) on the audio source, which
+  ExoPlayer's DataSource doesn't support directly on Android, so the plugin
+  works around this by running a local HTTP proxy on 127.0.0.1 that ExoPlayer
+  talks to in plain HTTP, which then re-issues the real request over HTTPS
+  with the headers attached. Android blocks all cleartext traffic by default
+  (including to localhost), which breaks that proxy with "Cleartext HTTP
+  traffic to 127.0.0.1 not permitted" (confirmed via a live device's
+  ExoPlayerImplInternal log, 2026-08-31). This carves out an exception for
+  loopback only; every real request still goes out over HTTPS.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>
