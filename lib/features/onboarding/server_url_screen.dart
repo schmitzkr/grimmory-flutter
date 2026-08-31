@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
 import '../../core/providers.dart';
@@ -69,7 +70,17 @@ class _ServerUrlScreenState extends ConsumerState<ServerUrlScreen> {
     await prefs.setString('server_url', normalized);
     if (!mounted) return;
     setState(() => _checking = false);
-    // The router's redirect (gated on authProvider) takes over from here.
+    // GoRouterRefreshStream only listens to authProvider — a plain
+    // SharedPreferences write doesn't notify anything, so without this
+    // explicit navigation the router's redirect never re-runs and this
+    // screen just sits there forever with no error shown (looks like the
+    // "Continue" button silently does nothing). go_router's own redirect
+    // takes over correctly from here on: it'll either let this go through
+    // (not logged in yet) or bounce onward to /libraries (already logged
+    // in, e.g. after "change server" while a stored session is somehow
+    // still valid for the new server, which shouldn't normally happen but
+    // costs nothing to handle correctly).
+    context.go('/login');
   }
 
   @override
