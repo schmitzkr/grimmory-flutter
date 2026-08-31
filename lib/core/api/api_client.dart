@@ -6,18 +6,19 @@ import 'models.dart';
 
 /// Talks to a self-hosted Grimmory server's `/api/v1` REST API.
 ///
-/// Endpoint *paths* below are confirmed against a live instance
-/// (grimmory.mael.is, 2026-08-30) — every path this client uses returns a
-/// real 401 (not the Angular SPA's catch-all HTML fallback), meaning the
-/// route exists and just requires auth. Response *body shapes* for
-/// authenticated endpoints are still unconfirmed, since Spring Security's
-/// filter chain rejects unauthenticated requests before `@Valid` body
-/// validation ever runs — only the public auth endpoints (login/refresh/
-/// oidc-callback) yielded real field-name validation errors. The API uses
-/// camelCase JSON throughout (confirmed via `refreshToken` and the OIDC
-/// callback's five required fields), so fields on authenticated endpoints
-/// are written camelCase by inference from that confirmed pattern, not
-/// individually verified.
+/// Auth endpoint *paths and request field names* are confirmed against a
+/// live instance (grimmory.mael.is, 2026-08-30 — validation errors revealed
+/// exact required fields). Everything else — library/book/series/bookmark
+/// endpoints and every model shape — is confirmed against Grimmory's real
+/// Java source (github.com/grimmory-tools/grimmory, package org.booklore;
+/// Grimmory is a rebrand/fork of BookLore), 2026-08-31, after the original
+/// guesses (based on the documented-but-unstable API surface without
+/// source access) turned out wrong: entity IDs are numeric (`Long`), and a
+/// dedicated `/api/v1/app/*` controller namespace exists purpose-built for
+/// mobile clients (paginated summaries, continue-listening/recently-added)
+/// — this client uses that namespace wherever it covers a need, falling
+/// back to the general endpoints only where the app namespace doesn't
+/// cover something (audiobook streaming/info, bookmarks).
 class ApiClient {
   late final Dio _dio;
   final SharedPreferences _prefs;
@@ -35,7 +36,12 @@ class ApiClient {
 
   /// For requests made outside this class's own [_dio] instance (e.g. an
   /// image widget fetching cover art directly) — Grimmory's cover/stream
-  /// endpoints require the same bearer auth as everything else.
+  /// endpoints require the same bearer auth as everything else. Confirmed
+  /// (2026-08-31, via QueryParameterJwtFilter's source) that a normal
+  /// Authorization header authenticates these endpoints fine — the
+  /// alternative `?token=` query param some Grimmory clients use exists
+  /// only as a fallback for contexts that can't set custom headers (a
+  /// browser's bare `<audio>`/`<img src>`), which doesn't apply to us.
   Map<String, String> get authHeaders =>
       _token == null ? {} : {'Authorization': 'Bearer $_token'};
 
@@ -219,126 +225,157 @@ class ApiClient {
     await _prefs.remove('logged_in');
   }
 
-  // ── Libraries ──────────────────────────────────────────────────────────
+  // ── Libraries (AppLibraryController) ─────────────────────────────────
 
   Future<List<Library>> getLibraries() async {
-    final resp = await _dio.get('/libraries');
+    final resp = await _dio.get('/app/libraries');
     return (resp.data as List)
         .map((l) => Library.fromJson(l as Map<String, dynamic>))
         .toList();
   }
 
-  Future<List<Book>> getLibraryBooks(String libraryId) async {
-    final resp = await _dio.get('/libraries/$libraryId/book');
+  // ── Books (AppBookController) ─────────────────────────────────────────
+
+  Future<List<Book>> getLibraryBooks(
+    int libraryId, {
+    int page = 0,
+    int size = 100,
+  }) async {
+    final resp = await _dio.get(
+      '/app/books',
+      queryParameters: {'libraryId': libraryId, 'page': page, 'size': size},
+    );
+    return _extractPageContent(resp.data).map(Book.fromJson).toList();
+  }
+
+  Future<Book> getBook(int bookId) async {
+    final resp = await _dio.get('/app/books/$bookId');
+    return Book.fromJson(resp.data as Map<String, dynamic>);
+  }
+
+  Future<List<Book>> searchBooks(
+    String query, {
+    int page = 0,
+    int size = 20,
+  }) async {
+    final resp = await _dio.get(
+      '/app/books/search',
+      queryParameters: {'q': query, 'page': page, 'size': size},
+    );
+    return _extractPageContent(resp.data).map(Book.fromJson).toList();
+  }
+
+  Future<List<Book>> getContinueListening({int limit = 10}) async {
+    final resp = await _dio.get(
+      '/app/books/continue-listening',
+      queryParameters: {'limit': limit},
+    );
     return (resp.data as List)
         .map((b) => Book.fromJson(b as Map<String, dynamic>))
         .toList();
   }
 
-  // ── Books / audiobooks ────────────────────────────────────────────────
+  // ── Audiobook playback (not under /app — this endpoint isn't
+  // app-namespaced) ────────────────────────────────────────────────────
 
-  Future<Book> getBook(String bookId) async {
-    final resp = await _dio.get('/books/$bookId');
-    return Book.fromJson(resp.data as Map<String, dynamic>);
-  }
-
-  Future<AudiobookInfo> getAudiobookInfo(String bookId) async {
+  Future<AudiobookInfo> getAudiobookInfo(int bookId) async {
     final resp = await _dio.get('/audiobooks/$bookId/info');
     return AudiobookInfo.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  String streamUrl(String bookId) =>
+  String streamUrl(int bookId) =>
       '${_dio.options.baseUrl}/audiobooks/$bookId/stream';
 
-  String trackStreamUrl(String bookId, int trackIndex) =>
+  String trackStreamUrl(int bookId, int trackIndex) =>
       '${_dio.options.baseUrl}/audiobooks/$bookId/track/$trackIndex/stream';
 
-  String coverUrl(String bookId) =>
-      '${_dio.options.baseUrl}/audiobooks/$bookId/cover';
+  String coverUrl(int bookId) => '${_dio.options.baseUrl}/audiobooks/$bookId/cover';
 
-  // ── Progress ───────────────────────────────────────────────────────────
+  // ── Progress (AppBookController — GET/PUT .../progress) ───────────────
 
-  /// Path confirmed live (returns a real 401, not the SPA fallback) —
-  /// response body shape is still unverified since that requires an
-  /// authenticated request. Returns null on 404 so callers can treat "no
-  /// saved progress" the same way as "nothing to resume from".
-  Future<Progress?> getProgress(String bookId) async {
+  Future<AudiobookProgress?> getAudiobookProgress(int bookId) async {
     try {
-      final resp = await _dio.get('/books/$bookId/progress');
-      return Progress.fromJson(resp.data as Map<String, dynamic>);
+      final resp = await _dio.get('/app/books/$bookId/progress');
+      final data = resp.data as Map<String, dynamic>;
+      final audiobookProgress = data['audiobookProgress'];
+      if (audiobookProgress == null) return null;
+      return AudiobookProgress.fromJson(
+        audiobookProgress as Map<String, dynamic>,
+      );
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return null;
       rethrow;
     }
   }
 
-  Future<void> saveProgress(Progress progress) async {
-    await _dio.post('/books/progress', data: progress.toJson());
-  }
-
-  Future<void> resetProgress(String bookId) async {
-    await _dio.post('/books/reset-progress', data: {'bookId': bookId});
-  }
-
-  // ── Series ─────────────────────────────────────────────────────────────
-
-  Future<List<Series>> getSeries() async {
-    final resp = await _dio.get('/app/series');
-    return (resp.data as List)
-        .map((s) => Series.fromJson(s as Map<String, dynamic>))
-        .toList();
-  }
-
-  Future<List<Book>> getSeriesBooks(String seriesName) async {
-    final resp = await _dio.get('/app/series/$seriesName/books');
-    return (resp.data as List)
-        .map((b) => Book.fromJson(b as Map<String, dynamic>))
-        .toList();
-  }
-
-  // ── Search ─────────────────────────────────────────────────────────────
-
-  Future<List<Book>> searchBooks(String query) async {
-    final resp = await _dio.get(
-      '/books/page',
-      queryParameters: {'q': query},
+  Future<void> updateAudiobookProgress(
+    int bookId,
+    AudiobookProgress progress,
+  ) async {
+    await _dio.put(
+      '/app/books/$bookId/progress',
+      data: {'audiobookProgress': progress.toJson()},
     );
-    final items = (resp.data as Map<String, dynamic>)['content'] as List? ??
-        resp.data as List;
-    return items
-        .map((b) => Book.fromJson(b as Map<String, dynamic>))
-        .toList();
   }
 
-  // ── Bookmarks ──────────────────────────────────────────────────────────
+  // ── Series (AppSeriesController) ──────────────────────────────────────
 
-  Future<List<Bookmark>> getBookmarks(String bookId) async {
+  Future<List<Series>> getSeries({int page = 0, int size = 100}) async {
     final resp = await _dio.get(
-      '/bookmarks',
-      queryParameters: {'bookId': bookId},
+      '/app/series',
+      queryParameters: {'page': page, 'size': size},
     );
+    return _extractPageContent(resp.data).map(Series.fromJson).toList();
+  }
+
+  Future<List<Book>> getSeriesBooks(
+    String seriesName, {
+    int page = 0,
+    int size = 100,
+  }) async {
+    final resp = await _dio.get(
+      '/app/series/${Uri.encodeComponent(seriesName)}/books',
+      queryParameters: {'page': page, 'size': size},
+    );
+    return _extractPageContent(resp.data).map(Book.fromJson).toList();
+  }
+
+  // ── Bookmarks (BookMarkController — not app-namespaced) ────────────────
+
+  Future<List<Bookmark>> getBookmarks(int bookId) async {
+    final resp = await _dio.get('/bookmarks/book/$bookId');
     return (resp.data as List)
         .map((b) => Bookmark.fromJson(b as Map<String, dynamic>))
         .toList();
   }
 
   Future<Bookmark> createBookmark(
-    String bookId,
-    double positionSeconds, {
-    String? note,
+    int bookId, {
+    required int positionMs,
+    int? trackIndex,
+    String? title,
   }) async {
     final resp = await _dio.post(
       '/bookmarks',
       data: {
         'bookId': bookId,
-        'positionSeconds': positionSeconds,
-        'note': ?note,
+        'positionMs': positionMs,
+        'trackIndex': ?trackIndex,
+        'title': ?title,
       },
     );
     return Bookmark.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<void> deleteBookmark(String bookmarkId) async {
+  Future<void> deleteBookmark(int bookmarkId) async {
     await _dio.delete('/bookmarks/$bookmarkId');
+  }
+
+  /// Every `/app/*` list endpoint that supports pagination wraps its
+  /// results as `{"content": [...], "page", "size", "totalElements", ...}`
+  /// (Grimmory's `AppPageResponse<T>`) rather than returning a bare array.
+  List<Map<String, dynamic>> _extractPageContent(dynamic data) {
+    final content = (data as Map<String, dynamic>)['content'] as List;
+    return content.cast<Map<String, dynamic>>();
   }
 }

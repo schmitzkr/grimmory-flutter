@@ -15,7 +15,7 @@ class BookCover extends ConsumerWidget {
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
   });
 
-  final String bookId;
+  final int bookId;
   final double? width;
   final double? height;
   final BorderRadius borderRadius;

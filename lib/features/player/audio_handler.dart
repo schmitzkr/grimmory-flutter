@@ -3,20 +3,32 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
 
 /// Wraps a single [AudioPlayer] with Grimmory's streaming endpoints and
 /// exposes it as an [AudioHandler] — this is what turns playback into a
-/// proper Android foreground service with a media-style notification (and,
-/// later, the Android Auto browse surface — see the project plan's M3).
+/// proper Android foreground service with a media-style notification, and
+/// the Android Auto browse surface via [getChildren].
 ///
 /// One book plays at a time; there's no general music-library queue here
 /// (no shuffle, no reordering, no adding arbitrary items) — audiobooks are
-/// linear by nature, so [queue] just holds the current book's tracks in
-/// order and skip-next/previous means "next/previous track", not a
-/// user-editable playlist.
+/// linear by nature.
+///
+/// Grimmory audiobooks come in two shapes, per [AudiobookInfo.folderBased]
+/// (confirmed against Grimmory's real source, 2026-08-31 — see
+/// ApiClient's doc comment): a **single continuous stream** with chapter
+/// markers (`chapters`, timestamps relative to the one stream), or a
+/// **folder-based** book split into multiple physical files (`tracks`,
+/// each independently streamable), where `chapters` (if present) still use
+/// a book-wide cumulative timeline spanning all tracks. Track navigation
+/// (skip next/previous, tap-to-play a track) only applies to folder-based
+/// books; chapter navigation (seek within the current stream) applies to
+/// both, using [AudiobookTrack.cumulativeStartMs] to convert between a
+/// track-relative player position and the book-wide position Grimmory's
+/// progress API expects.
 class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   GrimmoryAudioHandler(this._apiClient) {
     _init();
@@ -25,8 +37,18 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   final ApiClient _apiClient;
   final AudioPlayer _player = AudioPlayer();
 
-  String? _currentBookId;
-  String? get currentBookId => _currentBookId;
+  int? _currentBookId;
+  int? get currentBookId => _currentBookId;
+
+  bool _folderBased = false;
+  List<AudiobookTrack> _tracks = [];
+  int _totalDurationMs = 0;
+
+  /// Chapter markers for the currently loaded book — not part of the base
+  /// [AudioHandler] interface (audio_service has no chapter concept), so
+  /// exposed as a plain extra subject the player screen watches directly.
+  final BehaviorSubject<List<AudiobookChapter>> chaptersSubject =
+      BehaviorSubject.seeded([]);
 
   Timer? _progressTimer;
   // Guards against retry-looping forever if a refreshed token still fails
@@ -58,14 +80,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   // required. Static per-call (not pushed/subscribed) — BaseAudioHandler's
   // default subscribeToChildren is fine for content that doesn't need to
   // update while the user is browsing it.
-  //
-  // "Continue listening" (books with in-progress playback, most recent
-  // first) was in the original plan for this tree but isn't implemented —
-  // there's no confirmed or even guessable Grimmory endpoint for "list of
-  // books with saved progress across the whole library" (only
-  // per-book GET .../progress, itself already a guess). Revisit once a
-  // real endpoint is confirmed against a live instance (M0); an empty,
-  // permanently-stuck root menu item would be worse than not having one.
+  static const _rootContinueListening = 'root:continue';
   static const _rootLibraries = 'root:libraries';
   static const _rootSeries = 'root:series';
 
@@ -77,9 +92,17 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     switch (parentMediaId) {
       case AudioService.browsableRootId:
         return const [
+          MediaItem(
+            id: _rootContinueListening,
+            title: 'Continue Listening',
+            playable: false,
+          ),
           MediaItem(id: _rootLibraries, title: 'Libraries', playable: false),
           MediaItem(id: _rootSeries, title: 'Series', playable: false),
         ];
+      case _rootContinueListening:
+        final books = await _apiClient.getContinueListening();
+        return books.map(_mediaItemForBrowse).toList();
       case _rootLibraries:
         final libraries = await _apiClient.getLibraries();
         return [
@@ -95,16 +118,15 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
         return [
           for (final s in series)
             MediaItem(
-              id: 'series:${Uri.encodeComponent(s.name)}',
-              title: s.name,
+              id: 'series:${Uri.encodeComponent(s.seriesName)}',
+              title: s.seriesName,
               playable: false,
             ),
         ];
       default:
         if (parentMediaId.startsWith('lib:')) {
-          final books = await _apiClient.getLibraryBooks(
-            parentMediaId.substring(4),
-          );
+          final libraryId = int.parse(parentMediaId.substring(4));
+          final books = await _apiClient.getLibraryBooks(libraryId);
           return books.map(_mediaItemForBrowse).toList();
         }
         if (parentMediaId.startsWith('series:')) {
@@ -122,18 +144,23 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   /// suffix), so tapping it in Android Auto calls [playFromMediaId] exactly
   /// the same way the phone UI's Play button does.
   MediaItem _mediaItemForBrowse(Book book) => MediaItem(
-    id: book.id,
+    id: book.id.toString(),
     title: book.title,
-    artist: book.author,
+    artist: book.authors.isNotEmpty ? book.authors.join(', ') : null,
     artUri: Uri.parse(_apiClient.coverUrl(book.id)),
     artHeaders: _apiClient.authHeaders,
     playable: true,
     extras: {'bookId': book.id},
   );
 
+  // ── Playback ─────────────────────────────────────────────────────────
+
   @override
-  Future<void> playFromMediaId(String mediaId, [Map<String, dynamic>? extras]) async {
-    await loadBook(mediaId);
+  Future<void> playFromMediaId(
+    String mediaId, [
+    Map<String, dynamic>? extras,
+  ]) async {
+    await loadBook(int.parse(mediaId));
     await play();
   }
 
@@ -141,7 +168,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   /// progress (if any). Called directly by the book detail screen's Play
   /// button (via [playFromMediaId]), not just from Android Auto's browse
   /// tree — this is the one entry point for starting playback on a book.
-  Future<void> loadBook(String bookId) async {
+  Future<void> loadBook(int bookId) async {
     _stopProgressTimer();
     await _saveProgressNow();
 
@@ -153,11 +180,15 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     final info = results[1] as AudiobookInfo;
 
     _currentBookId = bookId;
+    _folderBased = info.folderBased;
+    _tracks = info.tracks;
+    _totalDurationMs = info.durationMs;
     _retriedAfterRefresh = false;
+    chaptersSubject.add(info.chapters);
 
-    Progress? progress;
+    AudiobookProgress? progress;
     try {
-      progress = await _apiClient.getProgress(bookId);
+      progress = await _apiClient.getAudiobookProgress(bookId);
     } catch (_) {
       // Best-effort — don't block playback on a progress-fetch failure.
     }
@@ -167,11 +198,24 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
       info,
       initialIndex: progress?.trackIndex,
       initialPosition: progress != null
-          ? Duration(seconds: progress.positionSeconds.round())
+          ? Duration(milliseconds: _toTrackRelativeMs(progress))
           : null,
     );
 
     _startProgressTimer();
+  }
+
+  /// [AudiobookProgress.positionMs] is absolute across the whole book's
+  /// cumulative timeline (matching [AudiobookTrack.cumulativeStartMs]) —
+  /// just_audio's `initialPosition` is relative to whichever track
+  /// `initialIndex` points at, so this converts. For a non-folder-based
+  /// book, positionMs is already the right absolute stream position.
+  int _toTrackRelativeMs(AudiobookProgress progress) {
+    if (!_folderBased || progress.trackIndex == null) return progress.positionMs;
+    final index = progress.trackIndex!;
+    if (index < 0 || index >= _tracks.length) return progress.positionMs;
+    final relative = progress.positionMs - _tracks[index].cumulativeStartMs;
+    return relative < 0 ? 0 : relative;
   }
 
   Future<void> _loadSource(
@@ -180,18 +224,15 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     int? initialIndex,
     Duration? initialPosition,
   }) async {
-    final items = info.tracks.isEmpty
-        ? [_mediaItemFor(book, info, trackIndex: null)]
-        : List.generate(
-            info.tracks.length,
-            (i) => _mediaItemFor(book, info, trackIndex: i),
-          );
+    final items = info.folderBased && info.tracks.isNotEmpty
+        ? [for (final t in info.tracks) _mediaItemForTrack(book, info, t)]
+        : [_mediaItemForBook(book, info)];
     queue.add(items);
 
     final source = _buildAudioSource(book, info);
     await _player.setAudioSource(
       source,
-      initialIndex: initialIndex,
+      initialIndex: info.folderBased ? initialIndex : null,
       initialPosition: initialPosition,
     );
 
@@ -201,7 +242,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
 
   AudioSource _buildAudioSource(Book book, AudiobookInfo info) {
     final headers = _apiClient.authHeaders;
-    if (info.tracks.length <= 1) {
+    if (!info.folderBased || info.tracks.isEmpty) {
       return AudioSource.uri(
         Uri.parse(_apiClient.streamUrl(book.id)),
         headers: headers,
@@ -209,39 +250,44 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     }
     return ConcatenatingAudioSource(
       children: [
-        for (var i = 0; i < info.tracks.length; i++)
+        for (final track in info.tracks)
           AudioSource.uri(
-            Uri.parse(_apiClient.trackStreamUrl(book.id, i)),
+            Uri.parse(_apiClient.trackStreamUrl(book.id, track.index)),
             headers: headers,
           ),
       ],
     );
   }
 
-  MediaItem _mediaItemFor(Book book, AudiobookInfo info, {int? trackIndex}) {
-    final track =
-        trackIndex != null && trackIndex < info.tracks.length
-        ? info.tracks[trackIndex]
-        : null;
-    return MediaItem(
-      id: trackIndex != null ? '${book.id}#$trackIndex' : book.id,
-      title: book.title,
-      artist: book.author,
-      album: info.narrator,
-      duration: track != null
-          ? Duration(seconds: track.durationSeconds.round())
-          : (info.totalDurationSeconds != null
-                ? Duration(seconds: info.totalDurationSeconds!.round())
-                : null),
-      // audio_service fetches art itself for the system notification —
-      // artHeaders lets it do that with the same bearer auth Grimmory's
-      // cover endpoint requires everywhere else.
-      artUri: Uri.parse(_apiClient.coverUrl(book.id)),
-      artHeaders: _apiClient.authHeaders,
-      displaySubtitle: track?.title,
-      extras: {'bookId': book.id, 'trackIndex': ?trackIndex},
-    );
-  }
+  MediaItem _mediaItemForBook(Book book, AudiobookInfo info) => MediaItem(
+    id: book.id.toString(),
+    title: book.title,
+    artist: book.authors.isNotEmpty ? book.authors.join(', ') : null,
+    album: info.narrator ?? book.narrator,
+    duration: Duration(milliseconds: info.durationMs),
+    // audio_service fetches art itself for the system notification —
+    // artHeaders lets it do that with the same bearer auth Grimmory's
+    // cover endpoint requires everywhere else.
+    artUri: Uri.parse(_apiClient.coverUrl(book.id)),
+    artHeaders: _apiClient.authHeaders,
+    extras: {'bookId': book.id},
+  );
+
+  MediaItem _mediaItemForTrack(
+    Book book,
+    AudiobookInfo info,
+    AudiobookTrack track,
+  ) => MediaItem(
+    id: '${book.id}#${track.index}',
+    title: book.title,
+    artist: book.authors.isNotEmpty ? book.authors.join(', ') : null,
+    album: info.narrator ?? book.narrator,
+    duration: Duration(milliseconds: track.durationMs),
+    displaySubtitle: track.title,
+    artUri: Uri.parse(_apiClient.coverUrl(book.id)),
+    artHeaders: _apiClient.authHeaders,
+    extras: {'bookId': book.id, 'trackIndex': track.index},
+  );
 
   void _updateMediaItemForIndex(int? index) {
     if (index == null) return;
@@ -296,11 +342,19 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     final bookId = _currentBookId;
     if (bookId == null) return;
     try {
-      await _apiClient.saveProgress(
-        Progress(
-          bookId: bookId,
-          positionSeconds: _player.position.inMilliseconds / 1000,
-          trackIndex: _player.currentIndex,
+      final absolutePositionMs = _toAbsoluteMs(_player.position);
+      final percentage = _totalDurationMs > 0
+          ? (absolutePositionMs / _totalDurationMs).clamp(0.0, 1.0)
+          : 0.0;
+      await _apiClient.updateAudiobookProgress(
+        bookId,
+        AudiobookProgress(
+          positionMs: absolutePositionMs,
+          trackIndex: _folderBased ? _player.currentIndex : null,
+          trackPositionMs: _folderBased
+              ? _player.position.inMilliseconds
+              : null,
+          percentage: percentage,
         ),
       );
     } catch (_) {
@@ -308,6 +362,18 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
       // The next periodic tick (or the final save on pause/stop) will
       // usually catch up.
     }
+  }
+
+  /// Converts the player's current (track-relative, for folder-based books)
+  /// position into the book-wide absolute position Grimmory's progress API
+  /// expects — the reverse of [_toTrackRelativeMs].
+  int _toAbsoluteMs(Duration playerPosition) {
+    if (!_folderBased) return playerPosition.inMilliseconds;
+    final index = _player.currentIndex;
+    if (index == null || index < 0 || index >= _tracks.length) {
+      return playerPosition.inMilliseconds;
+    }
+    return _tracks[index].cumulativeStartMs + playerPosition.inMilliseconds;
   }
 
   void _broadcastState(PlaybackEvent event) {
@@ -354,10 +420,33 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> seek(Duration position) => _player.seek(position);
 
-  /// Jumps to a specific track (chapter navigation) — distinct from
-  /// [skipToNext]/[skipToPrevious], which move by one track relative to
-  /// the current one. Used by the player screen's track list.
-  Future<void> seekToTrack(int index) => _player.seek(Duration.zero, index: index);
+  /// Jumps to a specific track — folder-based books only (see
+  /// [seekToChapterStart] for the single-stream, chapter-marker case).
+  Future<void> seekToTrack(int index) =>
+      _player.seek(Duration.zero, index: index);
+
+  /// Seeks within the current stream to a chapter's start. For a
+  /// folder-based book, [startTimeMs] is on the book-wide cumulative
+  /// timeline (same as [AudiobookTrack.cumulativeStartMs]) and needs
+  /// converting to (track index, track-relative position); for a
+  /// single-stream book it's already the right absolute position.
+  Future<void> seekToChapterStart(int startTimeMs) async {
+    if (!_folderBased || _tracks.isEmpty) {
+      await _player.seek(Duration(milliseconds: startTimeMs));
+      return;
+    }
+    var targetTrack = _tracks.first;
+    for (final track in _tracks) {
+      if (track.cumulativeStartMs <= startTimeMs) {
+        targetTrack = track;
+      }
+    }
+    final relativeMs = startTimeMs - targetTrack.cumulativeStartMs;
+    await _player.seek(
+      Duration(milliseconds: relativeMs < 0 ? 0 : relativeMs),
+      index: targetTrack.index,
+    );
+  }
 
   @override
   Future<void> skipToNext() => _player.seekToNext();
@@ -374,6 +463,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     _stopProgressTimer();
     await _player.stop();
     _currentBookId = null;
+    chaptersSubject.add([]);
     await super.stop();
   }
 }

@@ -41,6 +41,10 @@ dependencies:
   audio_service: ^0.18.15
   just_audio: ^0.9.42
   audio_session: ^0.1.21
+  # Already a transitive dep of audio_service — declared directly since the
+  # audio handler imports BehaviorSubject itself (for chapter-list state
+  # alongside audio_service's own queue/mediaItem/playbackState subjects).
+  rxdart: ^0.28.0
 
   # Misc
   package_info_plus: ^10.2.0

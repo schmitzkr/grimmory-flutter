@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/api/models.dart';
 import '../../core/widgets/book_cover.dart';
 import 'playback_provider.dart';
 import 'sleep_timer.dart';
@@ -20,17 +21,24 @@ class PlayerScreen extends ConsumerWidget {
     final mediaItemAsync = ref.watch(currentMediaItemProvider);
     final playbackStateAsync = ref.watch(playbackStateProvider);
     final queueAsync = ref.watch(queueProvider);
+    final chaptersAsync = ref.watch(chaptersProvider);
     final handler = ref.read(audioHandlerProvider);
 
     final mediaItem = mediaItemAsync.value;
     final playbackState = playbackStateAsync.value;
     final queue = queueAsync.value ?? [];
+    final chapters = chaptersAsync.value ?? [];
 
     if (mediaItem == null) {
       return const Scaffold(body: Center(child: Text('Nothing playing.')));
     }
 
-    final bookId = mediaItem.extras?['bookId'] as String?;
+    final bookId = mediaItem.extras?['bookId'] as int?;
+    // Folder-based books have one queue entry per track; a single-stream
+    // book's queue always has exactly one entry (see
+    // GrimmoryAudioHandler._loadSource) — chapters, when present, apply to
+    // that case instead.
+    final isFolderBased = queue.length > 1;
     final playing = playbackState?.playing ?? false;
     final processingState =
         playbackState?.processingState ?? AudioProcessingState.idle;
@@ -159,7 +167,7 @@ class PlayerScreen extends ConsumerWidget {
               child: Text('${speed.toStringAsFixed(2)}x speed'),
             ),
           ),
-          if (queue.length > 1) ...[
+          if (isFolderBased) ...[
             const Divider(height: 32),
             Text('Tracks', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -176,6 +184,20 @@ class PlayerScreen extends ConsumerWidget {
                     ? Text(_formatDuration(queue[i].duration!))
                     : null,
                 onTap: () => handler.seekToTrack(i),
+              ),
+          ] else if (chapters.isNotEmpty) ...[
+            const Divider(height: 32),
+            Text('Chapters', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            for (final AudiobookChapter chapter in chapters)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Text('${chapter.index + 1}'),
+                title: Text(chapter.title),
+                trailing: Text(
+                  _formatDuration(Duration(milliseconds: chapter.durationMs)),
+                ),
+                onTap: () => handler.seekToChapterStart(chapter.startTimeMs),
               ),
           ],
         ],

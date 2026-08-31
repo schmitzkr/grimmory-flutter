@@ -18,116 +18,146 @@ Map<String, dynamic> _$AuthTokensToJson(_AuthTokens instance) =>
     };
 
 _Library _$LibraryFromJson(Map<String, dynamic> json) => _Library(
-  id: json['id'] as String,
+  id: (json['id'] as num).toInt(),
   name: json['name'] as String,
-  type: json['type'] as String?,
+  icon: json['icon'] as String?,
+  bookCount: (json['bookCount'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$LibraryToJson(_Library instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'type': instance.type,
+  'icon': instance.icon,
+  'bookCount': instance.bookCount,
 };
 
 _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
-  id: json['id'] as String,
+  id: (json['id'] as num).toInt(),
   title: json['title'] as String,
-  author: json['author'] as String?,
+  authors:
+      (json['authors'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
   seriesName: json['seriesName'] as String?,
-  coverUrl: json['coverUrl'] as String?,
+  seriesNumber: (json['seriesNumber'] as num?)?.toDouble(),
+  libraryId: (json['libraryId'] as num?)?.toInt(),
+  narrator: json['narrator'] as String?,
+  description: json['description'] as String?,
 );
 
 Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,
-  'author': instance.author,
+  'authors': instance.authors,
   'seriesName': instance.seriesName,
-  'coverUrl': instance.coverUrl,
-};
-
-_Track _$TrackFromJson(Map<String, dynamic> json) => _Track(
-  index: (json['index'] as num).toInt(),
-  title: json['title'] as String,
-  durationSeconds: (json['durationSeconds'] as num).toDouble(),
-);
-
-Map<String, dynamic> _$TrackToJson(_Track instance) => <String, dynamic>{
-  'index': instance.index,
-  'title': instance.title,
-  'durationSeconds': instance.durationSeconds,
-};
-
-_Chapter _$ChapterFromJson(Map<String, dynamic> json) => _Chapter(
-  title: json['title'] as String,
-  startSeconds: (json['startSeconds'] as num).toDouble(),
-  endSeconds: (json['endSeconds'] as num?)?.toDouble(),
-  trackIndex: (json['trackIndex'] as num?)?.toInt(),
-);
-
-Map<String, dynamic> _$ChapterToJson(_Chapter instance) => <String, dynamic>{
-  'title': instance.title,
-  'startSeconds': instance.startSeconds,
-  'endSeconds': instance.endSeconds,
-  'trackIndex': instance.trackIndex,
+  'seriesNumber': instance.seriesNumber,
+  'libraryId': instance.libraryId,
+  'narrator': instance.narrator,
+  'description': instance.description,
 };
 
 _AudiobookInfo _$AudiobookInfoFromJson(Map<String, dynamic> json) =>
     _AudiobookInfo(
-      bookId: json['bookId'] as String,
+      bookId: (json['bookId'] as num).toInt(),
       narrator: json['narrator'] as String?,
-      tracks:
-          (json['tracks'] as List<dynamic>?)
-              ?.map((e) => Track.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
+      durationMs: (json['durationMs'] as num).toInt(),
+      folderBased: json['folderBased'] as bool? ?? false,
       chapters:
           (json['chapters'] as List<dynamic>?)
-              ?.map((e) => Chapter.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => AudiobookChapter.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      totalDurationSeconds: (json['totalDurationSeconds'] as num?)?.toDouble(),
+      tracks:
+          (json['tracks'] as List<dynamic>?)
+              ?.map((e) => AudiobookTrack.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$AudiobookInfoToJson(_AudiobookInfo instance) =>
     <String, dynamic>{
       'bookId': instance.bookId,
       'narrator': instance.narrator,
-      'tracks': instance.tracks,
+      'durationMs': instance.durationMs,
+      'folderBased': instance.folderBased,
       'chapters': instance.chapters,
-      'totalDurationSeconds': instance.totalDurationSeconds,
+      'tracks': instance.tracks,
+    };
+
+_AudiobookChapter _$AudiobookChapterFromJson(Map<String, dynamic> json) =>
+    _AudiobookChapter(
+      index: (json['index'] as num).toInt(),
+      title: json['title'] as String,
+      startTimeMs: (json['startTimeMs'] as num).toInt(),
+      endTimeMs: (json['endTimeMs'] as num).toInt(),
+      durationMs: (json['durationMs'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$AudiobookChapterToJson(_AudiobookChapter instance) =>
+    <String, dynamic>{
+      'index': instance.index,
+      'title': instance.title,
+      'startTimeMs': instance.startTimeMs,
+      'endTimeMs': instance.endTimeMs,
+      'durationMs': instance.durationMs,
+    };
+
+_AudiobookTrack _$AudiobookTrackFromJson(Map<String, dynamic> json) =>
+    _AudiobookTrack(
+      index: (json['index'] as num).toInt(),
+      fileName: json['fileName'] as String,
+      title: json['title'] as String,
+      durationMs: (json['durationMs'] as num).toInt(),
+      fileSizeBytes: (json['fileSizeBytes'] as num?)?.toInt(),
+      cumulativeStartMs: (json['cumulativeStartMs'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$AudiobookTrackToJson(_AudiobookTrack instance) =>
+    <String, dynamic>{
+      'index': instance.index,
+      'fileName': instance.fileName,
+      'title': instance.title,
+      'durationMs': instance.durationMs,
+      'fileSizeBytes': instance.fileSizeBytes,
+      'cumulativeStartMs': instance.cumulativeStartMs,
+    };
+
+_AudiobookProgress _$AudiobookProgressFromJson(Map<String, dynamic> json) =>
+    _AudiobookProgress(
+      positionMs: (json['positionMs'] as num).toInt(),
+      trackIndex: (json['trackIndex'] as num?)?.toInt(),
+      trackPositionMs: (json['trackPositionMs'] as num?)?.toInt(),
+      percentage: (json['percentage'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$AudiobookProgressToJson(_AudiobookProgress instance) =>
+    <String, dynamic>{
+      'positionMs': instance.positionMs,
+      'trackIndex': instance.trackIndex,
+      'trackPositionMs': instance.trackPositionMs,
+      'percentage': instance.percentage,
     };
 
 _Series _$SeriesFromJson(Map<String, dynamic> json) => _Series(
-  name: json['name'] as String,
+  seriesName: json['seriesName'] as String,
   bookCount: (json['bookCount'] as num).toInt(),
+  authors:
+      (json['authors'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$SeriesToJson(_Series instance) => <String, dynamic>{
-  'name': instance.name,
+  'seriesName': instance.seriesName,
   'bookCount': instance.bookCount,
-};
-
-_Progress _$ProgressFromJson(Map<String, dynamic> json) => _Progress(
-  bookId: json['bookId'] as String,
-  positionSeconds: (json['positionSeconds'] as num).toDouble(),
-  trackIndex: (json['trackIndex'] as num?)?.toInt(),
-  updatedAt: json['updatedAt'] == null
-      ? null
-      : DateTime.parse(json['updatedAt'] as String),
-);
-
-Map<String, dynamic> _$ProgressToJson(_Progress instance) => <String, dynamic>{
-  'bookId': instance.bookId,
-  'positionSeconds': instance.positionSeconds,
-  'trackIndex': instance.trackIndex,
-  'updatedAt': instance.updatedAt?.toIso8601String(),
+  'authors': instance.authors,
 };
 
 _Bookmark _$BookmarkFromJson(Map<String, dynamic> json) => _Bookmark(
-  id: json['id'] as String,
-  bookId: json['bookId'] as String,
-  positionSeconds: (json['positionSeconds'] as num).toDouble(),
-  note: json['note'] as String?,
+  id: (json['id'] as num).toInt(),
+  bookId: (json['bookId'] as num).toInt(),
+  positionMs: (json['positionMs'] as num?)?.toInt(),
+  trackIndex: (json['trackIndex'] as num?)?.toInt(),
+  title: json['title'] as String?,
+  notes: json['notes'] as String?,
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
@@ -136,7 +166,9 @@ _Bookmark _$BookmarkFromJson(Map<String, dynamic> json) => _Bookmark(
 Map<String, dynamic> _$BookmarkToJson(_Bookmark instance) => <String, dynamic>{
   'id': instance.id,
   'bookId': instance.bookId,
-  'positionSeconds': instance.positionSeconds,
-  'note': instance.note,
+  'positionMs': instance.positionMs,
+  'trackIndex': instance.trackIndex,
+  'title': instance.title,
+  'notes': instance.notes,
   'createdAt': instance.createdAt?.toIso8601String(),
 };

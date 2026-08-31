@@ -33,7 +33,9 @@ class LibrariesTab extends ConsumerWidget {
               return ListTile(
                 leading: const Icon(Icons.headphones),
                 title: Text(library.name),
-                subtitle: library.type != null ? Text(library.type!) : null,
+                subtitle: Text(
+                  '${library.bookCount} ${library.bookCount == 1 ? 'book' : 'books'}',
+                ),
                 onTap: () => context.push('/libraries/${library.id}'),
               );
             },
