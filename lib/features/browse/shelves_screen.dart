@@ -1,0 +1,108 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/api/errors.dart';
+import '../../core/api/models.dart';
+import '../../core/providers.dart';
+
+final shelvesListProvider = FutureProvider<List<Shelf>>((ref) async {
+  return ref.read(apiClientProvider).getShelves();
+});
+
+final magicShelvesListProvider = FutureProvider<List<MagicShelf>>((ref) async {
+  return ref.read(apiClientProvider).getMagicShelves();
+});
+
+/// Body of the "Shelves" tab on [HomeScreen]. Regular shelves are
+/// display-only (see [Shelf]'s doc comment — the server has no endpoint to
+/// list their books); magic shelves are tappable.
+class ShelvesTab extends ConsumerWidget {
+  const ShelvesTab({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final shelves = ref.watch(shelvesListProvider);
+    final magicShelves = ref.watch(magicShelvesListProvider);
+
+    if (shelves.isLoading || magicShelves.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final error = shelves.error ?? magicShelves.error;
+    if (error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(friendlyApiError(error)),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () {
+                  ref.invalidate(shelvesListProvider);
+                  ref.invalidate(magicShelvesListProvider);
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final regular = shelves.value ?? [];
+    final magic = magicShelves.value ?? [];
+    if (regular.isEmpty && magic.isEmpty) {
+      return const Center(child: Text('No shelves found.'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => Future.wait([
+        ref.refresh(shelvesListProvider.future),
+        ref.refresh(magicShelvesListProvider.future),
+      ]),
+      child: ListView(
+        children: [
+          if (magic.isNotEmpty) ...[
+            const _SectionHeader('Shelves'),
+            for (final shelf in magic)
+              ListTile(
+                leading: const Icon(Icons.auto_awesome_outlined),
+                title: Text(shelf.name),
+                onTap: () => context.push(
+                  '/shelves/magic/${shelf.id}',
+                  extra: shelf.name,
+                ),
+              ),
+          ],
+          if (regular.isNotEmpty) ...[
+            const _SectionHeader('Collections'),
+            for (final shelf in regular)
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(shelf.name),
+                subtitle: Text(
+                  '${shelf.bookCount} ${shelf.bookCount == 1 ? 'book' : 'books'}',
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+    );
+  }
+}

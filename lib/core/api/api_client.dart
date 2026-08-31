@@ -318,6 +318,18 @@ class ApiClient {
         .toList();
   }
 
+  /// `/app/books/recently-added`, not `/app/books/recently` as an earlier
+  /// pass at this guessed before checking `AppBookController`'s source.
+  Future<List<Book>> getRecentlyAdded({int limit = 10}) async {
+    final resp = await _dio.get(
+      '/app/books/recently-added',
+      queryParameters: {'limit': limit},
+    );
+    return (resp.data as List)
+        .map((b) => Book.fromJson(b as Map<String, dynamic>))
+        .toList();
+  }
+
   // ── Audiobook playback (not under /app — this endpoint isn't
   // app-namespaced) ────────────────────────────────────────────────────
 
@@ -394,6 +406,68 @@ class ApiClient {
   }) async {
     final resp = await _dio.get(
       '/app/series/${Uri.encodeComponent(seriesName)}/books',
+      queryParameters: {'page': page, 'size': size},
+    );
+    return _extractPageContent(resp.data).map(Book.fromJson).toList();
+  }
+
+  // ── Authors (AppAuthorController) ───────────────────────────────────────
+
+  Future<List<Author>> getAuthors({int page = 0, int size = 100}) async {
+    final resp = await _dio.get(
+      '/app/authors',
+      queryParameters: {'page': page, 'size': size},
+    );
+    return _extractPageContent(resp.data).map(Author.fromJson).toList();
+  }
+
+  Future<Author> getAuthorDetail(int authorId) async {
+    final resp = await _dio.get('/app/authors/$authorId');
+    return Author.fromJson(resp.data as Map<String, dynamic>);
+  }
+
+  /// There's no "books by author ID" endpoint — `BookListRequest.authors`
+  /// filters by name, the same filter dimension the library screen's author
+  /// filter uses.
+  Future<List<Book>> getBooksByAuthor(
+    String authorName, {
+    int page = 0,
+    int size = 100,
+  }) async {
+    final resp = await _dio.get(
+      '/app/books',
+      queryParameters: {
+        'page': page,
+        'size': size,
+        'authors': [authorName],
+      },
+    );
+    return _extractPageContent(resp.data).map(Book.fromJson).toList();
+  }
+
+  // ── Shelves (AppShelfController) ────────────────────────────────────────
+
+  Future<List<Shelf>> getShelves() async {
+    final resp = await _dio.get('/app/shelves');
+    return (resp.data as List)
+        .map((s) => Shelf.fromJson(s as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<MagicShelf>> getMagicShelves() async {
+    final resp = await _dio.get('/app/shelves/magic');
+    return (resp.data as List)
+        .map((s) => MagicShelf.fromJson(s as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<Book>> getMagicShelfBooks(
+    int magicShelfId, {
+    int page = 0,
+    int size = 100,
+  }) async {
+    final resp = await _dio.get(
+      '/app/shelves/magic/$magicShelfId/books',
       queryParameters: {'page': page, 'size': size},
     );
     return _extractPageContent(resp.data).map(Book.fromJson).toList();

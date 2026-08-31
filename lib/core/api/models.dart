@@ -172,6 +172,51 @@ abstract class Bookmark with _$Bookmark {
       _$BookmarkFromJson(json);
 }
 
+/// From `AppAuthorSummary` (`GET /api/v1/app/authors`) and `AppAuthorDetail`
+/// (`GET /api/v1/app/authors/{id}`) — [description] is only present on the
+/// detail response, null on the list. Neither carries the author's actual
+/// books; that needs a separate `/app/books?authors=<name>` filter query
+/// (`ApiClient.getBooksByAuthor`), same author-name filter the library
+/// screen's author filter uses.
+@freezed
+abstract class Author with _$Author {
+  const factory Author({
+    required int id,
+    required String name,
+    @Default(0) int bookCount,
+    String? description,
+  }) = _Author;
+
+  factory Author.fromJson(Map<String, dynamic> json) => _$AuthorFromJson(json);
+}
+
+/// From `AppShelfSummary` (`GET /api/v1/app/shelves`) — a regular,
+/// user-curated shelf. Display-only in this app: unlike magic shelves,
+/// there's no `/app/shelves/{id}/books` endpoint to drill into one, only
+/// the summary (name + count).
+@freezed
+abstract class Shelf with _$Shelf {
+  const factory Shelf({
+    required int id,
+    required String name,
+    @Default(0) int bookCount,
+  }) = _Shelf;
+
+  factory Shelf.fromJson(Map<String, dynamic> json) => _$ShelfFromJson(json);
+}
+
+/// From `AppMagicShelfSummary` (`GET /api/v1/app/shelves/magic`) — a
+/// dynamic/query-based shelf. Unlike [Shelf], its books are browsable via
+/// `GET /api/v1/app/shelves/magic/{id}/books` (`ApiClient.getMagicShelfBooks`).
+@freezed
+abstract class MagicShelf with _$MagicShelf {
+  const factory MagicShelf({required int id, required String name}) =
+      _MagicShelf;
+
+  factory MagicShelf.fromJson(Map<String, dynamic> json) =>
+      _$MagicShelfFromJson(json);
+}
+
 /// A single facet value with a book count, e.g. one entry in
 /// [FilterOptions.authors] — from `AppFilterOptions.CountedOption`
 /// (`GET /api/v1/app/filter-options`).

@@ -2520,6 +2520,813 @@ as DateTime?,
 
 
 /// @nodoc
+mixin _$Author {
+
+ int get id; String get name; int get bookCount; String? get description;
+/// Create a copy of Author
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AuthorCopyWith<Author> get copyWith => _$AuthorCopyWithImpl<Author>(this as Author, _$identity);
+
+  /// Serializes this Author to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Author&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.description, description) || other.description == description));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,bookCount,description);
+
+@override
+String toString() {
+  return 'Author(id: $id, name: $name, bookCount: $bookCount, description: $description)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AuthorCopyWith<$Res>  {
+  factory $AuthorCopyWith(Author value, $Res Function(Author) _then) = _$AuthorCopyWithImpl;
+@useResult
+$Res call({
+ int id, String name, int bookCount, String? description
+});
+
+
+
+
+}
+/// @nodoc
+class _$AuthorCopyWithImpl<$Res>
+    implements $AuthorCopyWith<$Res> {
+  _$AuthorCopyWithImpl(this._self, this._then);
+
+  final Author _self;
+  final $Res Function(Author) _then;
+
+/// Create a copy of Author
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? description = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
+as int,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [Author].
+extension AuthorPatterns on Author {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Author value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Author() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Author value)  $default,){
+final _that = this;
+switch (_that) {
+case _Author():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Author value)?  $default,){
+final _that = this;
+switch (_that) {
+case _Author() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? description)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Author() when $default != null:
+return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? description)  $default,) {final _that = this;
+switch (_that) {
+case _Author():
+return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int bookCount,  String? description)?  $default,) {final _that = this;
+switch (_that) {
+case _Author() when $default != null:
+return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _Author implements Author {
+  const _Author({required this.id, required this.name, this.bookCount = 0, this.description});
+  factory _Author.fromJson(Map<String, dynamic> json) => _$AuthorFromJson(json);
+
+@override final  int id;
+@override final  String name;
+@override@JsonKey() final  int bookCount;
+@override final  String? description;
+
+/// Create a copy of Author
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AuthorCopyWith<_Author> get copyWith => __$AuthorCopyWithImpl<_Author>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$AuthorToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Author&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.description, description) || other.description == description));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,bookCount,description);
+
+@override
+String toString() {
+  return 'Author(id: $id, name: $name, bookCount: $bookCount, description: $description)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AuthorCopyWith<$Res> implements $AuthorCopyWith<$Res> {
+  factory _$AuthorCopyWith(_Author value, $Res Function(_Author) _then) = __$AuthorCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String name, int bookCount, String? description
+});
+
+
+
+
+}
+/// @nodoc
+class __$AuthorCopyWithImpl<$Res>
+    implements _$AuthorCopyWith<$Res> {
+  __$AuthorCopyWithImpl(this._self, this._then);
+
+  final _Author _self;
+  final $Res Function(_Author) _then;
+
+/// Create a copy of Author
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? description = freezed,}) {
+  return _then(_Author(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
+as int,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$Shelf {
+
+ int get id; String get name; int get bookCount;
+/// Create a copy of Shelf
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ShelfCopyWith<Shelf> get copyWith => _$ShelfCopyWithImpl<Shelf>(this as Shelf, _$identity);
+
+  /// Serializes this Shelf to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Shelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,bookCount);
+
+@override
+String toString() {
+  return 'Shelf(id: $id, name: $name, bookCount: $bookCount)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ShelfCopyWith<$Res>  {
+  factory $ShelfCopyWith(Shelf value, $Res Function(Shelf) _then) = _$ShelfCopyWithImpl;
+@useResult
+$Res call({
+ int id, String name, int bookCount
+});
+
+
+
+
+}
+/// @nodoc
+class _$ShelfCopyWithImpl<$Res>
+    implements $ShelfCopyWith<$Res> {
+  _$ShelfCopyWithImpl(this._self, this._then);
+
+  final Shelf _self;
+  final $Res Function(Shelf) _then;
+
+/// Create a copy of Shelf
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [Shelf].
+extension ShelfPatterns on Shelf {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Shelf value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Shelf() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Shelf value)  $default,){
+final _that = this;
+switch (_that) {
+case _Shelf():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Shelf value)?  $default,){
+final _that = this;
+switch (_that) {
+case _Shelf() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Shelf() when $default != null:
+return $default(_that.id,_that.name,_that.bookCount);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount)  $default,) {final _that = this;
+switch (_that) {
+case _Shelf():
+return $default(_that.id,_that.name,_that.bookCount);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int bookCount)?  $default,) {final _that = this;
+switch (_that) {
+case _Shelf() when $default != null:
+return $default(_that.id,_that.name,_that.bookCount);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _Shelf implements Shelf {
+  const _Shelf({required this.id, required this.name, this.bookCount = 0});
+  factory _Shelf.fromJson(Map<String, dynamic> json) => _$ShelfFromJson(json);
+
+@override final  int id;
+@override final  String name;
+@override@JsonKey() final  int bookCount;
+
+/// Create a copy of Shelf
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ShelfCopyWith<_Shelf> get copyWith => __$ShelfCopyWithImpl<_Shelf>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ShelfToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Shelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,bookCount);
+
+@override
+String toString() {
+  return 'Shelf(id: $id, name: $name, bookCount: $bookCount)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ShelfCopyWith<$Res> implements $ShelfCopyWith<$Res> {
+  factory _$ShelfCopyWith(_Shelf value, $Res Function(_Shelf) _then) = __$ShelfCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String name, int bookCount
+});
+
+
+
+
+}
+/// @nodoc
+class __$ShelfCopyWithImpl<$Res>
+    implements _$ShelfCopyWith<$Res> {
+  __$ShelfCopyWithImpl(this._self, this._then);
+
+  final _Shelf _self;
+  final $Res Function(_Shelf) _then;
+
+/// Create a copy of Shelf
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? bookCount = null,}) {
+  return _then(_Shelf(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$MagicShelf {
+
+ int get id; String get name;
+/// Create a copy of MagicShelf
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MagicShelfCopyWith<MagicShelf> get copyWith => _$MagicShelfCopyWithImpl<MagicShelf>(this as MagicShelf, _$identity);
+
+  /// Serializes this MagicShelf to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MagicShelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'MagicShelf(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MagicShelfCopyWith<$Res>  {
+  factory $MagicShelfCopyWith(MagicShelf value, $Res Function(MagicShelf) _then) = _$MagicShelfCopyWithImpl;
+@useResult
+$Res call({
+ int id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class _$MagicShelfCopyWithImpl<$Res>
+    implements $MagicShelfCopyWith<$Res> {
+  _$MagicShelfCopyWithImpl(this._self, this._then);
+
+  final MagicShelf _self;
+  final $Res Function(MagicShelf) _then;
+
+/// Create a copy of MagicShelf
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [MagicShelf].
+extension MagicShelfPatterns on MagicShelf {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MagicShelf value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MagicShelf() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MagicShelf value)  $default,){
+final _that = this;
+switch (_that) {
+case _MagicShelf():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MagicShelf value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MagicShelf() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MagicShelf() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name)  $default,) {final _that = this;
+switch (_that) {
+case _MagicShelf():
+return $default(_that.id,_that.name);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name)?  $default,) {final _that = this;
+switch (_that) {
+case _MagicShelf() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _MagicShelf implements MagicShelf {
+  const _MagicShelf({required this.id, required this.name});
+  factory _MagicShelf.fromJson(Map<String, dynamic> json) => _$MagicShelfFromJson(json);
+
+@override final  int id;
+@override final  String name;
+
+/// Create a copy of MagicShelf
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MagicShelfCopyWith<_MagicShelf> get copyWith => __$MagicShelfCopyWithImpl<_MagicShelf>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$MagicShelfToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MagicShelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'MagicShelf(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MagicShelfCopyWith<$Res> implements $MagicShelfCopyWith<$Res> {
+  factory _$MagicShelfCopyWith(_MagicShelf value, $Res Function(_MagicShelf) _then) = __$MagicShelfCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class __$MagicShelfCopyWithImpl<$Res>
+    implements _$MagicShelfCopyWith<$Res> {
+  __$MagicShelfCopyWithImpl(this._self, this._then);
+
+  final _MagicShelf _self;
+  final $Res Function(_MagicShelf) _then;
+
+/// Create a copy of MagicShelf
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
+  return _then(_MagicShelf(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$CountedOption {
 
  String get name; int get count;
