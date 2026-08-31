@@ -85,7 +85,9 @@ class _BookmarksSheet extends ConsumerWidget {
                       return ListTile(
                         leading: const Icon(Icons.bookmark),
                         title: Text(
-                          hasTitle ? bookmark.title! : positionLabel ?? 'Bookmark',
+                          hasTitle
+                              ? bookmark.title!
+                              : positionLabel ?? 'Bookmark',
                         ),
                         subtitle: hasTitle && positionLabel != null
                             ? Text(positionLabel)
@@ -111,8 +113,7 @@ class _BookmarksSheet extends ConsumerWidget {
                     },
                   );
                 },
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) =>
                     const Center(child: Text('Could not load bookmarks.')),
               ),

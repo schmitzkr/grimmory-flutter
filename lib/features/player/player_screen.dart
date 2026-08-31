@@ -213,4 +213,3 @@ class PlayerScreen extends ConsumerWidget {
     );
   }
 }
-
