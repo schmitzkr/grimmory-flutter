@@ -377,6 +377,24 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     return _tracks[index].cumulativeStartMs + playerPosition.inMilliseconds;
   }
 
+  /// [Bookmark.positionMs] isn't individually confirmed against a live
+  /// instance, but `CreateBookMarkRequest`/`BookMark` (Grimmory source) only
+  /// have `positionMs` + `trackIndex`, no separate track-relative field —
+  /// same shape as [AudiobookProgress], whose `positionMs` is book-wide
+  /// absolute, so this follows that same convention for consistency.
+  Future<Bookmark> createBookmarkAtCurrentPosition({String? title}) {
+    final bookId = _currentBookId;
+    if (bookId == null) {
+      throw StateError('No book is currently loaded');
+    }
+    return _apiClient.createBookmark(
+      bookId,
+      positionMs: _toAbsoluteMs(_player.position),
+      trackIndex: _folderBased ? _player.currentIndex : null,
+      title: title,
+    );
+  }
+
   void _broadcastState(PlaybackEvent event) {
     final playing = _player.playing;
     playbackState.add(
