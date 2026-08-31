@@ -211,7 +211,8 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   /// `initialIndex` points at, so this converts. For a non-folder-based
   /// book, positionMs is already the right absolute stream position.
   int _toTrackRelativeMs(AudiobookProgress progress) {
-    if (!_folderBased || progress.trackIndex == null) return progress.positionMs;
+    if (!_folderBased || progress.trackIndex == null)
+      return progress.positionMs;
     final index = progress.trackIndex!;
     if (index < 0 || index >= _tracks.length) return progress.positionMs;
     final relative = progress.positionMs - _tracks[index].cumulativeStartMs;

@@ -51,18 +51,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        redirect: (context, state) => '/libraries',
-      ),
+      GoRoute(path: '/', redirect: (context, state) => '/libraries'),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const ServerUrlScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/sso-settings',
         builder: (context, state) => const SsoSettingsScreen(),
@@ -79,15 +73,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/series/:name',
-        builder: (context, state) => SeriesDetailScreen(
-          seriesName: state.pathParameters['name']!,
-        ),
+        builder: (context, state) =>
+            SeriesDetailScreen(seriesName: state.pathParameters['name']!),
       ),
       GoRoute(
         path: '/books/:id',
-        builder: (context, state) => BookDetailScreen(
-          bookId: int.parse(state.pathParameters['id']!),
-        ),
+        builder: (context, state) =>
+            BookDetailScreen(bookId: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/player',

@@ -48,10 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIcon: Icon(Icons.collections_bookmark),
             label: 'Series',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
+          NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
         ],
       ),
     );

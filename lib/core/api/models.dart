@@ -151,8 +151,7 @@ abstract class Series with _$Series {
     @Default([]) List<String> authors,
   }) = _Series;
 
-  factory Series.fromJson(Map<String, dynamic> json) =>
-      _$SeriesFromJson(json);
+  factory Series.fromJson(Map<String, dynamic> json) => _$SeriesFromJson(json);
 }
 
 /// From `BookMark` (Java class name, capital M — same JSON field names

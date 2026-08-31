@@ -109,7 +109,10 @@ class _ServerUrlScreenState extends ConsumerState<ServerUrlScreen> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: 16),
             FilledButton(

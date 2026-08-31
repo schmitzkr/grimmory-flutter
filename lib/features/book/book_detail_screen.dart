@@ -8,16 +8,17 @@ import '../../core/providers.dart';
 import '../../core/widgets/book_cover.dart';
 import '../player/playback_provider.dart';
 
-final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), int>(
-  (ref, bookId) async {
-    final apiClient = ref.read(apiClientProvider);
-    final results = await Future.wait([
-      apiClient.getBook(bookId),
-      apiClient.getAudiobookInfo(bookId),
-    ]);
-    return (results[0] as Book, results[1] as AudiobookInfo);
-  },
-);
+final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), int>((
+  ref,
+  bookId,
+) async {
+  final apiClient = ref.read(apiClientProvider);
+  final results = await Future.wait([
+    apiClient.getBook(bookId),
+    apiClient.getAudiobookInfo(bookId),
+  ]);
+  return (results[0] as Book, results[1] as AudiobookInfo);
+});
 
 class BookDetailScreen extends ConsumerWidget {
   const BookDetailScreen({required this.bookId, super.key});
