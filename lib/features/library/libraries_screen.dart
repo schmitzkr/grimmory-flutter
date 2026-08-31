@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import 'continue_listening_section.dart';
 
 final librariesProvider = FutureProvider<List<Library>>((ref) async {
   return ref.read(apiClientProvider).getLibraries();
@@ -25,11 +26,17 @@ class LibrariesTab extends ConsumerWidget {
           return const Center(child: Text('No libraries found.'));
         }
         return RefreshIndicator(
-          onRefresh: () => ref.refresh(librariesProvider.future),
+          onRefresh: () => Future.wait([
+            ref.refresh(librariesProvider.future),
+            ref.refresh(continueListeningProvider.future),
+          ]),
           child: ListView.builder(
-            itemCount: items.length,
+            // Index 0 is the Continue Listening header/carousel; library
+            // tiles follow at items[index - 1].
+            itemCount: items.length + 1,
             itemBuilder: (context, index) {
-              final library = items[index];
+              if (index == 0) return const ContinueListeningSection();
+              final library = items[index - 1];
               return ListTile(
                 leading: const Icon(Icons.headphones),
                 title: Text(library.name),
