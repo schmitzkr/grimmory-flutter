@@ -171,3 +171,29 @@ abstract class Bookmark with _$Bookmark {
   factory Bookmark.fromJson(Map<String, dynamic> json) =>
       _$BookmarkFromJson(json);
 }
+
+/// A single facet value with a book count, e.g. one entry in
+/// [FilterOptions.authors] — from `AppFilterOptions.CountedOption`
+/// (`GET /api/v1/app/filter-options`).
+@freezed
+abstract class CountedOption with _$CountedOption {
+  const factory CountedOption({required String name, @Default(0) int count}) =
+      _CountedOption;
+
+  factory CountedOption.fromJson(Map<String, dynamic> json) =>
+      _$CountedOptionFromJson(json);
+}
+
+/// Only the facets this app's library filter UI actually uses — the real
+/// `AppFilterOptions` response has ~30 fields (categories, comic-specific
+/// facets, half a dozen rating-source breakdowns, etc.) built for a general
+/// ebook/comic manager, most of which don't apply to audiobooks. Unknown
+/// JSON fields are simply ignored by the generated `fromJson`.
+@freezed
+abstract class FilterOptions with _$FilterOptions {
+  const factory FilterOptions({@Default([]) List<CountedOption> authors}) =
+      _FilterOptions;
+
+  factory FilterOptions.fromJson(Map<String, dynamic> json) =>
+      _$FilterOptionsFromJson(json);
+}

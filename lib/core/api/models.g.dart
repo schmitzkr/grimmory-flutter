@@ -172,3 +172,24 @@ Map<String, dynamic> _$BookmarkToJson(_Bookmark instance) => <String, dynamic>{
   'notes': instance.notes,
   'createdAt': instance.createdAt?.toIso8601String(),
 };
+
+_CountedOption _$CountedOptionFromJson(Map<String, dynamic> json) =>
+    _CountedOption(
+      name: json['name'] as String,
+      count: (json['count'] as num?)?.toInt() ?? 0,
+    );
+
+Map<String, dynamic> _$CountedOptionToJson(_CountedOption instance) =>
+    <String, dynamic>{'name': instance.name, 'count': instance.count};
+
+_FilterOptions _$FilterOptionsFromJson(Map<String, dynamic> json) =>
+    _FilterOptions(
+      authors:
+          (json['authors'] as List<dynamic>?)
+              ?.map((e) => CountedOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+    );
+
+Map<String, dynamic> _$FilterOptionsToJson(_FilterOptions instance) =>
+    <String, dynamic>{'authors': instance.authors};
