@@ -71,5 +71,5 @@ flutter_launcher_icons:
   # NOT the same flat square used for image_path, which bakes the
   # background into the art itself (fine for the legacy/fallback icon, but
   # would double up the background if reused as the adaptive foreground).
-  adaptive_icon_background: "#6200EA"
+  adaptive_icon_background: "#1565C0"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
