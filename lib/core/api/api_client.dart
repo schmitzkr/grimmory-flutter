@@ -247,16 +247,48 @@ class ApiClient {
 
   // ── Books (AppBookController) ─────────────────────────────────────────
 
+  /// [sort] must be one of the keys `AppBookService.getSortField()`
+  /// recognizes server-side (confirmed against source, 2026-08-31):
+  /// `addedon` (default), `title`, `series`/`seriesname`, `narrator`,
+  /// `publisheddate`, `personalrating`, `readstatus`, `lastreadtime`, plus a
+  /// few ebook/comic-only fields this app has no UI for. Anything else
+  /// silently falls back to `addedon` server-side rather than erroring.
+  /// [authors] filters to books by any of the given author names (OR'd
+  /// together) — one of ~25 filter dimensions `BookListRequest` supports;
+  /// the rest (tags, language, ratings, comic-specific facets, etc.) aren't
+  /// exposed by this app's UI.
   Future<List<Book>> getLibraryBooks(
     int libraryId, {
     int page = 0,
     int size = 100,
+    String? sort,
+    String? dir,
+    List<String>? authors,
   }) async {
     final resp = await _dio.get(
       '/app/books',
-      queryParameters: {'libraryId': libraryId, 'page': page, 'size': size},
+      queryParameters: {
+        'libraryId': libraryId,
+        'page': page,
+        'size': size,
+        'sort': ?sort,
+        'dir': ?dir,
+        'authors': ?authors,
+      },
     );
     return _extractPageContent(resp.data).map(Book.fromJson).toList();
+  }
+
+  /// Available filter facet values (with book counts) for a library —
+  /// confirmed against `AppFilterController`/`AppBookService.getFilterOptions`
+  /// as `GET /api/v1/app/filter-options`, not `/app/filter` as originally
+  /// assumed before checking source.
+  Future<FilterOptions> getFilterOptions({int? libraryId}) async {
+    final resp = await _dio.get(
+      '/app/filter-options',
+      queryParameters: {'libraryId': ?libraryId},
+    );
+    return FilterOptions.fromJson(resp.data as Map<String, dynamic>);
   }
 
   Future<Book> getBook(int bookId) async {
