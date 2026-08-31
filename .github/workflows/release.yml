@@ -152,6 +152,9 @@ jobs:
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/grimmory.apk
 
+      - name: Zip debug symbols
+        run: (cd build/debug_info && zip -r ../../grimmory-debug-info.zip .)
+
       - name: Tag
         run: |
           git config user.name "github-actions[bot]"
@@ -165,4 +168,6 @@ jobs:
           tag_name: ${{ steps.meta.outputs.tag }}
           name: ${{ steps.meta.outputs.tag }}
           body: ${{ steps.meta.outputs.notes }}
-          files: build/app/outputs/flutter-apk/grimmory.apk
+          files: |
+            build/app/outputs/flutter-apk/grimmory.apk
+            grimmory-debug-info.zip
