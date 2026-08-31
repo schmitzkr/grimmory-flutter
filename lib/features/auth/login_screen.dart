@@ -49,18 +49,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen(authProvider, (previous, next) {
       final error = next.error;
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(friendlyApiError(error))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(friendlyApiError(error))));
       }
     });
 
     ref.listen(oidcLoginControllerProvider, (previous, next) {
       final error = next.error;
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('SSO sign-in failed: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('SSO sign-in failed: $error')));
       }
     });
 
@@ -113,9 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(
-                            oidcConfigured
-                                ? 'Sign in with SSO'
-                                : 'Set up SSO',
+                            oidcConfigured ? 'Sign in with SSO' : 'Set up SSO',
                           ),
                   ),
                 ),

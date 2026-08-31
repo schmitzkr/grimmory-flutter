@@ -24,9 +24,7 @@ class _SsoSettingsScreenState extends ConsumerState<SsoSettingsScreen> {
     super.initState();
     final existing = OidcConfig.load(ref.read(sharedPrefsProvider));
     _issuerController = TextEditingController(text: existing?.issuer ?? '');
-    _clientIdController = TextEditingController(
-      text: existing?.clientId ?? '',
-    );
+    _clientIdController = TextEditingController(text: existing?.clientId ?? '');
   }
 
   @override
