@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/models.dart';
+import '../../core/utils/duration_format.dart';
 import '../../core/widgets/book_cover.dart';
+import '../bookmarks/bookmarks_sheet.dart';
 import 'playback_provider.dart';
 import 'sleep_timer.dart';
 
@@ -51,6 +53,12 @@ class PlayerScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Now Playing'),
         actions: [
+          if (bookId != null)
+            IconButton(
+              tooltip: 'Bookmarks',
+              icon: const Icon(Icons.bookmark_border),
+              onPressed: () => showBookmarksSheet(context, ref, bookId),
+            ),
           IconButton(
             tooltip: 'Sleep timer',
             icon: const Icon(Icons.bedtime_outlined),
@@ -113,8 +121,8 @@ class PlayerScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(_formatDuration(position)),
-                        Text(_formatDuration(duration)),
+                        Text(formatDuration(position)),
+                        Text(formatDuration(duration)),
                       ],
                     ),
                   ),
@@ -181,7 +189,7 @@ class PlayerScreen extends ConsumerWidget {
                 ),
                 title: Text(queue[i].displaySubtitle ?? queue[i].title),
                 trailing: queue[i].duration != null
-                    ? Text(_formatDuration(queue[i].duration!))
+                    ? Text(formatDuration(queue[i].duration!))
                     : null,
                 onTap: () => handler.seekToTrack(i),
               ),
@@ -195,7 +203,7 @@ class PlayerScreen extends ConsumerWidget {
                 leading: Text('${chapter.index + 1}'),
                 title: Text(chapter.title),
                 trailing: Text(
-                  _formatDuration(Duration(milliseconds: chapter.durationMs)),
+                  formatDuration(Duration(milliseconds: chapter.durationMs)),
                 ),
                 onTap: () => handler.seekToChapterStart(chapter.startTimeMs),
               ),
@@ -204,11 +212,4 @@ class PlayerScreen extends ConsumerWidget {
       ),
     );
   }
-}
-
-String _formatDuration(Duration d) {
-  final hours = d.inHours;
-  final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-  final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-  return hours > 0 ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
 }
