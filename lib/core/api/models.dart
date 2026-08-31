@@ -25,7 +25,11 @@ abstract class AuthTokens with _$AuthTokens {
       _$AuthTokensFromJson(json);
 }
 
-/// From `AppLibrarySummary` (`GET /api/v1/app/libraries`).
+/// From the general `Library` DTO (`GET /api/v1/libraries`) — see
+/// `ApiClient.getLibraries()` for why this app uses that endpoint instead of
+/// the purpose-built-but-broken `AppLibrarySummary`/`/app/libraries`.
+/// [bookCount] isn't present on this DTO, so it's always the `@Default(0)`
+/// fallback for now.
 @freezed
 abstract class Library with _$Library {
   const factory Library({

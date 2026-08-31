@@ -161,6 +161,18 @@ Corrected against the real source (all confirmed by reading the actual `.java`/`
 
 This is exactly the kind of error the original M0 pass (§5) couldn't catch: everything there was confirmed via *unauthenticated* probing (endpoint paths, public auth-endpoint validation errors), which can't see response *bodies* on authenticated endpoints at all. The lesson: once real credentials or real source access are available, re-verify response shapes specifically — path-level confirmation and body-shape confirmation are genuinely different levels of assurance, and this project had only ever done the former until now.
 
+## 7. `/app/libraries` server bug (2026-08-29/30) — client-side workaround
+
+While testing v0.3.0 against `grimmory.mael.is`, the Libraries screen started failing with a server-side `500`. Server logs showed `org.hibernate.LazyInitializationException` thrown from `AppLibraryController.getLibraries()` → `AppBookMapper.toLibrarySummary()`, recurring on **every single call**, across multiple separate testing sessions (12 occurrences confirmed across three timestamp clusters spanning ~6 minutes) — not transient.
+
+Confirmed via the real Grimmory source (`github.com/grimmory-tools/grimmory`), not guessed:
+- `AppLibraryController.getLibraries()` (`/api/v1/app/libraries`) has no `@Transactional`, takes no request parameters at all, and simply calls `libraryRepository.findAll()`/`findByIdIn()` then maps each result via `AppBookMapper.toLibrarySummary()`.
+- That mapper accesses `library.getLibraryPaths()` — a plain field read, no conditions — and `LibraryEntity.libraryPaths` is `@OneToMany(..., fetch = FetchType.LAZY)`. Outside an active Hibernate session, that throws unconditionally.
+- **This app's call is not the problem** — the endpoint has no parameters to get wrong, and the exception fires identically for every caller/user/library-count.
+- Grimmory's own Angular frontend never calls `/app/libraries` at all — its Libraries page calls the separate general `GET /api/v1/libraries` (`LibraryController` → `LibraryService`, a different DTO/code path with no equivalent lazy-collection touch), which is what's actually exercised in production. `/app/libraries` looks to have never been hit by real traffic before this app started calling it.
+
+**Workaround** (this app only — no server changes, per the "only touch the app" rule): `ApiClient.getLibraries()` now calls the general `/libraries` endpoint instead of `/app/libraries`. Confirmed working (it's the same endpoint the real web frontend depends on for the same screen) and returns the same permission-filtered library list (admin sees all, non-admin sees only assigned libraries — verified in `LibraryService.getLibraries()`). Tradeoff: the general `Library` DTO has no `bookCount` field, so `Library.bookCount` is always the `@Default(0)` fallback for now — the Libraries screen's "N books" subtitle will read "0 books" until upstream is fixed. Revert to `/app/libraries` once fixed upstream (tracked via a filed bug report — see repo issue tracker).
+
 ## Verification
 - `flutter analyze` / `flutter test` clean at each milestone (wired into `pr-check.yml` from M1 onward).
 - M1: manually log in against a real Grimmory instance (both local JWT and OIDC), browse libraries/series/search, confirm token refresh survives an expired access token.

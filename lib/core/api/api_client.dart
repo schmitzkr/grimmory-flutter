@@ -225,10 +225,21 @@ class ApiClient {
     await _prefs.remove('logged_in');
   }
 
-  // ── Libraries (AppLibraryController) ─────────────────────────────────
+  // ── Libraries ───────────────────────────────────────────────────────
 
+  /// Uses the general `/libraries` endpoint (`LibraryController`), not
+  /// `/app/libraries` (`AppLibraryController`) — the latter throws a
+  /// server-side `LazyInitializationException` on every call (confirmed via
+  /// live server logs and the Grimmory source: `AppLibraryController
+  /// .getLibraries()` has no `@Transactional`, and `AppBookMapper
+  /// .toLibrarySummary()` accesses the lazy `LibraryEntity.libraryPaths`
+  /// collection after the session is gone). `/libraries` is what Grimmory's
+  /// own web frontend calls for the same screen, so it's confirmed working
+  /// in production. Tradeoff: its `Library` DTO has no `bookCount` field, so
+  /// [Library.bookCount] falls back to its `@Default(0)` here. Revert to
+  /// `/app/libraries` once the upstream bug is fixed.
   Future<List<Library>> getLibraries() async {
-    final resp = await _dio.get('/app/libraries');
+    final resp = await _dio.get('/libraries');
     return (resp.data as List)
         .map((l) => Library.fromJson(l as Map<String, dynamic>))
         .toList();
