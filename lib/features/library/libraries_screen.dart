@@ -6,6 +6,7 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import 'continue_listening_section.dart';
+import 'recently_added_section.dart';
 
 final librariesProvider = FutureProvider<List<Library>>((ref) async {
   return ref.read(apiClientProvider).getLibraries();
@@ -29,14 +30,16 @@ class LibrariesTab extends ConsumerWidget {
           onRefresh: () => Future.wait([
             ref.refresh(librariesProvider.future),
             ref.refresh(continueListeningProvider.future),
+            ref.refresh(recentlyAddedProvider.future),
           ]),
           child: ListView.builder(
-            // Index 0 is the Continue Listening header/carousel; library
-            // tiles follow at items[index - 1].
-            itemCount: items.length + 1,
+            // Indices 0 and 1 are the Continue Listening and Recently Added
+            // header carousels; library tiles follow at items[index - 2].
+            itemCount: items.length + 2,
             itemBuilder: (context, index) {
               if (index == 0) return const ContinueListeningSection();
-              final library = items[index - 1];
+              if (index == 1) return const RecentlyAddedSection();
+              final library = items[index - 2];
               return ListTile(
                 leading: const Icon(Icons.headphones),
                 title: Text(library.name),

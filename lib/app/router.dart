@@ -7,6 +7,8 @@ import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/sso_settings_screen.dart';
 import '../features/book/book_detail_screen.dart';
+import '../features/browse/author_detail_screen.dart';
+import '../features/browse/magic_shelf_detail_screen.dart';
 import '../features/browse/series_detail_screen.dart';
 import '../features/library/home_screen.dart';
 import '../features/library/library_detail_screen.dart';
@@ -80,6 +82,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/books/:id',
         builder: (context, state) =>
             BookDetailScreen(bookId: int.parse(state.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: '/authors/:id',
+        builder: (context, state) => AuthorDetailScreen(
+          authorId: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/shelves/magic/:id',
+        builder: (context, state) => MagicShelfDetailScreen(
+          magicShelfId: int.parse(state.pathParameters['id']!),
+          title: state.extra as String? ?? 'Shelf',
+        ),
       ),
       GoRoute(
         path: '/player',

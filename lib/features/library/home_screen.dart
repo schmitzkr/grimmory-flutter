@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../browse/authors_screen.dart';
 import '../browse/search_screen.dart';
 import '../browse/series_screen.dart';
+import '../browse/shelves_screen.dart';
 import 'libraries_screen.dart';
 
-/// Post-login landing screen — bottom-nav shell over the three top-level
-/// browse destinations. Each tab keeps its own state via IndexedStack rather
-/// than being rebuilt from scratch on every switch.
+/// Post-login landing screen — bottom-nav shell over the top-level browse
+/// destinations. Each tab keeps its own state via IndexedStack rather than
+/// being rebuilt from scratch on every switch.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -18,8 +20,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _index = 0;
 
-  static const _titles = ['Libraries', 'Series', 'Search'];
-  static const _tabs = [LibrariesTab(), SeriesTab(), SearchTab()];
+  static const _titles = [
+    'Libraries',
+    'Series',
+    'Authors',
+    'Shelves',
+    'Search',
+  ];
+  static const _tabs = [
+    LibrariesTab(),
+    SeriesTab(),
+    AuthorsTab(),
+    ShelvesTab(),
+    SearchTab(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIcon: Icon(Icons.collections_bookmark),
             label: 'Series',
           ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Authors',
+          ),
+          NavigationDestination(icon: Icon(Icons.shelves), label: 'Shelves'),
           NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
         ],
       ),

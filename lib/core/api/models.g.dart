@@ -173,6 +173,38 @@ Map<String, dynamic> _$BookmarkToJson(_Bookmark instance) => <String, dynamic>{
   'createdAt': instance.createdAt?.toIso8601String(),
 };
 
+_Author _$AuthorFromJson(Map<String, dynamic> json) => _Author(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  bookCount: (json['bookCount'] as num?)?.toInt() ?? 0,
+  description: json['description'] as String?,
+);
+
+Map<String, dynamic> _$AuthorToJson(_Author instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'bookCount': instance.bookCount,
+  'description': instance.description,
+};
+
+_Shelf _$ShelfFromJson(Map<String, dynamic> json) => _Shelf(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  bookCount: (json['bookCount'] as num?)?.toInt() ?? 0,
+);
+
+Map<String, dynamic> _$ShelfToJson(_Shelf instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'bookCount': instance.bookCount,
+};
+
+_MagicShelf _$MagicShelfFromJson(Map<String, dynamic> json) =>
+    _MagicShelf(id: (json['id'] as num).toInt(), name: json['name'] as String);
+
+Map<String, dynamic> _$MagicShelfToJson(_MagicShelf instance) =>
+    <String, dynamic>{'id': instance.id, 'name': instance.name};
+
 _CountedOption _$CountedOptionFromJson(Map<String, dynamic> json) =>
     _CountedOption(
       name: json['name'] as String,
