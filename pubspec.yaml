@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
 
   # State management
-  flutter_riverpod: ^3.3.2
+  flutter_riverpod: ^3.4.2
 
   # Navigation
   go_router: ^17.3.0
@@ -39,8 +39,8 @@ dependencies:
 
   # Background audio + Android Auto (MediaBrowserService) surface
   audio_service: ^0.18.15
-  just_audio: ^0.9.42
-  audio_session: ^0.1.21
+  just_audio: ^0.10.6
+  audio_session: ^0.2.4
   # Already a transitive dep of audio_service — declared directly since the
   # audio handler imports BehaviorSubject itself (for chapter-list state
   # alongside audio_service's own queue/mediaItem/playbackState subjects).
@@ -58,8 +58,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
-  build_runner: ^2.4.14
-  freezed: ^3.1.0
+  build_runner: ^2.16.0
+  freezed: ^4.0.1
   json_serializable: ^6.9.3
 
 flutter:
