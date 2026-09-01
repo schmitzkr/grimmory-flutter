@@ -20,6 +20,37 @@ import '../../core/providers.dart';
 /// `dart.library.io` conditional export that the analyzer resolves to the
 /// package's web stub even in this Android-only app, so a real `dart:io`
 /// `File` fails static type-checking against it.
+const _readerDarkModeKey = 'reader_dark_mode';
+
+/// `EpubTheme.dark()`/`.light()`'s `backgroundDecoration`/`foregroundColor`
+/// never actually reach the book's own CSS — `EpubViewer` always sends a
+/// `null`/empty background to the underlying JS (`epub_viewer.dart`'s
+/// `loadBook` call hardcodes `'backgroundColor': null`, and
+/// `EpubController.updateTheme` hardcodes `''`), so those factories only
+/// ever change text color, leaving light-mode-only page backgrounds behind
+/// white (or worse, dark) text. Driving both background and link color
+/// through `customCss` instead sidesteps that entirely — it's forwarded
+/// unconditionally as raw epub.js theme rules (selector -> CSS properties).
+final _lightEpubTheme = EpubTheme.custom(
+  customCss: {
+    'body': {'background': '#fafafa', 'color': '#1a1a1a'},
+    'a, a:link, a:visited': {
+      'color': '#1a56db',
+      'text-decoration': 'underline',
+    },
+  },
+);
+
+final _darkEpubTheme = EpubTheme.custom(
+  customCss: {
+    'body': {'background': '#121212', 'color': '#e8e8e8'},
+    'a, a:link, a:visited': {
+      'color': '#8ab4f8',
+      'text-decoration': 'underline',
+    },
+  },
+);
+
 class EpubReaderScreen extends ConsumerStatefulWidget {
   const EpubReaderScreen({
     required this.bookId,
@@ -41,10 +72,27 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   List<EpubChapter> _chapters = [];
   Object? _error;
 
+  // Defaults to the system's current brightness so the reader doesn't open
+  // looking inconsistent with the rest of the app; a persisted explicit
+  // choice (below) overrides that once the user has picked one.
+  late bool _isDark =
+      WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+      Brightness.dark;
+
   @override
   void initState() {
     super.initState();
+    final prefs = ref.read(sharedPrefsProvider);
+    if (prefs.containsKey(_readerDarkModeKey)) {
+      _isDark = prefs.getBool(_readerDarkModeKey)!;
+    }
     _load();
+  }
+
+  void _toggleTheme() {
+    setState(() => _isDark = !_isDark);
+    ref.read(sharedPrefsProvider).setBool(_readerDarkModeKey, _isDark);
+    _controller.updateTheme(theme: _isDark ? _darkEpubTheme : _lightEpubTheme);
   }
 
   Future<void> _load() async {
@@ -119,6 +167,13 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         title: Text(widget.title),
         actions: [
           IconButton(
+            icon: Icon(
+              _isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+            ),
+            tooltip: _isDark ? 'Switch to light theme' : 'Switch to dark theme',
+            onPressed: _toggleTheme,
+          ),
+          IconButton(
             icon: const Icon(Icons.menu_book_outlined),
             tooltip: 'Chapters',
             onPressed: _chapters.isEmpty ? null : () => _showChapters(context),
@@ -129,6 +184,9 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         epubController: _controller,
         epubSource: EpubSource.fromData(_bytes!),
         initialCfi: _initialCfi,
+        displaySettings: EpubDisplaySettings(
+          theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
+        ),
         onChaptersLoaded: (chapters) {
           if (mounted) setState(() => _chapters = chapters);
         },
