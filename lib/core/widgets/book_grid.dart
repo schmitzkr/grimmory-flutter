@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/downloads/download_manager.dart';
+import '../../features/downloads/download_models.dart';
 import '../api/models.dart';
 import 'book_cover.dart';
 
@@ -27,13 +30,17 @@ class BookGrid extends StatelessWidget {
   }
 }
 
-class BookGridTile extends StatelessWidget {
+class BookGridTile extends ConsumerWidget {
   const BookGridTile({required this.book, super.key});
 
   final Book book;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final downloaded =
+        ref.watch(downloadManagerProvider).value?[book.id]?.status ==
+        DownloadStatus.complete;
+
     return InkWell(
       onTap: () => context.push('/books/${book.id}'),
       borderRadius: BorderRadius.circular(8),
@@ -43,7 +50,28 @@ class BookGridTile extends StatelessWidget {
           Expanded(
             child: AspectRatio(
               aspectRatio: 1,
-              child: BookCover(bookId: book.id),
+              child: Stack(
+                children: [
+                  Positioned.fill(child: BookCover(bookId: book.id)),
+                  if (downloaded)
+                    Positioned(
+                      right: 6,
+                      bottom: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.download_done,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 6),

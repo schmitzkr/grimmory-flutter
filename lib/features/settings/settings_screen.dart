@@ -22,6 +22,12 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.download_outlined),
+            title: const Text('Downloads'),
+            onTap: () => context.push('/downloads'),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.battery_alert_outlined),
             title: const Text('Background playback getting interrupted?'),
             subtitle: const Text('Exclude Grimmory from battery optimization'),
