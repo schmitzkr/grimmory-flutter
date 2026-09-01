@@ -30,7 +30,7 @@ dependencies:
   # pre-exchanged token. No oidc_default_store — that's only needed to back
   # OidcUserManager's own session/token store, unused here.
   oidc: ^0.13.0
-  app_links: ^6.4.1
+  app_links: ^7.2.1
   url_launcher: ^6.3.0
 
   # Models
