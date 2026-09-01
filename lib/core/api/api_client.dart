@@ -256,7 +256,9 @@ class ApiClient {
   /// [authors] filters to books by any of the given author names (OR'd
   /// together) — one of ~25 filter dimensions `BookListRequest` supports;
   /// the rest (tags, language, ratings, comic-specific facets, etc.) aren't
-  /// exposed by this app's UI.
+  /// exposed by this app's UI. [fileType] values match `Library
+  /// .allowedFormats`'s enum (`AUDIOBOOK`, `EPUB`, `PDF`, `CBX`, `FB2`,
+  /// `MOBI`, `AZW3`) — used for the library screen's audiobook/ebook filter.
   Future<List<Book>> getLibraryBooks(
     int libraryId, {
     int page = 0,
@@ -264,6 +266,7 @@ class ApiClient {
     String? sort,
     String? dir,
     List<String>? authors,
+    List<String>? fileType,
   }) async {
     final resp = await _dio.get(
       '/app/books',
@@ -274,6 +277,7 @@ class ApiClient {
         'sort': ?sort,
         'dir': ?dir,
         'authors': ?authors,
+        'fileType': ?fileType,
       },
     );
     return _extractPageContent(resp.data).map(Book.fromJson).toList();
@@ -294,6 +298,15 @@ class ApiClient {
   Future<Book> getBook(int bookId) async {
     final resp = await _dio.get('/app/books/$bookId');
     return Book.fromJson(resp.data as Map<String, dynamic>);
+  }
+
+  /// Downloads the book's raw file (whatever format it actually is — EPUB,
+  /// PDF, etc.) to [destinationPath], via `BookController.downloadBook`
+  /// (not app-namespaced; requires the account's `canDownload()` permission
+  /// or admin). Runs through this class's own `_dio`, so the auth
+  /// interceptor attaches the bearer token automatically.
+  Future<void> downloadBookFile(int bookId, String destinationPath) async {
+    await _dio.download('/books/$bookId/download', destinationPath);
   }
 
   Future<List<Book>> searchBooks(
@@ -386,6 +399,26 @@ class ApiClient {
     await _dio.put(
       '/app/books/$bookId/progress',
       data: {'audiobookProgress': progress.toJson()},
+    );
+  }
+
+  Future<EpubProgress?> getEpubProgress(int bookId) async {
+    try {
+      final resp = await _dio.get('/app/books/$bookId/progress');
+      final data = resp.data as Map<String, dynamic>;
+      final epubProgress = data['epubProgress'];
+      if (epubProgress == null) return null;
+      return EpubProgress.fromJson(epubProgress as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<void> updateEpubProgress(int bookId, EpubProgress progress) async {
+    await _dio.put(
+      '/app/books/$bookId/progress',
+      data: {'epubProgress': progress.toJson()},
     );
   }
 

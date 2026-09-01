@@ -59,6 +59,11 @@ abstract class Book with _$Book {
     int? libraryId,
     String? narrator,
     String? description,
+    // From `AppBookSummary`/`AppBookDetail.primaryFileType` — one of
+    // AUDIOBOOK/EPUB/PDF/CBX/FB2/MOBI/AZW3 (matches Library.allowedFormats'
+    // enum). Drives which action the book detail screen shows (Play vs.
+    // Read vs. "not supported yet") and the library screen's type filter.
+    String? primaryFileType,
   }) = _Book;
 
   factory Book.fromJson(Map<String, dynamic> json) => _$BookFromJson(json);
@@ -140,6 +145,26 @@ abstract class AudiobookProgress with _$AudiobookProgress {
 
   factory AudiobookProgress.fromJson(Map<String, dynamic> json) =>
       _$AudiobookProgressFromJson(json);
+}
+
+/// From `model.dto.progress.EpubProgress`, read via
+/// `AppBookProgressResponse.epubProgress` and saved via the same
+/// (`@Deprecated` but still functional) `epubProgress` field on
+/// `UpdateProgressRequest` — mirrors how [AudiobookProgress] already uses
+/// its own deprecated sibling field rather than the newer unified
+/// `BookFileProgress`, for consistency with the existing pattern here.
+/// [cfi] (a standard EPUB Canonical Fragment Identifier) is what actually
+/// resumes reading at the right spot; [percentage] is 0.0-1.0.
+@freezed
+abstract class EpubProgress with _$EpubProgress {
+  const factory EpubProgress({
+    String? cfi,
+    String? href,
+    required double percentage,
+  }) = _EpubProgress;
+
+  factory EpubProgress.fromJson(Map<String, dynamic> json) =>
+      _$EpubProgressFromJson(json);
 }
 
 /// From `AppSeriesSummary` (`GET /api/v1/app/series`).

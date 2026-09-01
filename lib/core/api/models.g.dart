@@ -42,6 +42,7 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   libraryId: (json['libraryId'] as num?)?.toInt(),
   narrator: json['narrator'] as String?,
   description: json['description'] as String?,
+  primaryFileType: json['primaryFileType'] as String?,
 );
 
 Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
@@ -53,6 +54,7 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'libraryId': instance.libraryId,
   'narrator': instance.narrator,
   'description': instance.description,
+  'primaryFileType': instance.primaryFileType,
 };
 
 _AudiobookInfo _$AudiobookInfoFromJson(Map<String, dynamic> json) =>
@@ -134,6 +136,20 @@ Map<String, dynamic> _$AudiobookProgressToJson(_AudiobookProgress instance) =>
       'positionMs': instance.positionMs,
       'trackIndex': instance.trackIndex,
       'trackPositionMs': instance.trackPositionMs,
+      'percentage': instance.percentage,
+    };
+
+_EpubProgress _$EpubProgressFromJson(Map<String, dynamic> json) =>
+    _EpubProgress(
+      cfi: json['cfi'] as String?,
+      href: json['href'] as String?,
+      percentage: (json['percentage'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$EpubProgressToJson(_EpubProgress instance) =>
+    <String, dynamic>{
+      'cfi': instance.cfi,
+      'href': instance.href,
       'percentage': instance.percentage,
     };
 
