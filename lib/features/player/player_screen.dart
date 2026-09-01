@@ -74,7 +74,9 @@ class PlayerScreen extends ConsumerWidget {
               child: SizedBox(
                 width: 240,
                 height: 240,
-                child: BookCover(bookId: bookId),
+                // No Book object here, just a bare id -- but the player
+                // only ever plays audiobooks, so this is always accurate.
+                child: BookCover(bookId: bookId, fileType: 'AUDIOBOOK'),
               ),
             ),
           const SizedBox(height: 24),
