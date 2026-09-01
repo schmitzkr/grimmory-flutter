@@ -133,7 +133,13 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
       default:
         if (parentMediaId.startsWith('lib:')) {
           final libraryId = int.parse(parentMediaId.substring(4));
-          final books = await _apiClient.getLibraryBooks(libraryId);
+          // Only audiobooks are playable — every browse leaf here is
+          // handed straight to playFromMediaId(), which would fail
+          // (getAudiobookInfo 404s) for any other format.
+          final books = await _apiClient.getLibraryBooks(
+            libraryId,
+            fileType: const ['AUDIOBOOK'],
+          );
           return books.map(_mediaItemForBrowse).toList();
         }
         if (parentMediaId.startsWith('series:')) {

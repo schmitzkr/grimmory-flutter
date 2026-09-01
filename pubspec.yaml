@@ -46,6 +46,11 @@ dependencies:
   # alongside audio_service's own queue/mediaItem/playbackState subjects).
   rxdart: ^0.28.0
 
+  # EPUB reading — WebView + epub.js under the hood, so it parses a real
+  # local EPUB file directly rather than needing Grimmory's piecemeal
+  # spine/manifest/resource-file endpoints (/api/v1/epub/**) at all.
+  flutter_epub_viewer: ^2.0.0
+
   # Misc
   package_info_plus: ^10.2.0
   cached_network_image: ^4.0.0

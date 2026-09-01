@@ -26,9 +26,29 @@ enum LibrarySort {
   final String dir;
 }
 
+/// [fileTypes] values match `Library.allowedFormats`'s enum. `null` (All)
+/// omits the filter entirely; Ebooks lists every non-audiobook format so
+/// it still surfaces PDF/CBX/etc. content this app can't read yet —
+/// useful for seeing what's *in* the library, not just what's playable.
+enum LibraryTypeFilter {
+  all('All', null),
+  audiobooks('Audiobooks', ['AUDIOBOOK']),
+  ebooks('Ebooks', ['EPUB', 'PDF', 'CBX', 'FB2', 'MOBI', 'AZW3']);
+
+  const LibraryTypeFilter(this.label, this.fileTypes);
+
+  final String label;
+  final List<String>? fileTypes;
+}
+
 /// Query key for [libraryBooksProvider] — a record, so it gets Riverpod
 /// family caching's required value equality for free.
-typedef LibraryBooksQuery = ({int libraryId, LibrarySort sort, String? author});
+typedef LibraryBooksQuery = ({
+  int libraryId,
+  LibrarySort sort,
+  String? author,
+  LibraryTypeFilter type,
+});
 
 final libraryBooksProvider =
     FutureProvider.family<List<Book>, LibraryBooksQuery>((ref, query) async {
@@ -39,6 +59,7 @@ final libraryBooksProvider =
             sort: query.sort.sort,
             dir: query.sort.dir,
             authors: query.author != null ? [query.author!] : null,
+            fileType: query.type.fileTypes,
           );
     });
 
@@ -62,16 +83,36 @@ class LibraryDetailScreen extends ConsumerStatefulWidget {
 class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
   LibrarySort _sort = LibrarySort.dateAddedNewest;
   String? _author;
+  LibraryTypeFilter _type = LibraryTypeFilter.all;
 
   @override
   Widget build(BuildContext context) {
-    final query = (libraryId: widget.libraryId, sort: _sort, author: _author);
+    final query = (
+      libraryId: widget.libraryId,
+      sort: _sort,
+      author: _author,
+      type: _type,
+    );
     final books = ref.watch(libraryBooksProvider(query));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Library'),
         actions: [
+          PopupMenuButton<LibraryTypeFilter>(
+            tooltip: 'Show',
+            icon: Icon(
+              _type == LibraryTypeFilter.all
+                  ? Icons.category_outlined
+                  : Icons.category,
+            ),
+            initialValue: _type,
+            onSelected: (value) => setState(() => _type = value),
+            itemBuilder: (context) => [
+              for (final option in LibraryTypeFilter.values)
+                PopupMenuItem(value: option, child: Text(option.label)),
+            ],
+          ),
           if (_author != null)
             IconButton(
               tooltip: 'Clear filter',
