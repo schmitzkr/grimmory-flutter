@@ -73,5 +73,9 @@ flutter_launcher_icons:
   # NOT the same flat square used for image_path, which bakes the
   # background into the art itself (fine for the legacy/fallback icon, but
   # would double up the background if reused as the adaptive foreground).
-  adaptive_icon_background: "#1565C0"
+  adaptive_icon_background: "#3874EF"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  # Android 13+ themed icon: the system tints this layer's alpha shape with
+  # the user's wallpaper-derived color, so it must carry no color of its
+  # own -- a white silhouette on transparent, same as any adaptive layer.
+  adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"
