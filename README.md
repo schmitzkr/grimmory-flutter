@@ -1,43 +1,47 @@
 # grimmory-flutter
 
-An unofficial Android audiobook client for [Grimmory](https://grimmory.org), a
+An unofficial Android client for [Grimmory](https://grimmory.org), a
 self-hosted digital library server. Built to fill the mobile-app gap left by
 switching away from Audiobookshelf, with **Android Auto** support as the
 headline feature — something no Grimmory client offers today.
 
-Scope is deliberately narrow: **audiobooks only** (no ebook/comic reading),
-**streaming only** for now (no offline downloads), **Android only** for now
-(no iOS/CarPlay).
+Scope: **audiobooks** (streaming or offline download) and **EPUB** ebook
+reading. Other ebook/comic formats your library holds (PDF, CBX, FB2, MOBI,
+AZW3) show up in the library grid so you can see what's there, but aren't
+readable in-app yet — tracked in [#46](../../issues/46). **Android only** for
+now (no iOS/CarPlay).
 
 ## Features
 
 - Onboarding for any self-hosted Grimmory server URL (no fixed domain/tenant)
 - Local email/password login, or SSO via any OIDC provider your Grimmory
   instance is configured with
-- Browse libraries, series, and search
-- Full playback: single- and multi-file audiobooks, resume-from-progress,
-  autosaved progress, adjustable speed, sleep timer, chapter/track navigation
-- Android Auto: browse your libraries and series and start playback from the
-  car's head unit
+- Browse libraries, series, authors, and shelves; full-text search
+- Filter a library down to just Audiobooks or just Ebooks
+- Full audiobook playback: single- and multi-file books, resume-from-progress,
+  autosaved progress, adjustable speed, sleep timer, chapter/track navigation,
+  bookmarks
+- EPUB reading with a chapter list and synced reading progress
+- Offline downloads for audiobooks
+- Android Auto: browse Continue Listening, libraries, and series, and start
+  playback from the car's head unit
 
 ## Status
 
-Functional end-to-end, but **not yet verified against a live Grimmory
-instance** — Grimmory's REST API is explicitly marked unstable, and several
-request/response shapes used here (the OIDC callback contract, the
-per-book progress endpoint, chapter-vs-track metadata shape) are
-best-guess placeholders pending that verification. See inline `NOTE:`/
-unconfirmed-endpoint comments in `lib/core/api/` and `docs/plan.md`'s M0
-section for specifics.
+Functional and tested against a live Grimmory instance — Grimmory's REST API
+is explicitly marked unstable and undocumented for its actual response
+shapes, so several real bugs (wrong field names, wrong ID types, a
+server-side lazy-loading crash on one endpoint) were found and fixed this
+way rather than by guessing. See `docs/plan.md` (§5–§7) for the specifics of
+what was wrong and how it was confirmed/fixed.
 
 See `docs/plan.md` for the full design and milestone breakdown (M0 spike →
 M1 auth/browsing → M2 playback → M3 Android Auto → M4 polish/release).
 
-**Known gaps**: no bookmarks UI yet (API support exists in `ApiClient`, no
-screen built), no "continue listening" entry in the Android Auto browse
-tree (no confirmed API for it), no offline downloads (by design, see
-above), Android Auto browse tree hasn't been tested against a real head
-unit or the Desktop Head Unit emulator yet.
+**Known gaps**: in-app reading is EPUB-only for now (see scope above and
+[#46](../../issues/46)), and the Android Auto browse tree hasn't been
+verified against a real head unit or the Desktop Head Unit emulator yet
+(see Testing Android Auto below).
 
 ## Getting started
 
@@ -60,6 +64,10 @@ flutter pub run build_runner build --delete-conflicting-outputs  # regenerate fr
 flutter analyze
 flutter test
 ```
+
+Every PR runs `.github/workflows/pr-check.yml`: format/analyze/test, a debug
+Android build, and an [OSV-Scanner](https://google.github.io/osv-scanner/)
+dependency vulnerability check.
 
 Signed release builds go through `.github/workflows/release.yml`
 (`workflow_dispatch`, tags `vX.Y.Z`, attaches the APK to a GitHub Release) —
