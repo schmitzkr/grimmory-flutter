@@ -20,7 +20,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.9'
+          flutter-version: '3.47.2'
           cache: true
 
       - run: flutter pub get
@@ -65,7 +65,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: /opt/hostedtoolcache/android-sdk
-          key: android-sdk-35-buildtools-35.0.0
+          key: android-sdk-37-buildtools-37.0.0
 
       - name: Set up Android SDK
         run: |
@@ -80,12 +80,12 @@ jobs:
             unzip -q cmdline-tools.zip -d "$SDK_DIR/cmdline-tools"
             mv "$SDK_DIR/cmdline-tools/cmdline-tools" "$SDK_DIR/cmdline-tools/latest"
             yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-            "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+            "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-37" "build-tools;37.0.0"
           fi
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.9'
+          flutter-version: '3.47.2'
           cache: true
 
       - run: flutter pub get
