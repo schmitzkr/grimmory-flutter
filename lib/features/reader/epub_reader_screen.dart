@@ -14,7 +14,11 @@ import '../../core/providers.dart';
 /// using Grimmory's piecemeal spine/manifest/resource-file endpoints
 /// (`/api/v1/epub/**`), which this package has no use for.
 class EpubReaderScreen extends ConsumerStatefulWidget {
-  const EpubReaderScreen({required this.bookId, required this.title, super.key});
+  const EpubReaderScreen({
+    required this.bookId,
+    required this.title,
+    super.key,
+  });
 
   final int bookId;
   final String title;

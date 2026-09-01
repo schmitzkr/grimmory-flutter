@@ -36,7 +36,9 @@ class BookDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(book.value?.primaryFileType == 'AUDIOBOOK' ? 'Audiobook' : 'Book'),
+        title: Text(
+          book.value?.primaryFileType == 'AUDIOBOOK' ? 'Audiobook' : 'Book',
+        ),
       ),
       body: book.when(
         data: (book) => _BookDetailBody(book: book),
@@ -80,7 +82,11 @@ class _BookDetailBody extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       children: [
         Center(
-          child: SizedBox(width: 200, height: 200, child: BookCover(bookId: book.id)),
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: BookCover(bookId: book.id),
+          ),
         ),
         const SizedBox(height: 16),
         Text(
@@ -118,7 +124,9 @@ class _BookDetailBody extends ConsumerWidget {
               // source, start playing) — the player screen reflects
               // loading/now-playing state reactively via the audio
               // handler's own streams.
-              ref.read(audioHandlerProvider).playFromMediaId(book.id.toString());
+              ref
+                  .read(audioHandlerProvider)
+                  .playFromMediaId(book.id.toString());
               context.push('/player');
             },
             icon: const Icon(Icons.play_arrow),
@@ -148,7 +156,10 @@ class _BookDetailBody extends ConsumerWidget {
               children: [
                 if (info.folderBased && info.tracks.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Tracks', style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    'Tracks',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   for (final track in info.tracks)
                     ListTile(
