@@ -23,12 +23,7 @@ val hasReleaseSigning =
 
 android {
     namespace = "is.schmitzkr.grimmory"
-    // Hardcoded rather than flutter.compileSdkVersion (still 36 as of
-    // Flutter 3.47.2) -- flutter_secure_storage 11.x requires compiling
-    // against SDK 37. Bump this if a future Flutter release's own default
-    // catches up, but don't drop below whatever the newest dependency
-    // actually needs.
-    compileSdk = 37
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
