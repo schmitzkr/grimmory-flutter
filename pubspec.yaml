@@ -11,10 +11,10 @@ dependencies:
     sdk: flutter
 
   # State management
-  flutter_riverpod: ^3.3.2
+  flutter_riverpod: ^3.4.2
 
   # Navigation
-  go_router: ^17.3.0
+  go_router: ^18.0.0
 
   # HTTP
   dio: ^5.8.0+1
@@ -30,7 +30,7 @@ dependencies:
   # pre-exchanged token. No oidc_default_store — that's only needed to back
   # OidcUserManager's own session/token store, unused here.
   oidc: ^0.13.0
-  app_links: ^6.4.1
+  app_links: ^7.2.1
   url_launcher: ^6.3.0
 
   # Models
@@ -39,8 +39,8 @@ dependencies:
 
   # Background audio + Android Auto (MediaBrowserService) surface
   audio_service: ^0.18.15
-  just_audio: ^0.9.42
-  audio_session: ^0.1.21
+  just_audio: ^0.10.6
+  audio_session: ^0.2.4
   # Already a transitive dep of audio_service — declared directly since the
   # audio handler imports BehaviorSubject itself (for chapter-list state
   # alongside audio_service's own queue/mediaItem/playbackState subjects).
@@ -53,7 +53,7 @@ dependencies:
 
   # Misc
   package_info_plus: ^10.2.0
-  cached_network_image: ^3.4.1
+  cached_network_image: ^4.0.0
   cupertino_icons: ^1.0.8
   # Private, permission-free storage location for offline audiobook downloads
   path_provider: ^2.1.5
@@ -63,8 +63,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
-  build_runner: ^2.4.14
-  freezed: ^3.1.0
+  build_runner: ^2.16.0
+  freezed: ^4.0.1
   json_serializable: ^6.9.3
 
 flutter:
@@ -78,5 +78,9 @@ flutter_launcher_icons:
   # NOT the same flat square used for image_path, which bakes the
   # background into the art itself (fine for the legacy/fallback icon, but
   # would double up the background if reused as the adaptive foreground).
-  adaptive_icon_background: "#1565C0"
+  adaptive_icon_background: "#3874EF"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  # Android 13+ themed icon: the system tints this layer's alpha shape with
+  # the user's wallpaper-derived color, so it must carry no color of its
+  # own -- a white silhouette on transparent, same as any adaptive layer.
+  adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"
