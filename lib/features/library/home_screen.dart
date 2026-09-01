@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/update_provider.dart';
 import '../browse/authors_screen.dart';
 import '../browse/search_screen.dart';
 import '../browse/series_screen.dart';
@@ -47,7 +48,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: IndexedStack(index: _index, children: _tabs),
+      body: Column(
+        children: [
+          const UpdateBanner(),
+          Expanded(
+            child: IndexedStack(index: _index, children: _tabs),
+          ),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (index) => setState(() => _index = index),

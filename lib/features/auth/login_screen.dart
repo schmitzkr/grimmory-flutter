@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
+import '../../core/update_provider.dart';
 import 'auth_provider.dart';
 import 'oidc_login_controller.dart';
 
@@ -66,67 +67,78 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sign in')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _usernameController,
-              autocorrect: false,
-              decoration: const InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
-              onSubmitted: (_) => _login(),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: isLoading ? null : _login,
-              child: authState.isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Sign in'),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: isLoading ? null : _signInWithSso,
-                    child: oidcState.isLoading
+      body: Column(
+        children: [
+          const UpdateBanner(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _usernameController,
+                    autocorrect: false,
+                    decoration: const InputDecoration(
+                      labelText: 'Username',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _login(),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: isLoading ? null : _login,
+                    child: authState.isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Text(
-                            oidcConfigured ? 'Sign in with SSO' : 'Set up SSO',
-                          ),
+                        : const Text('Sign in'),
                   ),
-                ),
-                if (oidcConfigured)
-                  IconButton(
-                    tooltip: 'SSO settings',
-                    icon: const Icon(Icons.settings),
-                    onPressed: () => context.push('/sso-settings'),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: isLoading ? null : _signInWithSso,
+                          child: oidcState.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  oidcConfigured
+                                      ? 'Sign in with SSO'
+                                      : 'Set up SSO',
+                                ),
+                        ),
+                      ),
+                      if (oidcConfigured)
+                        IconButton(
+                          tooltip: 'SSO settings',
+                          icon: const Icon(Icons.settings),
+                          onPressed: () => context.push('/sso-settings'),
+                        ),
+                    ],
                   ),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

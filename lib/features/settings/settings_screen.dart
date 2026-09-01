@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
+import '../../core/update_provider.dart';
 import '../auth/auth_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -25,6 +26,12 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.download_outlined),
             title: const Text('Downloads'),
             onTap: () => context.push('/downloads'),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.new_releases_outlined),
+            title: const Text("What's new"),
+            onTap: () => showWhatsNewSheet(context, ref),
           ),
           const Divider(),
           ListTile(
