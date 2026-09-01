@@ -13,12 +13,19 @@ class BookCover extends ConsumerWidget {
     this.width,
     this.height,
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.fileType,
   });
 
   final int bookId;
   final double? width;
   final double? height;
   final BorderRadius borderRadius;
+
+  /// [Book.primaryFileType] — picks the fallback icon shown while no cover
+  /// art is available. `null` (or anything other than `'AUDIOBOOK'`) gets
+  /// the generic book icon rather than headphones, since this widget used
+  /// to show headphones unconditionally even for EPUBs.
+  final String? fileType;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,7 +59,7 @@ class BookCover extends ConsumerWidget {
   Widget _placeholder(BuildContext context) => ColoredBox(
     color: Theme.of(context).colorScheme.surfaceContainerHighest,
     child: Icon(
-      Icons.headphones,
+      fileType == 'AUDIOBOOK' ? Icons.headphones : Icons.menu_book,
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     ),
   );

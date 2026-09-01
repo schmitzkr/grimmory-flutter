@@ -52,7 +52,12 @@ class BookGridTile extends ConsumerWidget {
               aspectRatio: 1,
               child: Stack(
                 children: [
-                  Positioned.fill(child: BookCover(bookId: book.id)),
+                  Positioned.fill(
+                    child: BookCover(
+                      bookId: book.id,
+                      fileType: book.primaryFileType,
+                    ),
+                  ),
                   if (downloaded)
                     Positioned(
                       right: 6,

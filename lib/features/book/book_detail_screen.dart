@@ -85,7 +85,7 @@ class _BookDetailBody extends ConsumerWidget {
           child: SizedBox(
             width: 200,
             height: 200,
-            child: BookCover(bookId: book.id),
+            child: BookCover(bookId: book.id, fileType: book.primaryFileType),
           ),
         ),
         const SizedBox(height: 16),
