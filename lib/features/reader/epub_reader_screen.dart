@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
@@ -13,6 +14,12 @@ import '../../core/providers.dart';
 /// so this downloads the book's raw file once per session rather than
 /// using Grimmory's piecemeal spine/manifest/resource-file endpoints
 /// (`/api/v1/epub/**`), which this package has no use for.
+///
+/// Loaded via `EpubSource.fromData` (raw bytes) rather than
+/// `EpubSource.fromFile` — the latter's `File` parameter type comes from a
+/// `dart.library.io` conditional export that the analyzer resolves to the
+/// package's web stub even in this Android-only app, so a real `dart:io`
+/// `File` fails static type-checking against it.
 class EpubReaderScreen extends ConsumerStatefulWidget {
   const EpubReaderScreen({
     required this.bookId,
@@ -29,7 +36,7 @@ class EpubReaderScreen extends ConsumerStatefulWidget {
 
 class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   final _controller = EpubController();
-  File? _file;
+  Uint8List? _bytes;
   String? _initialCfi;
   List<EpubChapter> _chapters = [];
   Object? _error;
@@ -46,11 +53,12 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       final tempDir = await getTemporaryDirectory();
       final path = '${tempDir.path}/epub_${widget.bookId}.epub';
       await apiClient.downloadBookFile(widget.bookId, path);
+      final bytes = await File(path).readAsBytes();
       final progress = await apiClient.getEpubProgress(widget.bookId);
 
       if (!mounted) return;
       setState(() {
-        _file = File(path);
+        _bytes = bytes;
         _initialCfi = progress?.cfi;
       });
     } catch (e) {
@@ -99,7 +107,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       );
     }
 
-    if (_file == null) {
+    if (_bytes == null) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.title)),
         body: const Center(child: CircularProgressIndicator()),
@@ -119,7 +127,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       ),
       body: EpubViewer(
         epubController: _controller,
-        epubSource: EpubSource.fromFile(_file!),
+        epubSource: EpubSource.fromData(_bytes!),
         initialCfi: _initialCfi,
         onChaptersLoaded: (chapters) {
           if (mounted) setState(() => _chapters = chapters);
