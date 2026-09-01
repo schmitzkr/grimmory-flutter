@@ -67,21 +67,18 @@ jobs:
           path: /opt/hostedtoolcache/android-sdk
           key: android-sdk-35-buildtools-35.0.0
 
-      - name: Set up Android SDK
+      # Point at the same path "Cache Android SDK" above targets, so a cache
+      # hit is actually reused instead of setup-android re-downloading into
+      # its own default location.
+      - name: Point Android SDK at the cached path
         run: |
-          SDK_DIR="/opt/hostedtoolcache/android-sdk"
-          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
-          echo "$SDK_DIR/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          echo "$SDK_DIR/platform-tools" >> "$GITHUB_PATH"
-          if [ ! -f "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ]; then
-            mkdir -p "$SDK_DIR/cmdline-tools"
-            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
-            unzip -q cmdline-tools.zip -d "$SDK_DIR/cmdline-tools"
-            mv "$SDK_DIR/cmdline-tools/cmdline-tools" "$SDK_DIR/cmdline-tools/latest"
-            yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-            "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-          fi
+          echo "ANDROID_HOME=/opt/hostedtoolcache/android-sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=/opt/hostedtoolcache/android-sdk" >> "$GITHUB_ENV"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
       - uses: subosito/flutter-action@v2
         with:
