@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
+import '../downloads/download_storage.dart';
 
 /// Wraps a single [AudioPlayer] with Grimmory's streaming endpoints and
 /// exposes it as an [AudioHandler] — this is what turns playback into a
@@ -36,6 +37,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
 
   final ApiClient _apiClient;
   final AudioPlayer _player = AudioPlayer();
+  final DownloadStorage _downloadStorage = DownloadStorage();
 
   int? _currentBookId;
   int? get currentBookId => _currentBookId;
@@ -43,6 +45,11 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   bool _folderBased = false;
   List<AudiobookTrack> _tracks = [];
   int _totalDurationMs = 0;
+  // Whether the currently loaded book is playing from local files rather
+  // than streaming — set once per loadBook() call from DownloadStorage, not
+  // re-checked per request, so a download started mid-playback doesn't
+  // switch sources out from under an active stream.
+  bool _isDownloaded = false;
 
   /// Chapter markers for the currently loaded book — not part of the base
   /// [AudioHandler] interface (audio_service has no chapter concept), so
@@ -168,16 +175,48 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   /// progress (if any). Called directly by the book detail screen's Play
   /// button (via [playFromMediaId]), not just from Android Auto's browse
   /// tree — this is the one entry point for starting playback on a book.
+  ///
+  /// If [bookId] has been downloaded (`DownloadStorage.isDownloaded`), this
+  /// needs zero network calls: book/track metadata comes from the cached
+  /// `record.json`/`info.json` instead of `getBook`/`getAudiobookInfo`, and
+  /// [_buildAudioSource] plays the local files instead of streaming.
   Future<void> loadBook(int bookId) async {
     _stopProgressTimer();
     await _saveProgressNow();
 
-    final results = await Future.wait([
-      _apiClient.getBook(bookId),
-      _apiClient.getAudiobookInfo(bookId),
-    ]);
-    final book = results[0] as Book;
-    final info = results[1] as AudiobookInfo;
+    _isDownloaded = await _downloadStorage.isDownloaded(bookId);
+    final Book book;
+    final AudiobookInfo info;
+    if (_isDownloaded) {
+      final record = await _downloadStorage.readRecord(bookId);
+      final cachedInfo = await _downloadStorage.readCachedInfo(bookId);
+      if (record != null && cachedInfo != null) {
+        book = Book(
+          id: bookId,
+          title: record.title,
+          authors: record.authors,
+          narrator: cachedInfo.narrator,
+        );
+        info = cachedInfo;
+      } else {
+        // Shouldn't happen (isDownloaded() checks record.json's presence),
+        // but fall back to streaming rather than crash on a corrupt download.
+        _isDownloaded = false;
+        final results = await Future.wait([
+          _apiClient.getBook(bookId),
+          _apiClient.getAudiobookInfo(bookId),
+        ]);
+        book = results[0] as Book;
+        info = results[1] as AudiobookInfo;
+      }
+    } else {
+      final results = await Future.wait([
+        _apiClient.getBook(bookId),
+        _apiClient.getAudiobookInfo(bookId),
+      ]);
+      book = results[0] as Book;
+      info = results[1] as AudiobookInfo;
+    }
 
     _currentBookId = bookId;
     _folderBased = info.folderBased;
@@ -190,7 +229,11 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     try {
       progress = await _apiClient.getAudiobookProgress(bookId);
     } catch (_) {
-      // Best-effort — don't block playback on a progress-fetch failure.
+      // Best-effort — fall back to the locally cached position (if any)
+      // for a downloaded book rather than always restarting from zero.
+      if (_isDownloaded) {
+        progress = await _downloadStorage.readLocalProgress(bookId);
+      }
     }
 
     await _loadSource(
@@ -230,7 +273,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
         : [_mediaItemForBook(book, info)];
     queue.add(items);
 
-    final source = _buildAudioSource(book, info);
+    final source = await _buildAudioSource(book, info);
     await _player.setAudioSource(
       source,
       initialIndex: info.folderBased ? initialIndex : null,
@@ -241,7 +284,41 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     mediaItem.add(items[startIndex]);
   }
 
-  AudioSource _buildAudioSource(Book book, AudiobookInfo info) {
+  Future<AudioSource> _buildAudioSource(Book book, AudiobookInfo info) async {
+    if (_isDownloaded) {
+      final local = await _buildLocalAudioSource(book, info);
+      if (local != null) return local;
+      // A local file went missing despite isDownloaded() being true (e.g.
+      // storage tampered with outside the app) — fall back to streaming
+      // rather than fail playback outright.
+      _isDownloaded = false;
+    }
+    return _buildStreamingAudioSource(book, info);
+  }
+
+  /// Returns null if any expected local file is missing, signaling the
+  /// caller to fall back to streaming instead of failing outright.
+  Future<AudioSource?> _buildLocalAudioSource(
+    Book book,
+    AudiobookInfo info,
+  ) async {
+    if (info.folderBased && info.tracks.isNotEmpty) {
+      final children = <AudioSource>[];
+      for (final track in info.tracks) {
+        final path = await _downloadStorage.localTrackPath(
+          book.id,
+          track.index,
+        );
+        if (path == null) return null;
+        children.add(AudioSource.uri(Uri.file(path)));
+      }
+      return ConcatenatingAudioSource(children: children);
+    }
+    final path = await _downloadStorage.localSingleFilePath(book.id);
+    return path == null ? null : AudioSource.uri(Uri.file(path));
+  }
+
+  AudioSource _buildStreamingAudioSource(Book book, AudiobookInfo info) {
     final headers = _apiClient.authHeaders;
     if (!info.folderBased || info.tracks.isEmpty) {
       return AudioSource.uri(
@@ -342,26 +419,34 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> _saveProgressNow() async {
     final bookId = _currentBookId;
     if (bookId == null) return;
+
+    final absolutePositionMs = _toAbsoluteMs(_player.position);
+    final percentage = _totalDurationMs > 0
+        ? (absolutePositionMs / _totalDurationMs).clamp(0.0, 1.0)
+        : 0.0;
+    final progress = AudiobookProgress(
+      positionMs: absolutePositionMs,
+      trackIndex: _folderBased ? _player.currentIndex : null,
+      trackPositionMs: _folderBased ? _player.position.inMilliseconds : null,
+      percentage: percentage,
+    );
+
+    if (_isDownloaded) {
+      try {
+        await _downloadStorage.writeLocalProgress(bookId, progress);
+      } catch (_) {
+        // Best-effort — a failed local cache write shouldn't block the
+        // server save attempt below.
+      }
+    }
+
     try {
-      final absolutePositionMs = _toAbsoluteMs(_player.position);
-      final percentage = _totalDurationMs > 0
-          ? (absolutePositionMs / _totalDurationMs).clamp(0.0, 1.0)
-          : 0.0;
-      await _apiClient.updateAudiobookProgress(
-        bookId,
-        AudiobookProgress(
-          positionMs: absolutePositionMs,
-          trackIndex: _folderBased ? _player.currentIndex : null,
-          trackPositionMs: _folderBased
-              ? _player.position.inMilliseconds
-              : null,
-          percentage: percentage,
-        ),
-      );
+      await _apiClient.updateAudiobookProgress(bookId, progress);
     } catch (_) {
       // Best-effort — a dropped progress save shouldn't interrupt playback.
       // The next periodic tick (or the final save on pause/stop) will
-      // usually catch up.
+      // usually catch up once connectivity returns; only the latest
+      // position matters, not a history of every missed update.
     }
   }
 
@@ -482,6 +567,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     _stopProgressTimer();
     await _player.stop();
     _currentBookId = null;
+    _isDownloaded = false;
     chaptersSubject.add([]);
     await super.stop();
   }

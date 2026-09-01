@@ -10,6 +10,7 @@ import '../features/book/book_detail_screen.dart';
 import '../features/browse/author_detail_screen.dart';
 import '../features/browse/magic_shelf_detail_screen.dart';
 import '../features/browse/series_detail_screen.dart';
+import '../features/downloads/downloads_screen.dart';
 import '../features/library/home_screen.dart';
 import '../features/library/library_detail_screen.dart';
 import '../features/onboarding/server_url_screen.dart';
@@ -103,6 +104,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/downloads',
+        builder: (context, state) => const DownloadsScreen(),
       ),
     ],
   );

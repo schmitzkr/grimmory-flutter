@@ -6,6 +6,8 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_cover.dart';
+import '../downloads/download_manager.dart';
+import '../downloads/download_models.dart';
 import '../player/playback_provider.dart';
 
 final bookDetailProvider = FutureProvider.family<(Book, AudiobookInfo), int>((
@@ -88,6 +90,8 @@ class BookDetailScreen extends ConsumerWidget {
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Play'),
               ),
+              const SizedBox(height: 8),
+              _DownloadButton(book: book),
               if (info.folderBased && info.tracks.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Text('Tracks', style: Theme.of(context).textTheme.titleMedium),
@@ -136,6 +140,55 @@ class BookDetailScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _DownloadButton extends ConsumerWidget {
+  const _DownloadButton({required this.book});
+
+  final Book book;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Rebuilds whenever the download registry changes for any book, not
+    // just this one, but that's a small in-memory map — cheap either way.
+    ref.watch(downloadManagerProvider);
+    final notifier = ref.read(downloadManagerProvider.notifier);
+    final record = notifier.recordFor(book.id);
+
+    switch (record?.status) {
+      case null:
+        return OutlinedButton.icon(
+          onPressed: () => notifier.download(book),
+          icon: const Icon(Icons.download_outlined),
+          label: const Text('Download for offline'),
+        );
+      case DownloadStatus.queued:
+      case DownloadStatus.downloading:
+        return Column(
+          children: [
+            LinearProgressIndicator(value: record!.progress),
+            const SizedBox(height: 4),
+            OutlinedButton.icon(
+              onPressed: () => notifier.cancel(book.id),
+              icon: const Icon(Icons.close),
+              label: const Text('Cancel download'),
+            ),
+          ],
+        );
+      case DownloadStatus.complete:
+        return OutlinedButton.icon(
+          onPressed: () => notifier.delete(book.id),
+          icon: const Icon(Icons.delete_outline),
+          label: const Text('Downloaded — remove'),
+        );
+      case DownloadStatus.failed:
+        return OutlinedButton.icon(
+          onPressed: () => notifier.download(book),
+          icon: const Icon(Icons.refresh),
+          label: const Text('Download failed — retry'),
+        );
+    }
   }
 }
 

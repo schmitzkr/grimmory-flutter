@@ -50,6 +50,8 @@ dependencies:
   package_info_plus: ^10.2.0
   cached_network_image: ^3.4.1
   cupertino_icons: ^1.0.8
+  # Private, permission-free storage location for offline audiobook downloads
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
