@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../player/mini_player.dart';
 
 /// EPUB rendering is entirely client-side via `flutter_epub_viewer`
 /// (WebView + epub.js), which parses a real local EPUB file directly —
@@ -192,6 +193,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         },
         onRelocated: _saveProgress,
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 

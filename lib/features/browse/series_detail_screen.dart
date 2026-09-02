@@ -5,6 +5,7 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
+import '../player/mini_player.dart';
 
 final seriesBooksProvider = FutureProvider.family<List<Book>, String>((
   ref,
@@ -54,6 +55,7 @@ class SeriesDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 }

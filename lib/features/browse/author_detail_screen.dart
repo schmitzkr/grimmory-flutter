@@ -5,6 +5,7 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
+import '../player/mini_player.dart';
 
 final authorDetailProvider = FutureProvider.family<Author, int>((
   ref,
@@ -111,6 +112,7 @@ class _AuthorBooks extends ConsumerWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 }

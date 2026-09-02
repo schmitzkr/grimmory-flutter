@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../player/mini_player.dart';
 import 'download_manager.dart';
 import 'download_models.dart';
 
@@ -61,6 +62,7 @@ class DownloadsScreen extends ConsumerWidget {
         error: (error, _) =>
             const Center(child: Text('Could not load downloads.')),
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 }

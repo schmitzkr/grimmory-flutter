@@ -5,6 +5,7 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
+import '../player/mini_player.dart';
 
 final magicShelfBooksProvider = FutureProvider.family<List<Book>, int>((
   ref,
@@ -59,6 +60,7 @@ class MagicShelfDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 }
