@@ -36,6 +36,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No icon changes to commit"
           else
-            git commit -m "chore: regenerate launcher icons"
+            git commit -m "chore(icons): regenerate launcher icons"
             git push
           fi
