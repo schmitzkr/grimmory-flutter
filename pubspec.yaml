@@ -73,12 +73,13 @@ flutter:
 flutter_launcher_icons:
   android: true
   image_path: "assets/icon/icon.png"
-  # Adaptive icon (Android 8+): background color + a transparent-background
-  # foreground glyph inset in the safe zone, composited by the launcher —
-  # NOT the same flat square used for image_path, which bakes the
-  # background into the art itself (fine for the legacy/fallback icon, but
-  # would double up the background if reused as the adaptive foreground).
-  adaptive_icon_background: "#3874EF"
+  # Adaptive icon (Android 8+): background layer + a transparent-background
+  # foreground glyph inset in the safe zone, composited by the launcher.
+  # Background is fully transparent so the home-screen icon is just the
+  # book glyph floating over the wallpaper, not a colored square/circle
+  # behind it — both image_path (above) and this layer are transparent-
+  # background PNGs now, no baked-in fill color anywhere.
+  adaptive_icon_background: "#00000000"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
   # Android 13+ themed icon: the system tints this layer's alpha shape with
   # the user's wallpaper-derived color, so it must carry no color of its
