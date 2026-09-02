@@ -1,0 +1,41 @@
+name: Regenerate Launcher Icons
+
+# One-off utility: flutter_launcher_icons is a manual generator, not a build
+# step — changing assets/icon/*.png or the flutter_launcher_icons config in
+# pubspec.yaml has no effect until `dart run flutter_launcher_icons` is run
+# and its output (android/app/src/main/res/**) is committed. That step has
+# been missed multiple times in this repo's history, silently no-op'ing
+# icon changes. Run this manually (workflow_dispatch) on whatever branch
+# has icon-related changes; it regenerates and commits the output back.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run flutter_launcher_icons
+
+      - name: Commit regenerated icons
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add android/app/src/main/res
+          if git diff --cached --quiet; then
+            echo "No icon changes to commit"
+          else
+            git commit -m "chore: regenerate launcher icons"
+            git push
+          fi
