@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/update_provider.dart';
 import '../auth/auth_provider.dart';
+import '../player/mini_player.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -60,6 +61,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 }

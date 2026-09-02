@@ -5,6 +5,7 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
+import '../player/mini_player.dart';
 
 /// A sort choice pairs a server-recognized [sort] key with a [dir]ection —
 /// see `ApiClient.getLibraryBooks`'s doc comment for the full confirmed set
@@ -173,6 +174,7 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 

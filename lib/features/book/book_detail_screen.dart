@@ -8,6 +8,7 @@ import '../../core/providers.dart';
 import '../../core/widgets/book_cover.dart';
 import '../downloads/download_manager.dart';
 import '../downloads/download_models.dart';
+import '../player/mini_player.dart';
 import '../player/playback_provider.dart';
 
 final bookProvider = FutureProvider.family<Book, int>((ref, bookId) async {
@@ -60,6 +61,7 @@ class BookDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const MiniPlayer(),
     );
   }
 }
@@ -77,6 +79,17 @@ class _BookDetailBody extends ConsumerWidget {
         ? ref.watch(audiobookInfoProvider(book.id))
         : null;
     final narrator = audiobookInfo?.value?.narrator ?? book.narrator;
+
+    // Whether *this* book is the one currently loaded in the audio handler —
+    // without this, the Play button always says "Play" even while this
+    // exact book is already playing, with nothing on the page indicating
+    // it's the one making sound.
+    final currentMediaItem = ref.watch(currentMediaItemProvider).value;
+    final isCurrentBook =
+        isAudiobook && currentMediaItem?.extras?['bookId'] == book.id;
+    final isPlaying =
+        isCurrentBook &&
+        (ref.watch(playbackStateProvider).value?.playing ?? false);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -117,20 +130,53 @@ class _BookDetailBody extends ConsumerWidget {
           ),
         const SizedBox(height: 24),
         if (isAudiobook) ...[
+          if (isCurrentBook)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.graphic_eq,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    isPlaying ? 'Now playing' : 'Paused',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           FilledButton.icon(
             onPressed: () {
-              // Fire-and-forget: navigate immediately rather than blocking
-              // the tap on the full load (fetch metadata, build the audio
-              // source, start playing) — the player screen reflects
-              // loading/now-playing state reactively via the audio
-              // handler's own streams.
-              ref
-                  .read(audioHandlerProvider)
-                  .playFromMediaId(book.id.toString());
-              context.push('/player');
+              final handler = ref.read(audioHandlerProvider);
+              if (isCurrentBook) {
+                // Already loaded -- just toggle in place rather than
+                // reissuing playFromMediaId(), which would reload the
+                // source from scratch.
+                isPlaying ? handler.pause() : handler.play();
+              } else {
+                // Fire-and-forget: navigate immediately rather than
+                // blocking the tap on the full load (fetch metadata, build
+                // the audio source, start playing) — the player screen
+                // reflects loading/now-playing state reactively via the
+                // audio handler's own streams.
+                handler.playFromMediaId(book.id.toString());
+                context.push('/player');
+              }
             },
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Play'),
+            icon: Icon(
+              isCurrentBook
+                  ? (isPlaying ? Icons.pause : Icons.play_arrow)
+                  : Icons.play_arrow,
+            ),
+            label: Text(
+              isCurrentBook ? (isPlaying ? 'Pause' : 'Resume') : 'Play',
+            ),
           ),
           const SizedBox(height: 8),
           _DownloadButton(book: book),
