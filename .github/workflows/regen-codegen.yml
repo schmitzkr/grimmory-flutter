@@ -1,0 +1,43 @@
+name: Regenerate Code Generation Output
+
+# One-off utility: freezed/json_serializable's generated *.freezed.dart and
+# *.g.dart files are committed to the repo (not produced by CI at build
+# time), so any change to a @freezed model has to be regenerated and
+# committed by hand via `dart run build_runner build`. This dev
+# environment's local Flutter can't run that anymore (Dart SDK fell behind
+# pubspec.yaml's requirements after the toolchain bump) -- same gap
+# regen-launcher-icons.yml exists to cover for flutter_launcher_icons.
+# Run manually (workflow_dispatch) on whatever branch has a model change
+# pending regeneration; it regenerates and commits the output back.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Commit regenerated code
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- '*.freezed.dart' '*.g.dart'
+          if git diff --cached --quiet; then
+            echo "No generated-code changes to commit"
+          else
+            git commit -m "chore: regenerate freezed/json_serializable output"
+            git push
+          fi
