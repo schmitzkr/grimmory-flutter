@@ -1,0 +1,91 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+
+/// Adds tap-to-turn-page zones and a swipe-down gesture on top of
+/// [child] (the EPUB WebView) without disturbing its own swipe-to-turn-page
+/// and text-selection handling.
+///
+/// Deliberately built on [Listener] (raw pointer routing) rather than a
+/// [GestureDetector]/[PanGestureRecognizer]: `flutter_epub_viewer`'s
+/// underlying `InAppWebView` already registers its own
+/// `VerticalDragGestureRecognizer` to let vertical drags reach the WebView
+/// platform view, and a second recognizer of the same kind fighting it in
+/// the gesture arena would be unreliable. `Listener` never enters that
+/// arena — with `HitTestBehavior.translucent` it just observes raw pointer
+/// events alongside whatever the WebView does with them, so the existing
+/// swipe/selection behavior is untouched.
+class EpubGestureOverlay extends StatefulWidget {
+  const EpubGestureOverlay({
+    required this.child,
+    required this.onTapLeft,
+    required this.onTapRight,
+    required this.onSwipeDown,
+    super.key,
+  });
+
+  final Widget child;
+  final VoidCallback onTapLeft;
+  final VoidCallback onTapRight;
+  final VoidCallback onSwipeDown;
+
+  @override
+  State<EpubGestureOverlay> createState() => _EpubGestureOverlayState();
+}
+
+class _EpubGestureOverlayState extends State<EpubGestureOverlay> {
+  Offset? _downPosition;
+  int? _downTimeMs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.child,
+        Positioned.fill(
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (event) {
+              _downPosition = event.position;
+              _downTimeMs = event.timeStamp.inMilliseconds;
+            },
+            onPointerUp: (event) {
+              final downPosition = _downPosition;
+              final downTimeMs = _downTimeMs;
+              _downPosition = null;
+              _downTimeMs = null;
+              if (downPosition == null || downTimeMs == null) return;
+
+              final delta = event.position - downPosition;
+              final elapsedMs = event.timeStamp.inMilliseconds - downTimeMs;
+
+              // Swipe down: mostly vertical, downward, far enough, and
+              // quick enough that a deliberate slow scroll through content
+              // (were this book ever in scrolled flow) doesn't misfire.
+              if (delta.dy > 80 &&
+                  delta.dy.abs() > delta.dx.abs() * 1.5 &&
+                  elapsedMs < 600) {
+                widget.onSwipeDown();
+                return;
+              }
+
+              // Tap: minimal movement, quick — anything else (a real
+              // horizontal page-turn swipe, a text-selection drag) is left
+              // alone for the WebView's own handling to have already seen.
+              if (delta.distance < 12 && elapsedMs < 400) {
+                final width = context.size?.width ?? 0;
+                if (width <= 0) return;
+                if (downPosition.dx < width * 0.3) {
+                  widget.onTapLeft();
+                } else if (downPosition.dx > width * 0.7) {
+                  widget.onTapRight();
+                }
+                // Middle third: left for the page's own content (links,
+                // text selection) — no page-turn action here.
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}

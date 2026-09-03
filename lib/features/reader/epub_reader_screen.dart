@@ -8,7 +8,9 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../bookmarks/epub_bookmarks_sheet.dart';
 import '../player/mini_player.dart';
+import 'epub_gesture_overlay.dart';
 
 /// EPUB rendering is entirely client-side via `flutter_epub_viewer`
 /// (WebView + epub.js), which parses a real local EPUB file directly —
@@ -70,6 +72,10 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   final _controller = EpubController();
   Uint8List? _bytes;
   String? _initialCfi;
+  // Updated on every onRelocated callback -- the reader's last-known
+  // position, used as the target when adding a bookmark. Not rendered
+  // directly, so plain field assignment (no setState) is enough.
+  String? _currentCfi;
   List<EpubChapter> _chapters = [];
   Object? _error;
 
@@ -117,6 +123,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   }
 
   void _saveProgress(EpubLocation location) {
+    _currentCfi = location.startCfi;
     ref
         .read(apiClientProvider)
         .updateEpubProgress(
@@ -127,6 +134,16 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
           // Best-effort — a dropped progress save shouldn't interrupt
           // reading, same convention as the audiobook player.
         });
+  }
+
+  void _showBookmarks(BuildContext context) {
+    showEpubBookmarksSheet(
+      context,
+      ref,
+      bookId: widget.bookId,
+      currentCfi: _currentCfi,
+      onJumpTo: (cfi) => _controller.display(cfi: cfi),
+    );
   }
 
   @override
@@ -175,23 +192,33 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
             onPressed: _toggleTheme,
           ),
           IconButton(
+            icon: const Icon(Icons.bookmark_border),
+            tooltip: 'Bookmarks',
+            onPressed: () => _showBookmarks(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.menu_book_outlined),
             tooltip: 'Chapters',
             onPressed: _chapters.isEmpty ? null : () => _showChapters(context),
           ),
         ],
       ),
-      body: EpubViewer(
-        epubController: _controller,
-        epubSource: EpubSource.fromData(_bytes!),
-        initialCfi: _initialCfi,
-        displaySettings: EpubDisplaySettings(
-          theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
+      body: EpubGestureOverlay(
+        onTapLeft: _controller.prev,
+        onTapRight: _controller.next,
+        onSwipeDown: () => _showBookmarks(context),
+        child: EpubViewer(
+          epubController: _controller,
+          epubSource: EpubSource.fromData(_bytes!),
+          initialCfi: _initialCfi,
+          displaySettings: EpubDisplaySettings(
+            theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
+          ),
+          onChaptersLoaded: (chapters) {
+            if (mounted) setState(() => _chapters = chapters);
+          },
+          onRelocated: _saveProgress,
         ),
-        onChaptersLoaded: (chapters) {
-          if (mounted) setState(() => _chapters = chapters);
-        },
-        onRelocated: _saveProgress,
       ),
       bottomNavigationBar: const MiniPlayer(),
     );
