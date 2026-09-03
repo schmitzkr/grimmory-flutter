@@ -331,6 +331,22 @@ class ApiClient {
         .toList();
   }
 
+  /// `/app/books/continue-reading` — the non-audiobook counterpart to
+  /// [getContinueListening], confirmed against the real
+  /// `AppBookController`/`AppBookService`/`UserBookProgressRepository`
+  /// source (`findTopContinueReadingBookIds` explicitly filters
+  /// `bookType <> AUDIOBOOK`). Existed server-side the whole time; this app
+  /// just never called it.
+  Future<List<Book>> getContinueReading({int limit = 10}) async {
+    final resp = await _dio.get(
+      '/app/books/continue-reading',
+      queryParameters: {'limit': limit},
+    );
+    return (resp.data as List)
+        .map((b) => Book.fromJson(b as Map<String, dynamic>))
+        .toList();
+  }
+
   /// `/app/books/recently-added`, not `/app/books/recently` as an earlier
   /// pass at this guessed before checking `AppBookController`'s source.
   Future<List<Book>> getRecentlyAdded({int limit = 10}) async {

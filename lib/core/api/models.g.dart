@@ -43,6 +43,8 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   narrator: json['narrator'] as String?,
   description: json['description'] as String?,
   primaryFileType: json['primaryFileType'] as String?,
+  readProgress: (json['readProgress'] as num?)?.toDouble(),
+  readStatus: json['readStatus'] as String?,
 );
 
 Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
@@ -55,6 +57,8 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'narrator': instance.narrator,
   'description': instance.description,
   'primaryFileType': instance.primaryFileType,
+  'readProgress': instance.readProgress,
+  'readStatus': instance.readStatus,
 };
 
 _AudiobookInfo _$AudiobookInfoFromJson(Map<String, dynamic> json) =>
