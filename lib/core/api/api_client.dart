@@ -515,18 +515,23 @@ class ApiClient {
         .toList();
   }
 
+  /// Exactly one of [positionMs] (audiobook) or [cfi] (EPUB) should be
+  /// given, matching `CreateBookMarkRequest`'s own
+  /// `isAudiobookBookmark()`/CFI-based distinction (Grimmory source).
   Future<Bookmark> createBookmark(
     int bookId, {
-    required int positionMs,
+    int? positionMs,
     int? trackIndex,
+    String? cfi,
     String? title,
   }) async {
     final resp = await _dio.post(
       '/bookmarks',
       data: {
         'bookId': bookId,
-        'positionMs': positionMs,
+        'positionMs': ?positionMs,
         'trackIndex': ?trackIndex,
+        'cfi': ?cfi,
         'title': ?title,
       },
     );
