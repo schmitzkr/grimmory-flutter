@@ -1,7 +1,7 @@
 name: grimmory
 description: "Audiobook client for self-hosted Grimmory servers"
 publish_to: 'none'
-version: 0.10.0+17
+version: 0.11.0+18
 
 environment:
   sdk: ^3.11.1
