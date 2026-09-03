@@ -85,7 +85,12 @@ class OidcLoginController extends AsyncNotifier<void>
       }
 
       final pkce = OidcPkcePair.generate();
-      final authState = _randomToken();
+      // Confirmed via the real Grimmory server source (OidcStateService):
+      // `state` must be a one-time value the SERVER generates and caches,
+      // not client-generated randomness — the callback validates it against
+      // that server-side cache and rejects anything it didn't itself issue
+      // with "Invalid or expired OIDC state parameter".
+      final authState = await ref.read(apiClientProvider).getOidcState();
       final nonce = _randomToken();
 
       // Persisted BEFORE opening the browser so a cold restart (the browser
