@@ -18,6 +18,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   analyze-test:
@@ -159,13 +160,46 @@ jobs:
       # carried the real one. Commit it now, after the build has already
       # succeeded (so a failed build never leaves an orphaned version-bump
       # commit with no matching release), and tag the resulting commit.
-      - name: Commit version bump and tag
+      #
+      # main is branch-protected (PR + passing status checks required, no
+      # approving review required) and the default GITHUB_TOKEN's
+      # github-actions[bot] identity isn't in the ruleset's bypass list
+      # (GitHub's "Integration" bypass actor type only works on
+      # organization-owned repos, not personal accounts — confirmed via a
+      # real 422 on this repo). So this can't push straight to main like it
+      # used to; it opens a real PR for the version bump, waits for that
+      # PR's own required checks to pass, and merges it — fully compliant
+      # with the ruleset, no bypass or extra credentials needed.
+      - name: Commit version bump via PR
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
+          BRANCH="release/${{ steps.meta.outputs.tag }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add pubspec.yaml
           git commit -m "chore: bump version to ${{ inputs.version }}+${{ github.run_number }}"
-          git push origin "HEAD:${{ github.ref_name }}"
+          git push origin "$BRANCH"
+
+          PR_URL=$(gh pr create \
+            --base "${{ github.ref_name }}" \
+            --head "$BRANCH" \
+            --title "chore: bump version to ${{ inputs.version }}" \
+            --body "Automated version bump for release ${{ steps.meta.outputs.tag }}.")
+
+          # gh pr checks --watch can start polling before GitHub has
+          # scheduled any checks against a just-created PR and return
+          # immediately with "no checks reported" — give the pull_request
+          # event a moment to fan out before watching for real.
+          sleep 15
+          gh pr checks "$PR_URL" --watch --interval 15
+          gh pr merge "$PR_URL" --squash --delete-branch
+
+          git checkout "${{ github.ref_name }}"
+          git fetch origin "${{ github.ref_name }}"
+          git reset --hard "origin/${{ github.ref_name }}"
           git tag -a "${{ steps.meta.outputs.tag }}" -m "${{ steps.meta.outputs.tag }}"
           git push origin "${{ steps.meta.outputs.tag }}"
 
