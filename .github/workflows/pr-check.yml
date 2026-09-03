@@ -104,10 +104,12 @@ jobs:
   # (scans pubspec.lock against the OSV database), comparing against the
   # base branch so pre-existing advisories in unrelated deps don't block
   # every PR — same role govulncheck plays in this workspace's Go repos'
-  # CI (see schm/.gitea's go-pr-check-reusable.yml). upload-sarif is
-  # explicitly off: the default SARIF-to-Security-tab upload needs GitHub
-  # Advanced Security, which isn't available on a free-tier private repo
-  # (this one) — the PR-fails-on-new-vulnerability behavior doesn't need it.
+  # CI (see schm/.gitea's go-pr-check-reusable.yml). upload-sarif enables
+  # the reusable workflow's default SARIF-to-Security-tab upload, which
+  # needs GitHub Advanced Security — unavailable on a free-tier private
+  # repo (which this one was), but free on any public repo (which this
+  # one now is), giving a real Security tab instead of just failing the
+  # PR check with no persistent record.
   vulnerability-scan:
     permissions:
       actions: read
@@ -115,4 +117,4 @@ jobs:
       security-events: write
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.5.0"
     with:
-      upload-sarif: false
+      upload-sarif: true
