@@ -58,6 +58,41 @@ class BookGridTile extends ConsumerWidget {
                       fileType: book.primaryFileType,
                     ),
                   ),
+                  if (book.readStatus == 'READ')
+                    Positioned(
+                      left: 6,
+                      bottom: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.check,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                    )
+                  else if ((book.readProgress ?? 0) > 0 &&
+                      (book.readProgress ?? 0) < 1)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
+                        ),
+                        child: LinearProgressIndicator(
+                          value: book.readProgress,
+                          minHeight: 4,
+                          backgroundColor: Colors.black.withValues(alpha: 0.35),
+                        ),
+                      ),
+                    ),
                   if (downloaded)
                     Positioned(
                       right: 6,

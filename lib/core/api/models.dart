@@ -64,6 +64,16 @@ abstract class Book with _$Book {
     // enum). Drives which action the book detail screen shows (Play vs.
     // Read vs. "not supported yet") and the library screen's type filter.
     String? primaryFileType,
+    // Both already present on every `AppBookSummary`/`AppBookDetail`
+    // response (library/series/search/continue-reading/continue-listening
+    // all return them) — confirmed against the real DTOs — but never
+    // parsed or displayed until now. [readProgress] is 0.0-1.0;
+    // [readStatus] is one of Grimmory's `ReadStatus` enum values (UNREAD,
+    // READING, RE_READING, READ, PARTIALLY_READ, PAUSED, WONT_READ,
+    // ABANDONED, UNSET) — 'READ' is the only one this app currently acts
+    // on (a finished-book badge).
+    double? readProgress,
+    String? readStatus,
   }) = _Book;
 
   factory Book.fromJson(Map<String, dynamic> json) => _$BookFromJson(json);
