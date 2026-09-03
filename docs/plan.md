@@ -1,5 +1,13 @@
 # grimmory-flutter — Audiobook client for Grimmory, with Android Auto
 
+> **Note (2026-09):** this repo and app were later renamed to
+> **`grimreader-flutter`** / **GrimReader**, and scope grew from
+> audiobooks-only to also cover EPUB ebook reading (bookmarks, gestures,
+> reading-progress tracking) — see the [README](../README.md) for the
+> current feature set and status. This document is kept as-is below as a
+> historical record of the original design and its milestones; it is not
+> rewritten to match later renames or scope changes.
+
 ## Context
 
 You're replacing Audiobookshelf with **Grimmory** (https://grimmory.org, self-hosted, Spring Boot + MariaDB, AGPL-3.0, a community fork of BookLore). Grimmory has no official mobile app and no Android Auto support today, and Audiobookshelf's mobile app is the feature you'd otherwise lose by switching. This plan scaffolds a new, standalone Flutter app — **audiobooks only** (no ebook/comic reader) — that talks to a self-hosted Grimmory instance, with Android Auto as the headline feature.
