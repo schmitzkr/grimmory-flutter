@@ -170,6 +170,7 @@ Map<String, dynamic> _$SeriesToJson(_Series instance) => <String, dynamic>{
 _Bookmark _$BookmarkFromJson(Map<String, dynamic> json) => _Bookmark(
   id: (json['id'] as num).toInt(),
   bookId: (json['bookId'] as num).toInt(),
+  cfi: json['cfi'] as String?,
   positionMs: (json['positionMs'] as num?)?.toInt(),
   trackIndex: (json['trackIndex'] as num?)?.toInt(),
   title: json['title'] as String?,
@@ -182,6 +183,7 @@ _Bookmark _$BookmarkFromJson(Map<String, dynamic> json) => _Bookmark(
 Map<String, dynamic> _$BookmarkToJson(_Bookmark instance) => <String, dynamic>{
   'id': instance.id,
   'bookId': instance.bookId,
+  'cfi': instance.cfi,
   'positionMs': instance.positionMs,
   'trackIndex': instance.trackIndex,
   'title': instance.title,

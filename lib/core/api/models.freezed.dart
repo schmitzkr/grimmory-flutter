@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'models.dart';
@@ -9,6 +9,7 @@ part of 'models.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $AuthTokensCopyWith<AuthTokens> get copyWith => _$AuthTokensCopyWithImpl<AuthTok
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokens&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken));
+  final _this = this as AuthTokens;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokens&&(identical(other.accessToken, _this.accessToken) || other.accessToken == _this.accessToken)&&(identical(other.refreshToken, _this.refreshToken) || other.refreshToken == _this.refreshToken));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,accessToken,refreshToken);
+int get hashCode {
+  final _this = this as AuthTokens;
+  return Object.hash(runtimeType,_this.accessToken,_this.refreshToken);
+}
 
 @override
 String toString() {
-  return 'AuthTokens(accessToken: $accessToken, refreshToken: $refreshToken)';
+  final _this = this as AuthTokens;
+  return 'AuthTokens(accessToken: ${_this.accessToken}, refreshToken: ${_this.refreshToken})';
 }
 
 
@@ -66,7 +72,7 @@ class _$AuthTokensCopyWithImpl<$Res>
 /// Create a copy of AuthTokens
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? accessToken = null,Object? refreshToken = null,}) {
-  return _then(_self.copyWith(
+  return _then(AuthTokens(
 accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,
@@ -229,16 +235,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokens&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokens&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,accessToken,refreshToken);
+int get hashCode {
+    return Object.hash(runtimeType,accessToken,refreshToken);
+}
 
 @override
 String toString() {
-  return 'AuthTokens(accessToken: $accessToken, refreshToken: $refreshToken)';
+    return 'AuthTokens(accessToken: $accessToken, refreshToken: $refreshToken)';
 }
 
 
@@ -294,16 +302,21 @@ $LibraryCopyWith<Library> get copyWith => _$LibraryCopyWithImpl<Library>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Library&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
+  final _this = this as Library;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Library&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,bookCount);
+int get hashCode {
+  final _this = this as Library;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.icon,_this.bookCount);
+}
 
 @override
 String toString() {
-  return 'Library(id: $id, name: $name, icon: $icon, bookCount: $bookCount)';
+  final _this = this as Library;
+  return 'Library(id: ${_this.id}, name: ${_this.name}, icon: ${_this.icon}, bookCount: ${_this.bookCount})';
 }
 
 
@@ -332,7 +345,7 @@ class _$LibraryCopyWithImpl<$Res>
 /// Create a copy of Library
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? icon = freezed,Object? bookCount = null,}) {
-  return _then(_self.copyWith(
+  return _then(Library(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
@@ -499,16 +512,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Library&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Library&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,bookCount);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,icon,bookCount);
+}
 
 @override
 String toString() {
-  return 'Library(id: $id, name: $name, icon: $icon, bookCount: $bookCount)';
+    return 'Library(id: $id, name: $name, icon: $icon, bookCount: $bookCount)';
 }
 
 
@@ -553,11 +568,7 @@ as int,
 /// @nodoc
 mixin _$Book {
 
- int get id; String get title; List<String> get authors; String? get seriesName; double? get seriesNumber; int? get libraryId; String? get narrator; String? get description;// From `AppBookSummary`/`AppBookDetail.primaryFileType` — one of
-// AUDIOBOOK/EPUB/PDF/CBX/FB2/MOBI/AZW3 (matches Library.allowedFormats'
-// enum). Drives which action the book detail screen shows (Play vs.
-// Read vs. "not supported yet") and the library screen's type filter.
- String? get primaryFileType;
+ int get id; String get title; List<String> get authors; String? get seriesName; double? get seriesNumber; int? get libraryId; String? get narrator; String? get description; String? get primaryFileType;
 /// Create a copy of Book
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -570,16 +581,21 @@ $BookCopyWith<Book> get copyWith => _$BookCopyWithImpl<Book>(this as Book, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Book&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.authors, authors)&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.seriesNumber, seriesNumber) || other.seriesNumber == seriesNumber)&&(identical(other.libraryId, libraryId) || other.libraryId == libraryId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.description, description) || other.description == description)&&(identical(other.primaryFileType, primaryFileType) || other.primaryFileType == primaryFileType));
+  final _this = this as Book;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Book&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&(identical(other.seriesName, _this.seriesName) || other.seriesName == _this.seriesName)&&(identical(other.seriesNumber, _this.seriesNumber) || other.seriesNumber == _this.seriesNumber)&&(identical(other.libraryId, _this.libraryId) || other.libraryId == _this.libraryId)&&(identical(other.narrator, _this.narrator) || other.narrator == _this.narrator)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.primaryFileType, _this.primaryFileType) || other.primaryFileType == _this.primaryFileType));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(authors),seriesName,seriesNumber,libraryId,narrator,description,primaryFileType);
+int get hashCode {
+  final _this = this as Book;
+  return Object.hash(runtimeType,_this.id,_this.title,const DeepCollectionEquality().hash(_this.authors),_this.seriesName,_this.seriesNumber,_this.libraryId,_this.narrator,_this.description,_this.primaryFileType);
+}
 
 @override
 String toString() {
-  return 'Book(id: $id, title: $title, authors: $authors, seriesName: $seriesName, seriesNumber: $seriesNumber, libraryId: $libraryId, narrator: $narrator, description: $description, primaryFileType: $primaryFileType)';
+  final _this = this as Book;
+  return 'Book(id: ${_this.id}, title: ${_this.title}, authors: ${_this.authors}, seriesName: ${_this.seriesName}, seriesNumber: ${_this.seriesNumber}, libraryId: ${_this.libraryId}, narrator: ${_this.narrator}, description: ${_this.description}, primaryFileType: ${_this.primaryFileType})';
 }
 
 
@@ -608,7 +624,7 @@ class _$BookCopyWithImpl<$Res>
 /// Create a copy of Book
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? authors = null,Object? seriesName = freezed,Object? seriesNumber = freezed,Object? libraryId = freezed,Object? narrator = freezed,Object? description = freezed,Object? primaryFileType = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Book(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,authors: null == authors ? _self.authors : authors // ignore: cast_nullable_to_non_nullable
@@ -759,7 +775,7 @@ return $default(_that.id,_that.title,_that.authors,_that.seriesName,_that.series
 @JsonSerializable()
 
 class _Book implements Book {
-  const _Book({required this.id, required this.title, final  List<String> authors = const [], this.seriesName, this.seriesNumber, this.libraryId, this.narrator, this.description, this.primaryFileType}): _authors = authors;
+  const _Book({required this.id, required this.title,  List<String> authors = const [], this.seriesName, this.seriesNumber, this.libraryId, this.narrator, this.description, this.primaryFileType}): _authors = authors;
   factory _Book.fromJson(Map<String, dynamic> json) => _$BookFromJson(json);
 
 @override final  int id;
@@ -776,10 +792,6 @@ class _Book implements Book {
 @override final  int? libraryId;
 @override final  String? narrator;
 @override final  String? description;
-// From `AppBookSummary`/`AppBookDetail.primaryFileType` — one of
-// AUDIOBOOK/EPUB/PDF/CBX/FB2/MOBI/AZW3 (matches Library.allowedFormats'
-// enum). Drives which action the book detail screen shows (Play vs.
-// Read vs. "not supported yet") and the library screen's type filter.
 @override final  String? primaryFileType;
 
 /// Create a copy of Book
@@ -795,16 +807,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Book&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._authors, _authors)&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.seriesNumber, seriesNumber) || other.seriesNumber == seriesNumber)&&(identical(other.libraryId, libraryId) || other.libraryId == libraryId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.description, description) || other.description == description)&&(identical(other.primaryFileType, primaryFileType) || other.primaryFileType == primaryFileType));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Book&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.authors, _authors)&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.seriesNumber, seriesNumber) || other.seriesNumber == seriesNumber)&&(identical(other.libraryId, libraryId) || other.libraryId == libraryId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.description, description) || other.description == description)&&(identical(other.primaryFileType, primaryFileType) || other.primaryFileType == primaryFileType));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_authors),seriesName,seriesNumber,libraryId,narrator,description,primaryFileType);
+int get hashCode {
+    return Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_authors),seriesName,seriesNumber,libraryId,narrator,description,primaryFileType);
+}
 
 @override
 String toString() {
-  return 'Book(id: $id, title: $title, authors: $authors, seriesName: $seriesName, seriesNumber: $seriesNumber, libraryId: $libraryId, narrator: $narrator, description: $description, primaryFileType: $primaryFileType)';
+    return 'Book(id: $id, title: $title, authors: $authors, seriesName: $seriesName, seriesNumber: $seriesNumber, libraryId: $libraryId, narrator: $narrator, description: $description, primaryFileType: $primaryFileType)';
 }
 
 
@@ -854,11 +868,7 @@ as String?,
 /// @nodoc
 mixin _$AudiobookInfo {
 
- int get bookId; String? get narrator; int get durationMs;// Whether this audiobook is stored as multiple files (one AudioSource
-// per track) vs. a single file — determines which stream endpoint(s) to
-// use. There's no separate "track count" field; folderBased plus
-// tracks.length is the only way to know.
- bool get folderBased; List<AudiobookChapter> get chapters; List<AudiobookTrack> get tracks;
+ int get bookId; String? get narrator; int get durationMs; bool get folderBased; List<AudiobookChapter> get chapters; List<AudiobookTrack> get tracks;
 /// Create a copy of AudiobookInfo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -871,16 +881,21 @@ $AudiobookInfoCopyWith<AudiobookInfo> get copyWith => _$AudiobookInfoCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookInfo&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.folderBased, folderBased) || other.folderBased == folderBased)&&const DeepCollectionEquality().equals(other.chapters, chapters)&&const DeepCollectionEquality().equals(other.tracks, tracks));
+  final _this = this as AudiobookInfo;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookInfo&&(identical(other.bookId, _this.bookId) || other.bookId == _this.bookId)&&(identical(other.narrator, _this.narrator) || other.narrator == _this.narrator)&&(identical(other.durationMs, _this.durationMs) || other.durationMs == _this.durationMs)&&(identical(other.folderBased, _this.folderBased) || other.folderBased == _this.folderBased)&&const DeepCollectionEquality().equals(other.chapters, _this.chapters)&&const DeepCollectionEquality().equals(other.tracks, _this.tracks));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,bookId,narrator,durationMs,folderBased,const DeepCollectionEquality().hash(chapters),const DeepCollectionEquality().hash(tracks));
+int get hashCode {
+  final _this = this as AudiobookInfo;
+  return Object.hash(runtimeType,_this.bookId,_this.narrator,_this.durationMs,_this.folderBased,const DeepCollectionEquality().hash(_this.chapters),const DeepCollectionEquality().hash(_this.tracks));
+}
 
 @override
 String toString() {
-  return 'AudiobookInfo(bookId: $bookId, narrator: $narrator, durationMs: $durationMs, folderBased: $folderBased, chapters: $chapters, tracks: $tracks)';
+  final _this = this as AudiobookInfo;
+  return 'AudiobookInfo(bookId: ${_this.bookId}, narrator: ${_this.narrator}, durationMs: ${_this.durationMs}, folderBased: ${_this.folderBased}, chapters: ${_this.chapters}, tracks: ${_this.tracks})';
 }
 
 
@@ -909,7 +924,7 @@ class _$AudiobookInfoCopyWithImpl<$Res>
 /// Create a copy of AudiobookInfo
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? bookId = null,Object? narrator = freezed,Object? durationMs = null,Object? folderBased = null,Object? chapters = null,Object? tracks = null,}) {
-  return _then(_self.copyWith(
+  return _then(AudiobookInfo(
 bookId: null == bookId ? _self.bookId : bookId // ignore: cast_nullable_to_non_nullable
 as int,narrator: freezed == narrator ? _self.narrator : narrator // ignore: cast_nullable_to_non_nullable
 as String?,durationMs: null == durationMs ? _self.durationMs : durationMs // ignore: cast_nullable_to_non_nullable
@@ -1057,16 +1072,12 @@ return $default(_that.bookId,_that.narrator,_that.durationMs,_that.folderBased,_
 @JsonSerializable()
 
 class _AudiobookInfo implements AudiobookInfo {
-  const _AudiobookInfo({required this.bookId, this.narrator, required this.durationMs, this.folderBased = false, final  List<AudiobookChapter> chapters = const [], final  List<AudiobookTrack> tracks = const []}): _chapters = chapters,_tracks = tracks;
+  const _AudiobookInfo({required this.bookId, this.narrator, required this.durationMs, this.folderBased = false,  List<AudiobookChapter> chapters = const [],  List<AudiobookTrack> tracks = const []}): _chapters = chapters,_tracks = tracks;
   factory _AudiobookInfo.fromJson(Map<String, dynamic> json) => _$AudiobookInfoFromJson(json);
 
 @override final  int bookId;
 @override final  String? narrator;
 @override final  int durationMs;
-// Whether this audiobook is stored as multiple files (one AudioSource
-// per track) vs. a single file — determines which stream endpoint(s) to
-// use. There's no separate "track count" field; folderBased plus
-// tracks.length is the only way to know.
 @override@JsonKey() final  bool folderBased;
  final  List<AudiobookChapter> _chapters;
 @override@JsonKey() List<AudiobookChapter> get chapters {
@@ -1096,16 +1107,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookInfo&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.folderBased, folderBased) || other.folderBased == folderBased)&&const DeepCollectionEquality().equals(other._chapters, _chapters)&&const DeepCollectionEquality().equals(other._tracks, _tracks));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookInfo&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.folderBased, folderBased) || other.folderBased == folderBased)&&const DeepCollectionEquality().equals(other.chapters, _chapters)&&const DeepCollectionEquality().equals(other.tracks, _tracks));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,bookId,narrator,durationMs,folderBased,const DeepCollectionEquality().hash(_chapters),const DeepCollectionEquality().hash(_tracks));
+int get hashCode {
+    return Object.hash(runtimeType,bookId,narrator,durationMs,folderBased,const DeepCollectionEquality().hash(_chapters),const DeepCollectionEquality().hash(_tracks));
+}
 
 @override
 String toString() {
-  return 'AudiobookInfo(bookId: $bookId, narrator: $narrator, durationMs: $durationMs, folderBased: $folderBased, chapters: $chapters, tracks: $tracks)';
+    return 'AudiobookInfo(bookId: $bookId, narrator: $narrator, durationMs: $durationMs, folderBased: $folderBased, chapters: $chapters, tracks: $tracks)';
 }
 
 
@@ -1165,16 +1178,21 @@ $AudiobookChapterCopyWith<AudiobookChapter> get copyWith => _$AudiobookChapterCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookChapter&&(identical(other.index, index) || other.index == index)&&(identical(other.title, title) || other.title == title)&&(identical(other.startTimeMs, startTimeMs) || other.startTimeMs == startTimeMs)&&(identical(other.endTimeMs, endTimeMs) || other.endTimeMs == endTimeMs)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs));
+  final _this = this as AudiobookChapter;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookChapter&&(identical(other.index, _this.index) || other.index == _this.index)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.startTimeMs, _this.startTimeMs) || other.startTimeMs == _this.startTimeMs)&&(identical(other.endTimeMs, _this.endTimeMs) || other.endTimeMs == _this.endTimeMs)&&(identical(other.durationMs, _this.durationMs) || other.durationMs == _this.durationMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,index,title,startTimeMs,endTimeMs,durationMs);
+int get hashCode {
+  final _this = this as AudiobookChapter;
+  return Object.hash(runtimeType,_this.index,_this.title,_this.startTimeMs,_this.endTimeMs,_this.durationMs);
+}
 
 @override
 String toString() {
-  return 'AudiobookChapter(index: $index, title: $title, startTimeMs: $startTimeMs, endTimeMs: $endTimeMs, durationMs: $durationMs)';
+  final _this = this as AudiobookChapter;
+  return 'AudiobookChapter(index: ${_this.index}, title: ${_this.title}, startTimeMs: ${_this.startTimeMs}, endTimeMs: ${_this.endTimeMs}, durationMs: ${_this.durationMs})';
 }
 
 
@@ -1203,7 +1221,7 @@ class _$AudiobookChapterCopyWithImpl<$Res>
 /// Create a copy of AudiobookChapter
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? index = null,Object? title = null,Object? startTimeMs = null,Object? endTimeMs = null,Object? durationMs = null,}) {
-  return _then(_self.copyWith(
+  return _then(AudiobookChapter(
 index: null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,startTimeMs: null == startTimeMs ? _self.startTimeMs : startTimeMs // ignore: cast_nullable_to_non_nullable
@@ -1372,16 +1390,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookChapter&&(identical(other.index, index) || other.index == index)&&(identical(other.title, title) || other.title == title)&&(identical(other.startTimeMs, startTimeMs) || other.startTimeMs == startTimeMs)&&(identical(other.endTimeMs, endTimeMs) || other.endTimeMs == endTimeMs)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookChapter&&(identical(other.index, index) || other.index == index)&&(identical(other.title, title) || other.title == title)&&(identical(other.startTimeMs, startTimeMs) || other.startTimeMs == startTimeMs)&&(identical(other.endTimeMs, endTimeMs) || other.endTimeMs == endTimeMs)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,index,title,startTimeMs,endTimeMs,durationMs);
+int get hashCode {
+    return Object.hash(runtimeType,index,title,startTimeMs,endTimeMs,durationMs);
+}
 
 @override
 String toString() {
-  return 'AudiobookChapter(index: $index, title: $title, startTimeMs: $startTimeMs, endTimeMs: $endTimeMs, durationMs: $durationMs)';
+    return 'AudiobookChapter(index: $index, title: $title, startTimeMs: $startTimeMs, endTimeMs: $endTimeMs, durationMs: $durationMs)';
 }
 
 
@@ -1440,16 +1460,21 @@ $AudiobookTrackCopyWith<AudiobookTrack> get copyWith => _$AudiobookTrackCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookTrack&&(identical(other.index, index) || other.index == index)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.title, title) || other.title == title)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.fileSizeBytes, fileSizeBytes) || other.fileSizeBytes == fileSizeBytes)&&(identical(other.cumulativeStartMs, cumulativeStartMs) || other.cumulativeStartMs == cumulativeStartMs));
+  final _this = this as AudiobookTrack;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookTrack&&(identical(other.index, _this.index) || other.index == _this.index)&&(identical(other.fileName, _this.fileName) || other.fileName == _this.fileName)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.durationMs, _this.durationMs) || other.durationMs == _this.durationMs)&&(identical(other.fileSizeBytes, _this.fileSizeBytes) || other.fileSizeBytes == _this.fileSizeBytes)&&(identical(other.cumulativeStartMs, _this.cumulativeStartMs) || other.cumulativeStartMs == _this.cumulativeStartMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,index,fileName,title,durationMs,fileSizeBytes,cumulativeStartMs);
+int get hashCode {
+  final _this = this as AudiobookTrack;
+  return Object.hash(runtimeType,_this.index,_this.fileName,_this.title,_this.durationMs,_this.fileSizeBytes,_this.cumulativeStartMs);
+}
 
 @override
 String toString() {
-  return 'AudiobookTrack(index: $index, fileName: $fileName, title: $title, durationMs: $durationMs, fileSizeBytes: $fileSizeBytes, cumulativeStartMs: $cumulativeStartMs)';
+  final _this = this as AudiobookTrack;
+  return 'AudiobookTrack(index: ${_this.index}, fileName: ${_this.fileName}, title: ${_this.title}, durationMs: ${_this.durationMs}, fileSizeBytes: ${_this.fileSizeBytes}, cumulativeStartMs: ${_this.cumulativeStartMs})';
 }
 
 
@@ -1478,7 +1503,7 @@ class _$AudiobookTrackCopyWithImpl<$Res>
 /// Create a copy of AudiobookTrack
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? index = null,Object? fileName = null,Object? title = null,Object? durationMs = null,Object? fileSizeBytes = freezed,Object? cumulativeStartMs = null,}) {
-  return _then(_self.copyWith(
+  return _then(AudiobookTrack(
 index: null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
 as int,fileName: null == fileName ? _self.fileName : fileName // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -1649,16 +1674,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookTrack&&(identical(other.index, index) || other.index == index)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.title, title) || other.title == title)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.fileSizeBytes, fileSizeBytes) || other.fileSizeBytes == fileSizeBytes)&&(identical(other.cumulativeStartMs, cumulativeStartMs) || other.cumulativeStartMs == cumulativeStartMs));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookTrack&&(identical(other.index, index) || other.index == index)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.title, title) || other.title == title)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.fileSizeBytes, fileSizeBytes) || other.fileSizeBytes == fileSizeBytes)&&(identical(other.cumulativeStartMs, cumulativeStartMs) || other.cumulativeStartMs == cumulativeStartMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,index,fileName,title,durationMs,fileSizeBytes,cumulativeStartMs);
+int get hashCode {
+    return Object.hash(runtimeType,index,fileName,title,durationMs,fileSizeBytes,cumulativeStartMs);
+}
 
 @override
 String toString() {
-  return 'AudiobookTrack(index: $index, fileName: $fileName, title: $title, durationMs: $durationMs, fileSizeBytes: $fileSizeBytes, cumulativeStartMs: $cumulativeStartMs)';
+    return 'AudiobookTrack(index: $index, fileName: $fileName, title: $title, durationMs: $durationMs, fileSizeBytes: $fileSizeBytes, cumulativeStartMs: $cumulativeStartMs)';
 }
 
 
@@ -1718,16 +1745,21 @@ $AudiobookProgressCopyWith<AudiobookProgress> get copyWith => _$AudiobookProgres
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookProgress&&(identical(other.positionMs, positionMs) || other.positionMs == positionMs)&&(identical(other.trackIndex, trackIndex) || other.trackIndex == trackIndex)&&(identical(other.trackPositionMs, trackPositionMs) || other.trackPositionMs == trackPositionMs)&&(identical(other.percentage, percentage) || other.percentage == percentage));
+  final _this = this as AudiobookProgress;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AudiobookProgress&&(identical(other.positionMs, _this.positionMs) || other.positionMs == _this.positionMs)&&(identical(other.trackIndex, _this.trackIndex) || other.trackIndex == _this.trackIndex)&&(identical(other.trackPositionMs, _this.trackPositionMs) || other.trackPositionMs == _this.trackPositionMs)&&(identical(other.percentage, _this.percentage) || other.percentage == _this.percentage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,positionMs,trackIndex,trackPositionMs,percentage);
+int get hashCode {
+  final _this = this as AudiobookProgress;
+  return Object.hash(runtimeType,_this.positionMs,_this.trackIndex,_this.trackPositionMs,_this.percentage);
+}
 
 @override
 String toString() {
-  return 'AudiobookProgress(positionMs: $positionMs, trackIndex: $trackIndex, trackPositionMs: $trackPositionMs, percentage: $percentage)';
+  final _this = this as AudiobookProgress;
+  return 'AudiobookProgress(positionMs: ${_this.positionMs}, trackIndex: ${_this.trackIndex}, trackPositionMs: ${_this.trackPositionMs}, percentage: ${_this.percentage})';
 }
 
 
@@ -1756,7 +1788,7 @@ class _$AudiobookProgressCopyWithImpl<$Res>
 /// Create a copy of AudiobookProgress
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? positionMs = null,Object? trackIndex = freezed,Object? trackPositionMs = freezed,Object? percentage = null,}) {
-  return _then(_self.copyWith(
+  return _then(AudiobookProgress(
 positionMs: null == positionMs ? _self.positionMs : positionMs // ignore: cast_nullable_to_non_nullable
 as int,trackIndex: freezed == trackIndex ? _self.trackIndex : trackIndex // ignore: cast_nullable_to_non_nullable
 as int?,trackPositionMs: freezed == trackPositionMs ? _self.trackPositionMs : trackPositionMs // ignore: cast_nullable_to_non_nullable
@@ -1923,16 +1955,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookProgress&&(identical(other.positionMs, positionMs) || other.positionMs == positionMs)&&(identical(other.trackIndex, trackIndex) || other.trackIndex == trackIndex)&&(identical(other.trackPositionMs, trackPositionMs) || other.trackPositionMs == trackPositionMs)&&(identical(other.percentage, percentage) || other.percentage == percentage));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AudiobookProgress&&(identical(other.positionMs, positionMs) || other.positionMs == positionMs)&&(identical(other.trackIndex, trackIndex) || other.trackIndex == trackIndex)&&(identical(other.trackPositionMs, trackPositionMs) || other.trackPositionMs == trackPositionMs)&&(identical(other.percentage, percentage) || other.percentage == percentage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,positionMs,trackIndex,trackPositionMs,percentage);
+int get hashCode {
+    return Object.hash(runtimeType,positionMs,trackIndex,trackPositionMs,percentage);
+}
 
 @override
 String toString() {
-  return 'AudiobookProgress(positionMs: $positionMs, trackIndex: $trackIndex, trackPositionMs: $trackPositionMs, percentage: $percentage)';
+    return 'AudiobookProgress(positionMs: $positionMs, trackIndex: $trackIndex, trackPositionMs: $trackPositionMs, percentage: $percentage)';
 }
 
 
@@ -1990,16 +2024,21 @@ $EpubProgressCopyWith<EpubProgress> get copyWith => _$EpubProgressCopyWithImpl<E
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EpubProgress&&(identical(other.cfi, cfi) || other.cfi == cfi)&&(identical(other.href, href) || other.href == href)&&(identical(other.percentage, percentage) || other.percentage == percentage));
+  final _this = this as EpubProgress;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EpubProgress&&(identical(other.cfi, _this.cfi) || other.cfi == _this.cfi)&&(identical(other.href, _this.href) || other.href == _this.href)&&(identical(other.percentage, _this.percentage) || other.percentage == _this.percentage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cfi,href,percentage);
+int get hashCode {
+  final _this = this as EpubProgress;
+  return Object.hash(runtimeType,_this.cfi,_this.href,_this.percentage);
+}
 
 @override
 String toString() {
-  return 'EpubProgress(cfi: $cfi, href: $href, percentage: $percentage)';
+  final _this = this as EpubProgress;
+  return 'EpubProgress(cfi: ${_this.cfi}, href: ${_this.href}, percentage: ${_this.percentage})';
 }
 
 
@@ -2028,7 +2067,7 @@ class _$EpubProgressCopyWithImpl<$Res>
 /// Create a copy of EpubProgress
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? cfi = freezed,Object? href = freezed,Object? percentage = null,}) {
-  return _then(_self.copyWith(
+  return _then(EpubProgress(
 cfi: freezed == cfi ? _self.cfi : cfi // ignore: cast_nullable_to_non_nullable
 as String?,href: freezed == href ? _self.href : href // ignore: cast_nullable_to_non_nullable
 as String?,percentage: null == percentage ? _self.percentage : percentage // ignore: cast_nullable_to_non_nullable
@@ -2193,16 +2232,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EpubProgress&&(identical(other.cfi, cfi) || other.cfi == cfi)&&(identical(other.href, href) || other.href == href)&&(identical(other.percentage, percentage) || other.percentage == percentage));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EpubProgress&&(identical(other.cfi, cfi) || other.cfi == cfi)&&(identical(other.href, href) || other.href == href)&&(identical(other.percentage, percentage) || other.percentage == percentage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cfi,href,percentage);
+int get hashCode {
+    return Object.hash(runtimeType,cfi,href,percentage);
+}
 
 @override
 String toString() {
-  return 'EpubProgress(cfi: $cfi, href: $href, percentage: $percentage)';
+    return 'EpubProgress(cfi: $cfi, href: $href, percentage: $percentage)';
 }
 
 
@@ -2259,16 +2300,21 @@ $SeriesCopyWith<Series> get copyWith => _$SeriesCopyWithImpl<Series>(this as Ser
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Series&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&const DeepCollectionEquality().equals(other.authors, authors));
+  final _this = this as Series;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Series&&(identical(other.seriesName, _this.seriesName) || other.seriesName == _this.seriesName)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount)&&const DeepCollectionEquality().equals(other.authors, _this.authors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,seriesName,bookCount,const DeepCollectionEquality().hash(authors));
+int get hashCode {
+  final _this = this as Series;
+  return Object.hash(runtimeType,_this.seriesName,_this.bookCount,const DeepCollectionEquality().hash(_this.authors));
+}
 
 @override
 String toString() {
-  return 'Series(seriesName: $seriesName, bookCount: $bookCount, authors: $authors)';
+  final _this = this as Series;
+  return 'Series(seriesName: ${_this.seriesName}, bookCount: ${_this.bookCount}, authors: ${_this.authors})';
 }
 
 
@@ -2297,7 +2343,7 @@ class _$SeriesCopyWithImpl<$Res>
 /// Create a copy of Series
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? seriesName = null,Object? bookCount = null,Object? authors = null,}) {
-  return _then(_self.copyWith(
+  return _then(Series(
 seriesName: null == seriesName ? _self.seriesName : seriesName // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
 as int,authors: null == authors ? _self.authors : authors // ignore: cast_nullable_to_non_nullable
@@ -2442,7 +2488,7 @@ return $default(_that.seriesName,_that.bookCount,_that.authors);case _:
 @JsonSerializable()
 
 class _Series implements Series {
-  const _Series({required this.seriesName, required this.bookCount, final  List<String> authors = const []}): _authors = authors;
+  const _Series({required this.seriesName, required this.bookCount,  List<String> authors = const []}): _authors = authors;
   factory _Series.fromJson(Map<String, dynamic> json) => _$SeriesFromJson(json);
 
 @override final  String seriesName;
@@ -2468,16 +2514,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Series&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&const DeepCollectionEquality().equals(other._authors, _authors));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Series&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&const DeepCollectionEquality().equals(other.authors, _authors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,seriesName,bookCount,const DeepCollectionEquality().hash(_authors));
+int get hashCode {
+    return Object.hash(runtimeType,seriesName,bookCount,const DeepCollectionEquality().hash(_authors));
+}
 
 @override
 String toString() {
-  return 'Series(seriesName: $seriesName, bookCount: $bookCount, authors: $authors)';
+    return 'Series(seriesName: $seriesName, bookCount: $bookCount, authors: $authors)';
 }
 
 
@@ -2521,7 +2569,7 @@ as List<String>,
 /// @nodoc
 mixin _$Bookmark {
 
- int get id; int get bookId; int? get positionMs; int? get trackIndex; String? get title; String? get notes; DateTime? get createdAt;
+ int get id; int get bookId; String? get cfi; int? get positionMs; int? get trackIndex; String? get title; String? get notes; DateTime? get createdAt;
 /// Create a copy of Bookmark
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2534,16 +2582,21 @@ $BookmarkCopyWith<Bookmark> get copyWith => _$BookmarkCopyWithImpl<Bookmark>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Bookmark&&(identical(other.id, id) || other.id == id)&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.positionMs, positionMs) || other.positionMs == positionMs)&&(identical(other.trackIndex, trackIndex) || other.trackIndex == trackIndex)&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  final _this = this as Bookmark;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Bookmark&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.bookId, _this.bookId) || other.bookId == _this.bookId)&&(identical(other.cfi, _this.cfi) || other.cfi == _this.cfi)&&(identical(other.positionMs, _this.positionMs) || other.positionMs == _this.positionMs)&&(identical(other.trackIndex, _this.trackIndex) || other.trackIndex == _this.trackIndex)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,bookId,positionMs,trackIndex,title,notes,createdAt);
+int get hashCode {
+  final _this = this as Bookmark;
+  return Object.hash(runtimeType,_this.id,_this.bookId,_this.cfi,_this.positionMs,_this.trackIndex,_this.title,_this.notes,_this.createdAt);
+}
 
 @override
 String toString() {
-  return 'Bookmark(id: $id, bookId: $bookId, positionMs: $positionMs, trackIndex: $trackIndex, title: $title, notes: $notes, createdAt: $createdAt)';
+  final _this = this as Bookmark;
+  return 'Bookmark(id: ${_this.id}, bookId: ${_this.bookId}, cfi: ${_this.cfi}, positionMs: ${_this.positionMs}, trackIndex: ${_this.trackIndex}, title: ${_this.title}, notes: ${_this.notes}, createdAt: ${_this.createdAt})';
 }
 
 
@@ -2554,7 +2607,7 @@ abstract mixin class $BookmarkCopyWith<$Res>  {
   factory $BookmarkCopyWith(Bookmark value, $Res Function(Bookmark) _then) = _$BookmarkCopyWithImpl;
 @useResult
 $Res call({
- int id, int bookId, int? positionMs, int? trackIndex, String? title, String? notes, DateTime? createdAt
+ int id, int bookId, String? cfi, int? positionMs, int? trackIndex, String? title, String? notes, DateTime? createdAt
 });
 
 
@@ -2571,11 +2624,12 @@ class _$BookmarkCopyWithImpl<$Res>
 
 /// Create a copy of Bookmark
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? bookId = null,Object? positionMs = freezed,Object? trackIndex = freezed,Object? title = freezed,Object? notes = freezed,Object? createdAt = freezed,}) {
-  return _then(_self.copyWith(
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? bookId = null,Object? cfi = freezed,Object? positionMs = freezed,Object? trackIndex = freezed,Object? title = freezed,Object? notes = freezed,Object? createdAt = freezed,}) {
+  return _then(Bookmark(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,bookId: null == bookId ? _self.bookId : bookId // ignore: cast_nullable_to_non_nullable
-as int,positionMs: freezed == positionMs ? _self.positionMs : positionMs // ignore: cast_nullable_to_non_nullable
+as int,cfi: freezed == cfi ? _self.cfi : cfi // ignore: cast_nullable_to_non_nullable
+as String?,positionMs: freezed == positionMs ? _self.positionMs : positionMs // ignore: cast_nullable_to_non_nullable
 as int?,trackIndex: freezed == trackIndex ? _self.trackIndex : trackIndex // ignore: cast_nullable_to_non_nullable
 as int?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
@@ -2665,10 +2719,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int bookId,  int? positionMs,  int? trackIndex,  String? title,  String? notes,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int bookId,  String? cfi,  int? positionMs,  int? trackIndex,  String? title,  String? notes,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Bookmark() when $default != null:
-return $default(_that.id,_that.bookId,_that.positionMs,_that.trackIndex,_that.title,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.bookId,_that.cfi,_that.positionMs,_that.trackIndex,_that.title,_that.notes,_that.createdAt);case _:
   return orElse();
 
 }
@@ -2686,10 +2740,10 @@ return $default(_that.id,_that.bookId,_that.positionMs,_that.trackIndex,_that.ti
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int bookId,  int? positionMs,  int? trackIndex,  String? title,  String? notes,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int bookId,  String? cfi,  int? positionMs,  int? trackIndex,  String? title,  String? notes,  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _Bookmark():
-return $default(_that.id,_that.bookId,_that.positionMs,_that.trackIndex,_that.title,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.bookId,_that.cfi,_that.positionMs,_that.trackIndex,_that.title,_that.notes,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2706,10 +2760,10 @@ return $default(_that.id,_that.bookId,_that.positionMs,_that.trackIndex,_that.ti
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int bookId,  int? positionMs,  int? trackIndex,  String? title,  String? notes,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int bookId,  String? cfi,  int? positionMs,  int? trackIndex,  String? title,  String? notes,  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Bookmark() when $default != null:
-return $default(_that.id,_that.bookId,_that.positionMs,_that.trackIndex,_that.title,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.bookId,_that.cfi,_that.positionMs,_that.trackIndex,_that.title,_that.notes,_that.createdAt);case _:
   return null;
 
 }
@@ -2721,11 +2775,12 @@ return $default(_that.id,_that.bookId,_that.positionMs,_that.trackIndex,_that.ti
 @JsonSerializable()
 
 class _Bookmark implements Bookmark {
-  const _Bookmark({required this.id, required this.bookId, this.positionMs, this.trackIndex, this.title, this.notes, this.createdAt});
+  const _Bookmark({required this.id, required this.bookId, this.cfi, this.positionMs, this.trackIndex, this.title, this.notes, this.createdAt});
   factory _Bookmark.fromJson(Map<String, dynamic> json) => _$BookmarkFromJson(json);
 
 @override final  int id;
 @override final  int bookId;
+@override final  String? cfi;
 @override final  int? positionMs;
 @override final  int? trackIndex;
 @override final  String? title;
@@ -2745,16 +2800,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Bookmark&&(identical(other.id, id) || other.id == id)&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.positionMs, positionMs) || other.positionMs == positionMs)&&(identical(other.trackIndex, trackIndex) || other.trackIndex == trackIndex)&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Bookmark&&(identical(other.id, id) || other.id == id)&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.cfi, cfi) || other.cfi == cfi)&&(identical(other.positionMs, positionMs) || other.positionMs == positionMs)&&(identical(other.trackIndex, trackIndex) || other.trackIndex == trackIndex)&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,bookId,positionMs,trackIndex,title,notes,createdAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,bookId,cfi,positionMs,trackIndex,title,notes,createdAt);
+}
 
 @override
 String toString() {
-  return 'Bookmark(id: $id, bookId: $bookId, positionMs: $positionMs, trackIndex: $trackIndex, title: $title, notes: $notes, createdAt: $createdAt)';
+    return 'Bookmark(id: $id, bookId: $bookId, cfi: $cfi, positionMs: $positionMs, trackIndex: $trackIndex, title: $title, notes: $notes, createdAt: $createdAt)';
 }
 
 
@@ -2765,7 +2822,7 @@ abstract mixin class _$BookmarkCopyWith<$Res> implements $BookmarkCopyWith<$Res>
   factory _$BookmarkCopyWith(_Bookmark value, $Res Function(_Bookmark) _then) = __$BookmarkCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int bookId, int? positionMs, int? trackIndex, String? title, String? notes, DateTime? createdAt
+ int id, int bookId, String? cfi, int? positionMs, int? trackIndex, String? title, String? notes, DateTime? createdAt
 });
 
 
@@ -2782,11 +2839,12 @@ class __$BookmarkCopyWithImpl<$Res>
 
 /// Create a copy of Bookmark
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? bookId = null,Object? positionMs = freezed,Object? trackIndex = freezed,Object? title = freezed,Object? notes = freezed,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? bookId = null,Object? cfi = freezed,Object? positionMs = freezed,Object? trackIndex = freezed,Object? title = freezed,Object? notes = freezed,Object? createdAt = freezed,}) {
   return _then(_Bookmark(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,bookId: null == bookId ? _self.bookId : bookId // ignore: cast_nullable_to_non_nullable
-as int,positionMs: freezed == positionMs ? _self.positionMs : positionMs // ignore: cast_nullable_to_non_nullable
+as int,cfi: freezed == cfi ? _self.cfi : cfi // ignore: cast_nullable_to_non_nullable
+as String?,positionMs: freezed == positionMs ? _self.positionMs : positionMs // ignore: cast_nullable_to_non_nullable
 as int?,trackIndex: freezed == trackIndex ? _self.trackIndex : trackIndex // ignore: cast_nullable_to_non_nullable
 as int?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
@@ -2815,16 +2873,21 @@ $AuthorCopyWith<Author> get copyWith => _$AuthorCopyWithImpl<Author>(this as Aut
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Author&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.description, description) || other.description == description));
+  final _this = this as Author;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Author&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount)&&(identical(other.description, _this.description) || other.description == _this.description));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,bookCount,description);
+int get hashCode {
+  final _this = this as Author;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.bookCount,_this.description);
+}
 
 @override
 String toString() {
-  return 'Author(id: $id, name: $name, bookCount: $bookCount, description: $description)';
+  final _this = this as Author;
+  return 'Author(id: ${_this.id}, name: ${_this.name}, bookCount: ${_this.bookCount}, description: ${_this.description})';
 }
 
 
@@ -2853,7 +2916,7 @@ class _$AuthorCopyWithImpl<$Res>
 /// Create a copy of Author
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? description = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Author(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
@@ -3020,16 +3083,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Author&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.description, description) || other.description == description));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Author&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.description, description) || other.description == description));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,bookCount,description);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,bookCount,description);
+}
 
 @override
 String toString() {
-  return 'Author(id: $id, name: $name, bookCount: $bookCount, description: $description)';
+    return 'Author(id: $id, name: $name, bookCount: $bookCount, description: $description)';
 }
 
 
@@ -3087,16 +3152,21 @@ $ShelfCopyWith<Shelf> get copyWith => _$ShelfCopyWithImpl<Shelf>(this as Shelf, 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Shelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
+  final _this = this as Shelf;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Shelf&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,bookCount);
+int get hashCode {
+  final _this = this as Shelf;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.bookCount);
+}
 
 @override
 String toString() {
-  return 'Shelf(id: $id, name: $name, bookCount: $bookCount)';
+  final _this = this as Shelf;
+  return 'Shelf(id: ${_this.id}, name: ${_this.name}, bookCount: ${_this.bookCount})';
 }
 
 
@@ -3125,7 +3195,7 @@ class _$ShelfCopyWithImpl<$Res>
 /// Create a copy of Shelf
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,}) {
-  return _then(_self.copyWith(
+  return _then(Shelf(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
@@ -3290,16 +3360,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Shelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Shelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,bookCount);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,bookCount);
+}
 
 @override
 String toString() {
-  return 'Shelf(id: $id, name: $name, bookCount: $bookCount)';
+    return 'Shelf(id: $id, name: $name, bookCount: $bookCount)';
 }
 
 
@@ -3356,16 +3428,21 @@ $MagicShelfCopyWith<MagicShelf> get copyWith => _$MagicShelfCopyWithImpl<MagicSh
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MagicShelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+  final _this = this as MagicShelf;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MagicShelf&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name);
+int get hashCode {
+  final _this = this as MagicShelf;
+  return Object.hash(runtimeType,_this.id,_this.name);
+}
 
 @override
 String toString() {
-  return 'MagicShelf(id: $id, name: $name)';
+  final _this = this as MagicShelf;
+  return 'MagicShelf(id: ${_this.id}, name: ${_this.name})';
 }
 
 
@@ -3394,7 +3471,7 @@ class _$MagicShelfCopyWithImpl<$Res>
 /// Create a copy of MagicShelf
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
-  return _then(_self.copyWith(
+  return _then(MagicShelf(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,
@@ -3557,16 +3634,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MagicShelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MagicShelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name);
+int get hashCode {
+    return Object.hash(runtimeType,id,name);
+}
 
 @override
 String toString() {
-  return 'MagicShelf(id: $id, name: $name)';
+    return 'MagicShelf(id: $id, name: $name)';
 }
 
 
@@ -3622,16 +3701,21 @@ $CountedOptionCopyWith<CountedOption> get copyWith => _$CountedOptionCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CountedOption&&(identical(other.name, name) || other.name == name)&&(identical(other.count, count) || other.count == count));
+  final _this = this as CountedOption;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CountedOption&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.count, _this.count) || other.count == _this.count));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,count);
+int get hashCode {
+  final _this = this as CountedOption;
+  return Object.hash(runtimeType,_this.name,_this.count);
+}
 
 @override
 String toString() {
-  return 'CountedOption(name: $name, count: $count)';
+  final _this = this as CountedOption;
+  return 'CountedOption(name: ${_this.name}, count: ${_this.count})';
 }
 
 
@@ -3660,7 +3744,7 @@ class _$CountedOptionCopyWithImpl<$Res>
 /// Create a copy of CountedOption
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? count = null,}) {
-  return _then(_self.copyWith(
+  return _then(CountedOption(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,count: null == count ? _self.count : count // ignore: cast_nullable_to_non_nullable
 as int,
@@ -3823,16 +3907,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CountedOption&&(identical(other.name, name) || other.name == name)&&(identical(other.count, count) || other.count == count));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CountedOption&&(identical(other.name, name) || other.name == name)&&(identical(other.count, count) || other.count == count));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,count);
+int get hashCode {
+    return Object.hash(runtimeType,name,count);
+}
 
 @override
 String toString() {
-  return 'CountedOption(name: $name, count: $count)';
+    return 'CountedOption(name: $name, count: $count)';
 }
 
 
@@ -3888,16 +3974,21 @@ $FilterOptionsCopyWith<FilterOptions> get copyWith => _$FilterOptionsCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FilterOptions&&const DeepCollectionEquality().equals(other.authors, authors));
+  final _this = this as FilterOptions;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FilterOptions&&const DeepCollectionEquality().equals(other.authors, _this.authors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(authors));
+int get hashCode {
+  final _this = this as FilterOptions;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.authors));
+}
 
 @override
 String toString() {
-  return 'FilterOptions(authors: $authors)';
+  final _this = this as FilterOptions;
+  return 'FilterOptions(authors: ${_this.authors})';
 }
 
 
@@ -3926,7 +4017,7 @@ class _$FilterOptionsCopyWithImpl<$Res>
 /// Create a copy of FilterOptions
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? authors = null,}) {
-  return _then(_self.copyWith(
+  return _then(FilterOptions(
 authors: null == authors ? _self.authors : authors // ignore: cast_nullable_to_non_nullable
 as List<CountedOption>,
   ));
@@ -4069,7 +4160,7 @@ return $default(_that.authors);case _:
 @JsonSerializable()
 
 class _FilterOptions implements FilterOptions {
-  const _FilterOptions({final  List<CountedOption> authors = const []}): _authors = authors;
+  const _FilterOptions({ List<CountedOption> authors = const []}): _authors = authors;
   factory _FilterOptions.fromJson(Map<String, dynamic> json) => _$FilterOptionsFromJson(json);
 
  final  List<CountedOption> _authors;
@@ -4093,16 +4184,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterOptions&&const DeepCollectionEquality().equals(other._authors, _authors));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterOptions&&const DeepCollectionEquality().equals(other.authors, _authors));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_authors));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_authors));
+}
 
 @override
 String toString() {
-  return 'FilterOptions(authors: $authors)';
+    return 'FilterOptions(authors: $authors)';
 }
 
 

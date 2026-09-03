@@ -180,12 +180,18 @@ abstract class Series with _$Series {
 }
 
 /// From `BookMark` (Java class name, capital M — same JSON field names
-/// regardless) at `/api/v1/bookmarks`. Note `notes`, not `note`.
+/// regardless) at `/api/v1/bookmarks`. Note `notes`, not `note`. One entity
+/// backs bookmarks for every format: [cfi] for EPUB, [positionMs]/
+/// [trackIndex] for audiobooks, `pageNumber` for PDF (not modeled here,
+/// since this app doesn't read PDFs yet) — confirmed against the real
+/// `BookMarkEntity`/`CreateBookMarkRequest` source, which comment each
+/// field with exactly which format it's "for".
 @freezed
 abstract class Bookmark with _$Bookmark {
   const factory Bookmark({
     required int id,
     required int bookId,
+    String? cfi,
     int? positionMs,
     int? trackIndex,
     String? title,
