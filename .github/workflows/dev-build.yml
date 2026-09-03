@@ -94,5 +94,5 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: grimmory-dev-build
+          name: grimreader-dev-build
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk

@@ -19,10 +19,10 @@ import 'package:url_launcher/url_launcher.dart';
 /// https://docs.github.com/rest/overview/resources-in-the-rest-api#user-agent-required.
 final _github = Dio(
   BaseOptions(
-    baseUrl: 'https://api.github.com/repos/schmitzkr/grimmory-flutter',
+    baseUrl: 'https://api.github.com/repos/schmitzkr/grimreader-flutter',
     headers: {
       'Accept': 'application/vnd.github+json',
-      'User-Agent': 'grimmory-flutter',
+      'User-Agent': 'grimreader-flutter',
     },
     receiveTimeout: const Duration(seconds: 10),
   ),
@@ -33,7 +33,7 @@ class AppRelease {
   final String releaseNotes;
   final DateTime? releasedAt;
 
-  /// The `grimmory.apk` asset's direct download URL — null if a release
+  /// The `grimreader.apk` asset's direct download URL — null if a release
   /// somehow has no such asset yet (e.g. checked mid-upload).
   final String? apkDownloadUrl;
   final bool prerelease;
@@ -49,7 +49,7 @@ class AppRelease {
   factory AppRelease.fromGithubJson(Map<String, dynamic> j) {
     final assets = (j['assets'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final apkAsset = assets.cast<Map<String, dynamic>?>().firstWhere(
-      (a) => a?['name'] == 'grimmory.apk',
+      (a) => a?['name'] == 'grimreader.apk',
       orElse: () => null,
     );
     return AppRelease(
@@ -416,7 +416,7 @@ Future<void> _startUpdate(ScaffoldMessengerState messenger, String url) async {
 
   try {
     final dir = await getTemporaryDirectory();
-    final savePath = '${dir.path}/grimmory-update.apk';
+    final savePath = '${dir.path}/grimreader-update.apk';
 
     // Remove stale file so we never install an old build
     final file = File(savePath);
@@ -452,7 +452,7 @@ Future<void> _startUpdate(ScaffoldMessengerState messenger, String url) async {
       messenger.showSnackBar(
         const SnackBar(
           content: Text(
-            'Allow "Install unknown apps" for Grimmory in Settings, then '
+            'Allow "Install unknown apps" for GrimReader in Settings, then '
             'tap the update banner again.',
           ),
           duration: Duration(seconds: 8),
