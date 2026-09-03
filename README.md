@@ -2,8 +2,7 @@
 
 An unofficial Android client for [Grimmory](https://grimmory.org), a
 self-hosted digital library server. Built to fill the mobile-app gap left by
-switching away from Audiobookshelf, with **Android Auto** support as the
-headline feature — something no Grimmory client offers today.
+switching away from Audiobookshelf.
 
 Scope: **audiobooks** (streaming or offline download) and **EPUB** ebook
 reading. Other ebook/comic formats your library holds (PDF, CBX, FB2, MOBI,
