@@ -38,7 +38,9 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.battery_alert_outlined),
             title: const Text('Background playback getting interrupted?'),
-            subtitle: const Text('Exclude Grimmory from battery optimization'),
+            subtitle: const Text(
+              'Exclude GrimReader from battery optimization',
+            ),
             onTap: () => _showBatteryOptimizationDialog(context),
           ),
           const Divider(),
@@ -82,7 +84,7 @@ void _showBatteryOptimizationDialog(BuildContext context) {
       content: const Text(
         'If playback stops unexpectedly when the screen is off or the '
         'app is in the background, your device may be aggressively '
-        "battery-optimizing Grimmory. To fix it, find Grimmory in your "
+        "battery-optimizing GrimReader. To fix it, find GrimReader in your "
         'phone\'s Settings → Apps → Battery (the exact wording varies by '
         'manufacturer) and set it to "Unrestricted" or "Not optimized".',
       ),

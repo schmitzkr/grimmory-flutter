@@ -147,7 +147,7 @@ jobs:
             --obfuscate --split-debug-info=build/debug_info
 
       - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/grimmory.apk
+        run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/grimreader.apk
 
       - name: Zip debug symbols
         run: (cd build/debug_info && zip -r ../../grimmory-debug-info.zip .)
@@ -176,5 +176,5 @@ jobs:
           name: ${{ steps.meta.outputs.tag }}
           body: ${{ steps.meta.outputs.notes }}
           files: |
-            build/app/outputs/flutter-apk/grimmory.apk
+            build/app/outputs/flutter-apk/grimreader.apk
             grimmory-debug-info.zip

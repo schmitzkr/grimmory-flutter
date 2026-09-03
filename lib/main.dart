@@ -82,7 +82,7 @@ class _GrimmoryAppState extends ConsumerState<GrimmoryApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: 'Grimmory',
+      title: 'GrimReader',
       theme: ThemeData(colorSchemeSeed: Colors.deepPurple, useMaterial3: true),
       darkTheme: ThemeData(
         colorSchemeSeed: Colors.deepPurple,
