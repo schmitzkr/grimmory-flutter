@@ -182,6 +182,19 @@ class ApiClient {
     await _storeTokens(AuthTokens.fromJson(resp.data as Map<String, dynamic>));
   }
 
+  /// `state` here is NOT arbitrary client-generated randomness — confirmed
+  /// via the real Grimmory server source (`OidcStateService`) that it's a
+  /// one-time value the server itself generates and caches (5 min TTL),
+  /// then consumes exactly once on callback. A state this app made up
+  /// itself will never be in that cache, and the server rejects it with
+  /// "Invalid or expired OIDC state parameter" every time. Callers must
+  /// use [getOidcState] to obtain the state value before starting the
+  /// authorize request, not generate their own.
+  Future<String> getOidcState() async {
+    final resp = await _dio.get('/auth/oidc/state');
+    return (resp.data as Map<String, dynamic>)['state'] as String;
+  }
+
   /// Confirmed via a live validation error that this endpoint's contract is
   /// NOT "hand me a completed ID token" (the original guess) — it's "hand
   /// me the raw PKCE authorization result and let the server exchange it
