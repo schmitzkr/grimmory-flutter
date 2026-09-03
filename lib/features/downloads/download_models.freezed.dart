@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'download_models.dart';
@@ -9,6 +9,7 @@ part of 'download_models.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $DownloadRecordCopyWith<DownloadRecord> get copyWith => _$DownloadRecordCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadRecord&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.authors, authors)&&(identical(other.status, status) || other.status == status)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.totalBytes, totalBytes) || other.totalBytes == totalBytes)&&(identical(other.error, error) || other.error == error));
+  final _this = this as DownloadRecord;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloadRecord&&(identical(other.bookId, _this.bookId) || other.bookId == _this.bookId)&&(identical(other.title, _this.title) || other.title == _this.title)&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.progress, _this.progress) || other.progress == _this.progress)&&(identical(other.totalBytes, _this.totalBytes) || other.totalBytes == _this.totalBytes)&&(identical(other.error, _this.error) || other.error == _this.error));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,bookId,title,const DeepCollectionEquality().hash(authors),status,progress,totalBytes,error);
+int get hashCode {
+  final _this = this as DownloadRecord;
+  return Object.hash(runtimeType,_this.bookId,_this.title,const DeepCollectionEquality().hash(_this.authors),_this.status,_this.progress,_this.totalBytes,_this.error);
+}
 
 @override
 String toString() {
-  return 'DownloadRecord(bookId: $bookId, title: $title, authors: $authors, status: $status, progress: $progress, totalBytes: $totalBytes, error: $error)';
+  final _this = this as DownloadRecord;
+  return 'DownloadRecord(bookId: ${_this.bookId}, title: ${_this.title}, authors: ${_this.authors}, status: ${_this.status}, progress: ${_this.progress}, totalBytes: ${_this.totalBytes}, error: ${_this.error})';
 }
 
 
@@ -66,7 +72,7 @@ class _$DownloadRecordCopyWithImpl<$Res>
 /// Create a copy of DownloadRecord
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? bookId = null,Object? title = null,Object? authors = null,Object? status = null,Object? progress = null,Object? totalBytes = null,Object? error = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(DownloadRecord(
 bookId: null == bookId ? _self.bookId : bookId // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,authors: null == authors ? _self.authors : authors // ignore: cast_nullable_to_non_nullable
@@ -215,7 +221,7 @@ return $default(_that.bookId,_that.title,_that.authors,_that.status,_that.progre
 @JsonSerializable()
 
 class _DownloadRecord implements DownloadRecord {
-  const _DownloadRecord({required this.bookId, required this.title, final  List<String> authors = const [], required this.status, this.progress = 0.0, this.totalBytes = 0, this.error}): _authors = authors;
+  const _DownloadRecord({required this.bookId, required this.title,  List<String> authors = const [], required this.status, this.progress = 0.0, this.totalBytes = 0, this.error}): _authors = authors;
   factory _DownloadRecord.fromJson(Map<String, dynamic> json) => _$DownloadRecordFromJson(json);
 
 @override final  int bookId;
@@ -245,16 +251,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DownloadRecord&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._authors, _authors)&&(identical(other.status, status) || other.status == status)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.totalBytes, totalBytes) || other.totalBytes == totalBytes)&&(identical(other.error, error) || other.error == error));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DownloadRecord&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.authors, _authors)&&(identical(other.status, status) || other.status == status)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.totalBytes, totalBytes) || other.totalBytes == totalBytes)&&(identical(other.error, error) || other.error == error));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,bookId,title,const DeepCollectionEquality().hash(_authors),status,progress,totalBytes,error);
+int get hashCode {
+    return Object.hash(runtimeType,bookId,title,const DeepCollectionEquality().hash(_authors),status,progress,totalBytes,error);
+}
 
 @override
 String toString() {
-  return 'DownloadRecord(bookId: $bookId, title: $title, authors: $authors, status: $status, progress: $progress, totalBytes: $totalBytes, error: $error)';
+    return 'DownloadRecord(bookId: $bookId, title: $title, authors: $authors, status: $status, progress: $progress, totalBytes: $totalBytes, error: $error)';
 }
 
 
