@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -44,6 +45,13 @@ class ApiClient {
   /// browser's bare `<audio>`/`<img src>`), which doesn't apply to us.
   Map<String, String> get authHeaders =>
       _token == null ? {} : {'Authorization': 'Bearer $_token'};
+
+  /// Lets tests answer requests in-process (request bodies, status codes,
+  /// the 401→refresh→retry path) without a server; everything above the
+  /// adapter — interceptors, transformers, base URL — still runs for real.
+  @visibleForTesting
+  set httpClientAdapter(HttpClientAdapter adapter) =>
+      _dio.httpClientAdapter = adapter;
 
   ApiClient(this._prefs, this._secureStorage, {String? initialToken}) {
     _token = initialToken;

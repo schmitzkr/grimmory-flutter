@@ -114,13 +114,16 @@ extension BookProgressX on Book {
 
 /// From `AppBookFile` (`AppBookDetail.files`). [bookType] matches
 /// `BookFileType` (AUDIOBOOK/EPUB/PDF/CBX/FB2/MOBI/AZW3); [isPrimary] is
-/// whichever file the library's format priority picks.
+/// whichever file the library's format priority picks — serialised as
+/// `primary`, not `isPrimary`: the DTO is a Lombok `@Data` class, whose
+/// `boolean isPrimary` field gets an `isPrimary()` getter that Jackson maps
+/// to the property name `primary` (same for its `isBook` → `book`).
 @freezed
 abstract class BookFile with _$BookFile {
   const factory BookFile({
     required int id,
     String? bookType,
-    @Default(false) bool isPrimary,
+    @JsonKey(name: 'primary') @Default(false) bool isPrimary,
     @Default(false) bool folderBased,
   }) = _BookFile;
 

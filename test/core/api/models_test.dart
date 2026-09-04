@@ -51,8 +51,8 @@ void main() {
       'title': 'Dual format',
       'primaryFileType': 'AUDIOBOOK',
       'files': [
-        {'id': 70, 'bookType': 'AUDIOBOOK', 'isPrimary': true},
-        {'id': 71, 'bookType': 'EPUB', 'isPrimary': false},
+        {'id': 70, 'bookType': 'AUDIOBOOK', 'primary': true},
+        {'id': 71, 'bookType': 'EPUB', 'primary': false},
       ],
     });
     expect(book.files, hasLength(2));
@@ -65,10 +65,56 @@ void main() {
       'title': 'Multi ebook',
       'files': [
         {'id': 80, 'bookType': 'MOBI'},
-        {'id': 81, 'bookType': 'EPUB', 'isPrimary': true},
+        {'id': 81, 'bookType': 'EPUB', 'primary': true},
       ],
     });
     expect(book.ebookFileId, 81);
+  });
+
+  // `AppBookFile` is a Lombok @Data class: its `boolean isPrimary` field
+  // serialises under the property name `primary` (Jackson strips the `is`
+  // from the generated `isPrimary()` getter), so the Dart-side field name is
+  // NOT the JSON key. A model keyed on `isPrimary` silently never sees it.
+  test('BookFile.fromJson reads the primary flag from the "primary" key', () {
+    expect(
+      BookFile.fromJson({
+        'id': 1,
+        'bookType': 'EPUB',
+        'primary': true,
+      }).isPrimary,
+      isTrue,
+    );
+    expect(
+      BookFile.fromJson({
+        'id': 1,
+        'bookType': 'EPUB',
+        'isPrimary': true,
+      }).isPrimary,
+      isFalse,
+    );
+    expect(BookFile.fromJson({'id': 1}).folderBased, isFalse);
+  });
+
+  test('EpubProgress and AudiobookProgress parse a server response', () {
+    final epub = EpubProgress.fromJson({
+      'cfi': 'epubcfi(/6/4!/4/2)',
+      'href': null,
+      'percentage': 44.2,
+    });
+    expect(epub.cfi, 'epubcfi(/6/4!/4/2)');
+    expect(epub.href, isNull);
+    expect(epub.percentage, 44.2);
+
+    final audio = AudiobookProgress.fromJson({
+      'positionMs': 3500,
+      'trackIndex': 2,
+      'percentage': 12.3,
+      'updatedAt': '2026-09-04T18:26:03Z',
+    });
+    expect(audio.positionMs, 3500);
+    expect(audio.trackIndex, 2);
+    expect(audio.trackPositionMs, isNull);
+    expect(audio.percentage, 12.3);
   });
 
   test('normalizedReadProgress treats every type as 0-100', () {
