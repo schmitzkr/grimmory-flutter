@@ -74,6 +74,27 @@ class BookGridTile extends ConsumerWidget {
                       fileType: book.primaryFileType,
                     ),
                   ),
+                  // Matches Grimmory's own web UI's top-left overlay stack
+                  // (book-type-pill-overlay + series-number-overlay in
+                  // book-card.component.html/.scss) — a format pill and a
+                  // "#N" series-order badge, the one piece of cover overlay
+                  // info that's actually about where a book sits when
+                  // sorted by series.
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (book.primaryFileType != null)
+                          _FormatPill(fileType: book.primaryFileType!),
+                        if (book.seriesNumber != null) ...[
+                          const SizedBox(height: 4),
+                          _SeriesNumberBadge(seriesNumber: book.seriesNumber!),
+                        ],
+                      ],
+                    ),
+                  ),
                   if (book.readStatus == 'READ')
                     Positioned(
                       left: 6,
@@ -145,6 +166,69 @@ class BookGridTile extends ConsumerWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// A small colored badge showing the book's file format (EPUB, AUDIOBOOK,
+/// etc.) — mirrors Grimmory web's `book-type-pill-overlay`, minus its
+/// per-format color theming (that reads per-file extension colors this
+/// app's `Book` model doesn't carry; a single consistent app-theme color
+/// keeps this simple without guessing at exact hex values).
+class _FormatPill extends StatelessWidget {
+  const _FormatPill({required this.fileType});
+
+  final String fileType;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        fileType,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.onPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: 9,
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+}
+
+/// "#N" badge showing where a book falls in its series — mirrors Grimmory
+/// web's `series-number-overlay`. Drops a trailing `.0` for whole numbers
+/// (e.g. "#3" not "#3.0"); a fractional entry (a novella between books 3
+/// and 4) still shows as e.g. "#3.5".
+class _SeriesNumberBadge extends StatelessWidget {
+  const _SeriesNumberBadge({required this.seriesNumber});
+
+  final double seriesNumber;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = seriesNumber == seriesNumber.roundToDouble()
+        ? seriesNumber.toInt().toString()
+        : seriesNumber.toString();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Text(
+        '#$label',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
