@@ -172,27 +172,38 @@ class BookGridTile extends ConsumerWidget {
 }
 
 /// A small colored badge showing the book's file format (EPUB, AUDIOBOOK,
-/// etc.) — mirrors Grimmory web's `book-type-pill-overlay`, minus its
-/// per-format color theming (that reads per-file extension colors this
-/// app's `Book` model doesn't carry; a single consistent app-theme color
-/// keeps this simple without guessing at exact hex values).
+/// etc.) — mirrors Grimmory web's `book-type-pill-overlay`, including its
+/// per-format color theming.
 class _FormatPill extends StatelessWidget {
   const _FormatPill({required this.fileType});
 
   final String fileType;
 
+  // Matches Grimmory's own web UI's per-format pill colors exactly (its
+  // `.book-type-*` classes in book-card.component.scss, backed by Tailwind
+  // v4's default palette via compat.scss's `--book-type-*-color` tokens) —
+  // confirmed by reading both files directly rather than picking arbitrary
+  // colors. Text is always white there too (`color: var(--color-white)`).
+  static const _colors = {
+    'EPUB': Color(0xFF16A34A), // green-600
+    'PDF': Color(0xFFDC2626), // red-600
+    'CBX': Color(0xFF3B82F6), // blue-500
+    'FB2': Color(0xFFEC4899), // pink-500
+    'MOBI': Color(0xFF6366F1), // indigo-500
+    'AZW3': Color(0xFF14B8A6), // teal-500
+    'AUDIOBOOK': Color(0xFFEAB308), // yellow-500
+  };
+
   @override
   Widget build(BuildContext context) {
+    final color = _colors[fileType] ?? Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(6),
-      ),
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
       child: Text(
         fileType,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onPrimary,
+          color: Colors.white,
           fontWeight: FontWeight.bold,
           fontSize: 9,
           letterSpacing: 0.3,
