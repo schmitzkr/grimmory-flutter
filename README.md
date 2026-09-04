@@ -1,4 +1,7 @@
-<img src="assets/icon/icon.png" alt="GrimReader app icon" width="120" align="left" />
+<table>
+<tr>
+<td><img src="assets/icon/icon.png" alt="GrimReader app icon" width="120" /></td>
+<td>
 
 # GrimReader
 
@@ -12,7 +15,9 @@ AZW3) show up in the library grid so you can see what's there, but aren't
 readable in-app yet — tracked in [#46](../../issues/46). **Android only** for
 now (no iOS/CarPlay).
 
-<br clear="left" />
+</td>
+</tr>
+</table>
 
 ## Features
 
