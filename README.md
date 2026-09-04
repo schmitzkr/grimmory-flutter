@@ -1,5 +1,7 @@
 # GrimReader
 
+<img src="assets/icon/icon.png" alt="GrimReader app icon" width="120" />
+
 An unofficial Android client for [Grimmory](https://grimmory.org), a
 self-hosted digital library server. Built to fill the mobile-app gap left by
 switching away from Audiobookshelf.
