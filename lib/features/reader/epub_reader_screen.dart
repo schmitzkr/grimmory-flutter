@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -145,7 +146,11 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
 
   void _saveProgress(EpubLocation location) {
     _currentCfi = location.startCfi;
-    ref
+    unawaited(_persistProgress(location));
+  }
+
+  Future<void> _persistProgress(EpubLocation location) {
+    return ref
         .read(apiClientProvider)
         .updateEpubProgress(
           widget.bookId,
@@ -166,6 +171,25 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
           // Best-effort — a dropped progress save shouldn't interrupt
           // reading, same convention as the audiobook player.
         });
+  }
+
+  /// `onRelocated` only fires after epub.js's own relocate event, which
+  /// lags a little behind actually opening the book or turning a page — a
+  /// real reported bug: open a book, read a page or two, back out quickly,
+  /// and the position is lost because no relocate event had fired yet. This
+  /// queries the live position on demand and awaits the save before letting
+  /// the pop proceed, so leaving the reader always persists wherever you
+  /// actually are, not just wherever the last passive event happened to be.
+  Future<void> _saveProgressBeforeExit() async {
+    if (_bytes == null) return;
+    try {
+      final location = await _controller.getCurrentLocation().timeout(
+        const Duration(seconds: 3),
+      );
+      await _persistProgress(location);
+    } catch (_) {
+      // Best-effort — never block leaving the reader on this.
+    }
   }
 
   void _showBookmarks(BuildContext context) {
@@ -212,48 +236,60 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _saveProgressBeforeExit();
+        if (mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+          actions: [
+            IconButton(
+              icon: Icon(
+                _isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              ),
+              tooltip: _isDark
+                  ? 'Switch to light theme'
+                  : 'Switch to dark theme',
+              onPressed: _toggleTheme,
             ),
-            tooltip: _isDark ? 'Switch to light theme' : 'Switch to dark theme',
-            onPressed: _toggleTheme,
-          ),
-          IconButton(
-            icon: const Icon(Icons.bookmark_border),
-            tooltip: 'Bookmarks',
-            onPressed: () => _showBookmarks(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu_book_outlined),
-            tooltip: 'Chapters',
-            onPressed: _chapters.isEmpty ? null : () => _showChapters(context),
-          ),
-        ],
-      ),
-      body: EpubGestureOverlay(
-        onTapLeft: _controller.prev,
-        onTapRight: _controller.next,
-        onSwipeDown: () => _showBookmarks(context),
-        onSwipeUp: _chapters.isEmpty ? () {} : () => _showChapters(context),
-        child: EpubViewer(
-          epubController: _controller,
-          epubSource: EpubSource.fromData(_bytes!),
-          initialCfi: _initialCfi,
-          displaySettings: EpubDisplaySettings(
-            theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
-          ),
-          onChaptersLoaded: (chapters) {
-            if (mounted) setState(() => _chapters = chapters);
-          },
-          onRelocated: _saveProgress,
+            IconButton(
+              icon: const Icon(Icons.bookmark_border),
+              tooltip: 'Bookmarks',
+              onPressed: () => _showBookmarks(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.menu_book_outlined),
+              tooltip: 'Chapters',
+              onPressed: _chapters.isEmpty
+                  ? null
+                  : () => _showChapters(context),
+            ),
+          ],
         ),
+        body: EpubGestureOverlay(
+          onTapLeft: _controller.prev,
+          onTapRight: _controller.next,
+          onSwipeDown: () => _showBookmarks(context),
+          onSwipeUp: _chapters.isEmpty ? () {} : () => _showChapters(context),
+          child: EpubViewer(
+            epubController: _controller,
+            epubSource: EpubSource.fromData(_bytes!),
+            initialCfi: _initialCfi,
+            displaySettings: EpubDisplaySettings(
+              theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
+            ),
+            onChaptersLoaded: (chapters) {
+              if (mounted) setState(() => _chapters = chapters);
+            },
+            onRelocated: _saveProgress,
+          ),
+        ),
+        bottomNavigationBar: const MiniPlayer(),
       ),
-      bottomNavigationBar: const MiniPlayer(),
     );
   }
 
