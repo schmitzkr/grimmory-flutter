@@ -11,6 +11,7 @@ import 'core/providers.dart';
 import 'features/auth/oidc_login_controller.dart';
 import 'features/player/audio_handler.dart';
 import 'features/player/playback_provider.dart';
+import 'features/player/progress_sync.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +82,9 @@ class _GrimmoryAppState extends ConsumerState<GrimmoryApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
+    // Watched here, at the root, purely to keep it alive for the app's
+    // lifetime — it has no value, only the side effect described on it.
+    ref.watch(audiobookProgressSyncProvider);
     return MaterialApp.router(
       title: 'GrimReader',
       theme: ThemeData(colorSchemeSeed: Colors.deepPurple, useMaterial3: true),
