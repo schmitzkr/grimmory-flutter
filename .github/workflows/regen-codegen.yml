@@ -30,7 +30,15 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
 
+      # main is branch-protected (PR + passing status checks required) and
+      # the default GITHUB_TOKEN's github-actions[bot] identity isn't in
+      # the ruleset's bypass list -- push with a PAT belonging to the repo
+      # admin instead. Same fix, and same reasoning, as
+      # regen-launcher-icons.yml's own "Commit regenerated icons" step and
+      # release.yml's "Commit version bump and tag" step.
       - name: Commit regenerated code
+        env:
+          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -39,5 +47,7 @@ jobs:
             echo "No generated-code changes to commit"
           else
             git commit -m "chore: regenerate freezed/json_serializable output"
-            git push
+            git config --unset-all "http.https://github.com/.extraheader" || true
+            git remote set-url origin "https://x-access-token:${RELEASE_PUSH_TOKEN}@github.com/${{ github.repository }}.git"
+            git push origin "HEAD:${{ github.ref_name }}"
           fi
