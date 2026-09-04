@@ -58,6 +58,14 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   final BehaviorSubject<List<AudiobookChapter>> chaptersSubject =
       BehaviorSubject.seeded([]);
 
+  /// Fires after each progress save the server actually accepted.
+  /// [sessionEnded] marks the saves made on pause/stop/completion/switching
+  /// books, as opposed to the periodic tick while playing — the signal
+  /// `audiobookProgressSyncProvider` uses to refresh the screens showing
+  /// this book's progress without refetching every five seconds.
+  final PublishSubject<({int bookId, bool sessionEnded})> progressSaved =
+      PublishSubject();
+
   Timer? _progressTimer;
   // Guards against retry-looping forever if a refreshed token still fails
   // (e.g. the server itself is down, not just the token) — one retry per
@@ -75,7 +83,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     _player.currentIndexStream.listen(_updateMediaItemForIndex);
     _player.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
-        _saveProgressNow();
+        _saveProgressNow(sessionEnded: true);
         _stopProgressTimer();
       }
     });
@@ -189,7 +197,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   /// [_buildAudioSource] plays the local files instead of streaming.
   Future<void> loadBook(int bookId) async {
     _stopProgressTimer();
-    await _saveProgressNow();
+    await _saveProgressNow(sessionEnded: true);
 
     _isDownloaded = await _downloadStorage.isDownloaded(bookId);
     final Book book;
@@ -434,7 +442,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     _progressTimer = null;
   }
 
-  Future<void> _saveProgressNow() async {
+  Future<void> _saveProgressNow({bool sessionEnded = false}) async {
     final bookId = _currentBookId;
     if (bookId == null) return;
 
@@ -469,6 +477,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
         progress,
         bookFileId: _bookFileId,
       );
+      progressSaved.add((bookId: bookId, sessionEnded: sessionEnded));
     } catch (_) {
       // Best-effort — a dropped progress save shouldn't interrupt playback.
       // The next periodic tick (or the final save on pause/stop) will
@@ -545,7 +554,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> pause() async {
     await _player.pause();
-    await _saveProgressNow();
+    await _saveProgressNow(sessionEnded: true);
   }
 
   @override
@@ -590,7 +599,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> stop() async {
-    await _saveProgressNow();
+    await _saveProgressNow(sessionEnded: true);
     _stopProgressTimer();
     await _player.stop();
     _currentBookId = null;
