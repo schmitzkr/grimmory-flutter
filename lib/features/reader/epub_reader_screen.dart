@@ -128,7 +128,18 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         .read(apiClientProvider)
         .updateEpubProgress(
           widget.bookId,
-          EpubProgress(cfi: location.startCfi, percentage: location.progress),
+          // location.progress is epub.js's own 0.0-1.0 fraction, but the
+          // server stores/interprets this percentage on a 0-100 scale
+          // (confirmed via the real web frontend, which does
+          // `goToFraction(progress.percentage / 100)` to convert it back) —
+          // sending the raw 0-1 fraction left read status stuck below the
+          // server's READING threshold for anything under ~10% real
+          // progress, so books never surfaced in Continue Reading unless
+          // read well past their first chapter.
+          EpubProgress(
+            cfi: location.startCfi,
+            percentage: location.progress * 100,
+          ),
         )
         .catchError((_) {
           // Best-effort — a dropped progress save shouldn't interrupt

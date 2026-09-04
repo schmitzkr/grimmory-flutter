@@ -67,7 +67,14 @@ abstract class Book with _$Book {
     // Both already present on every `AppBookSummary`/`AppBookDetail`
     // response (library/series/search/continue-reading/continue-listening
     // all return them) — confirmed against the real DTOs — but never
-    // parsed or displayed until now. [readProgress] is 0.0-1.0;
+    // parsed or displayed until now. [readProgress] is NOT on a consistent
+    // scale: it's whatever raw value this app (or another Grimmory client)
+    // last sent for that book's type. Audiobook progress is computed and
+    // sent by this app as a genuine 0.0-1.0 fraction; every other type
+    // (confirmed for EPUB against the real server/web-frontend source,
+    // which divides by 100 before use) is stored and returned on a 0-100
+    // scale. `BookGridTile` normalizes this for display — don't read this
+    // field directly elsewhere without accounting for [primaryFileType].
     // [readStatus] is one of Grimmory's `ReadStatus` enum values (UNREAD,
     // READING, RE_READING, READ, PARTIALLY_READ, PAUSED, WONT_READ,
     // ABANDONED, UNSET) — 'READ' is the only one this app currently acts
