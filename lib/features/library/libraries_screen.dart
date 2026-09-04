@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
@@ -126,10 +127,13 @@ class LibrariesTab extends ConsumerWidget {
   }
 }
 
-/// AppBar title for the Home tab — shows the current library scope
-/// ("All Libraries" or a specific library's name) and opens a menu to
-/// change it. Only meaningful when there's more than one library; with
-/// exactly one, it just labels the screen (nothing to switch between).
+/// AppBar title for the Home tab. With more than one library, shows the
+/// current scope ("All Libraries" or a specific name) and opens a menu to
+/// re-scope the Recently Added grid in place. With exactly one library
+/// there's nothing to switch between, so it instead links straight to that
+/// library's own full contents (`LibraryDetailScreen`, with sort/type/author
+/// filters) — Recently Added alone caps out at 30 books and was never meant
+/// to replace browsing a whole library.
 class HomeLibrarySelector extends ConsumerWidget {
   const HomeLibrarySelector({super.key});
 
@@ -138,8 +142,24 @@ class HomeLibrarySelector extends ConsumerWidget {
     final libraries = ref.watch(librariesProvider).value ?? [];
     final selectedId = ref.watch(selectedLibraryFilterProvider);
 
-    if (libraries.length <= 1) {
+    if (libraries.isEmpty) {
       return const Text('Home');
+    }
+
+    if (libraries.length == 1) {
+      final library = libraries.single;
+      return InkWell(
+        onTap: () => context.push('/libraries/${library.id}'),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(library.name, overflow: TextOverflow.ellipsis),
+            ),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+      );
     }
 
     final selectedName = selectedId == null
