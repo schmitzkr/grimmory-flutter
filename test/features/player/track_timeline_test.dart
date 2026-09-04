@@ -111,10 +111,28 @@ void main() {
           tracks: _tracks,
           folderBased: true,
         );
-        // Only exact for the track that actually contains 3200ms; earlier
-        // tracks clamp at their own start, which is the documented intent.
-        expect(absolute, index == 2 ? 3200 : _tracks[index].cumulativeStartMs);
+        // Exact for any track the position lies at or past the start of.
+        expect(absolute, 3200);
       }
+    });
+
+    test('a position before the track start round-trips to that start', () {
+      final relative = trackRelativeMs(
+        positionMs: 900,
+        trackIndex: 1,
+        tracks: _tracks,
+        folderBased: true,
+      );
+      expect(relative, 0);
+      expect(
+        absoluteMs(
+          trackPositionMs: relative,
+          trackIndex: 1,
+          tracks: _tracks,
+          folderBased: true,
+        ),
+        _tracks[1].cumulativeStartMs,
+      );
     });
 
     test('passes through for a single-stream book or unknown track', () {
@@ -154,7 +172,8 @@ void main() {
         audiobookPercentage(positionMs: 1234, totalDurationMs: 10000),
         12.3,
       );
-      expect(audiobookPercentage(positionMs: 1, totalDurationMs: 3), 0.0);
+      expect(audiobookPercentage(positionMs: 1, totalDurationMs: 10000), 0.0);
+      expect(audiobookPercentage(positionMs: 1, totalDurationMs: 3), 33.3);
       expect(audiobookPercentage(positionMs: 5, totalDurationMs: 6), 83.3);
     });
 
