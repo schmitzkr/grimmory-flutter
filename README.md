@@ -1,9 +1,6 @@
-<table>
-<tr>
-<td><img src="assets/icon/icon.png" alt="GrimReader app icon" width="120" /></td>
-<td>
+<img src="assets/icon/icon.png" alt="GrimReader app icon" width="120" align="left" />
 
-# GrimReader
+### GrimReader
 
 An unofficial Android client for [Grimmory](https://grimmory.org), a
 self-hosted digital library server. Built to fill the mobile-app gap left by
@@ -15,9 +12,7 @@ AZW3) show up in the library grid so you can see what's there, but aren't
 readable in-app yet — tracked in [#46](../../issues/46). **Android only** for
 now (no iOS/CarPlay).
 
-</td>
-</tr>
-</table>
+<br clear="left" />
 
 ## Features
 
