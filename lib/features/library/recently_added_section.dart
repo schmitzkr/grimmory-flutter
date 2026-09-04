@@ -1,20 +1,24 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
-import '../../core/widgets/book_carousel.dart';
 
-final recentlyAddedProvider = FutureProvider<List<Book>>((ref) async {
-  return ref.read(apiClientProvider).getRecentlyAdded();
+/// `null` (All Libraries) uses the dedicated `/app/books/recently-added`
+/// endpoint. A specific library has no server-side "recently added" filter
+/// of its own (confirmed against `AppBookController` — `getRecentlyAdded`
+/// takes only `limit`), so that case reuses the general `/app/books` list
+/// sorted by `addedon desc`, which is the same ordering scoped to one
+/// library.
+final recentlyAddedProvider = FutureProvider.family<List<Book>, int?>((
+  ref,
+  libraryId,
+) async {
+  final api = ref.read(apiClientProvider);
+  if (libraryId == null) return api.getRecentlyAdded(limit: 30);
+  return api.getLibraryBooks(
+    libraryId,
+    sort: 'addedon',
+    dir: 'desc',
+    size: 30,
+  );
 });
-
-class RecentlyAddedSection extends ConsumerWidget {
-  const RecentlyAddedSection({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final books = ref.watch(recentlyAddedProvider).value ?? [];
-    return BookCarousel(title: 'Recently Added', books: books);
-  }
-}

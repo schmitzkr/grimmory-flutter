@@ -22,13 +22,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _index = 0;
 
-  static const _titles = [
-    'Libraries',
-    'Series',
-    'Authors',
-    'Shelves',
-    'Search',
-  ];
+  static const _titles = ['Home', 'Series', 'Authors', 'Shelves', 'Search'];
   static const _tabs = [
     LibrariesTab(),
     SeriesTab(),
@@ -41,7 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_index]),
+        title: _index == 0
+            ? const HomeLibrarySelector()
+            : Text(_titles[_index]),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -66,9 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
             onDestinationSelected: (index) => setState(() => _index = index),
             destinations: const [
               NavigationDestination(
-                icon: Icon(Icons.headphones_outlined),
-                selectedIcon: Icon(Icons.headphones),
-                label: 'Libraries',
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Home',
               ),
               NavigationDestination(
                 icon: Icon(Icons.collections_bookmark_outlined),
