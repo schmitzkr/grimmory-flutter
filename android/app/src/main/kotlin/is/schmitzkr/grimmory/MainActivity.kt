@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.Process
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import com.ryanheise.audioservice.AudioServiceActivity
@@ -96,6 +99,18 @@ class MainActivity : AudioServiceActivity() {
 
         if (isInForeground) {
             startActivity(installIntent)
+            // The system installer replaces this app's APK but never kills
+            // this currently-running process on its own. Reported bug: with
+            // a persistent background audio service keeping this process
+            // (AudioServiceActivity's shared FlutterEngine) alive longer
+            // than a typical app, the old process was surviving right
+            // through the install, so reopening the app afterward launched
+            // a second, separate process alongside it -- two copies running
+            // at once. The delay just gives the installer activity a moment
+            // to actually launch before this process exits.
+            Handler(Looper.getMainLooper()).postDelayed({
+                Process.killProcess(Process.myPid())
+            }, 1000)
         } else {
             showInstallNotification(installIntent, uri)
         }
