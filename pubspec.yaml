@@ -50,6 +50,11 @@ dependencies:
   # local EPUB file directly rather than needing Grimmory's piecemeal
   # spine/manifest/resource-file endpoints (/api/v1/epub/**) at all.
   flutter_epub_viewer: ^2.0.0
+  # Already a transitive dep — declared directly so the reader can read the
+  # EPUB's spine (container.xml + OPF) itself for a size-based progress
+  # fraction, the same figure Grimmory's web reader uses, as a fallback for
+  # epub.js's percentage being 0 until its slow locations pass finishes.
+  archive: ^4.2.0
 
   # Misc
   package_info_plus: ^10.2.0
