@@ -1,6 +1,6 @@
-# GrimReader
+<img src="assets/icon/icon.png" alt="GrimReader app icon" width="120" align="left" />
 
-<img src="assets/icon/icon.png" alt="GrimReader app icon" width="120" />
+# GrimReader
 
 An unofficial Android client for [Grimmory](https://grimmory.org), a
 self-hosted digital library server. Built to fill the mobile-app gap left by
@@ -11,6 +11,8 @@ reading. Other ebook/comic formats your library holds (PDF, CBX, FB2, MOBI,
 AZW3) show up in the library grid so you can see what's there, but aren't
 readable in-app yet — tracked in [#46](../../issues/46). **Android only** for
 now (no iOS/CarPlay).
+
+<br clear="left" />
 
 ## Features
 
