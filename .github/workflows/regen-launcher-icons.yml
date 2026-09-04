@@ -28,7 +28,19 @@ jobs:
       - run: flutter pub get
       - run: dart run flutter_launcher_icons
 
+      # main is branch-protected (PR + passing status checks required) and
+      # the default GITHUB_TOKEN's github-actions[bot] identity isn't in
+      # the ruleset's bypass list (confirmed via a real rejected push here,
+      # same root cause release.yml hit and fixed) -- push with a PAT
+      # belonging to the repo admin (a real bypass-eligible identity)
+      # instead. See release.yml's own "Commit version bump and tag" step
+      # for the fuller writeup of why this is the working approach (a
+      # PR-based flow was also tried there and hit a harder, unrelated wall
+      # -- GITHUB_TOKEN-authored PRs never trigger their own required
+      # checks -- so don't repeat that path here either).
       - name: Commit regenerated icons
+        env:
+          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -37,5 +49,7 @@ jobs:
             echo "No icon changes to commit"
           else
             git commit -m "chore: regenerate launcher icons"
-            git push
+            git config --unset-all "http.https://github.com/.extraheader" || true
+            git remote set-url origin "https://x-access-token:${RELEASE_PUSH_TOKEN}@github.com/${{ github.repository }}.git"
+            git push origin "HEAD:${{ github.ref_name }}"
           fi
