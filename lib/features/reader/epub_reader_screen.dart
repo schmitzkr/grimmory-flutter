@@ -7,6 +7,7 @@ import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../book/book_detail_screen.dart' show bookProvider;
@@ -83,6 +84,9 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   // position, used as the target when adding a bookmark. Not rendered
   // directly, so plain field assignment (no setState) is enough.
   String? _currentCfi;
+  // Set right before a progress save fails, read by the SnackBar it
+  // triggers — see _persistProgress/_showSyncFailedSnackBar.
+  String? _lastSyncError;
   List<EpubChapter> _chapters = [];
   Object? _error;
 
@@ -146,31 +150,54 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
 
   void _saveProgress(EpubLocation location) {
     _currentCfi = location.startCfi;
-    unawaited(_persistProgress(location));
+    unawaited(
+      _persistProgress(location).then((ok) {
+        if (!ok) _showSyncFailedSnackBar();
+      }),
+    );
   }
 
-  Future<void> _persistProgress(EpubLocation location) {
-    return ref
-        .read(apiClientProvider)
-        .updateEpubProgress(
-          widget.bookId,
-          // location.progress is epub.js's own 0.0-1.0 fraction, but the
-          // server stores/interprets this percentage on a 0-100 scale
-          // (confirmed via the real web frontend, which does
-          // `goToFraction(progress.percentage / 100)` to convert it back) —
-          // sending the raw 0-1 fraction left read status stuck below the
-          // server's READING threshold for anything under ~10% real
-          // progress, so books never surfaced in Continue Reading unless
-          // read well past their first chapter.
-          EpubProgress(
-            cfi: location.startCfi,
-            percentage: location.progress * 100,
-          ),
-        )
-        .catchError((_) {
-          // Best-effort — a dropped progress save shouldn't interrupt
-          // reading, same convention as the audiobook player.
-        });
+  /// Returns whether the save actually succeeded — every caller used to
+  /// swallow failures completely silently, which made a real, reported
+  /// "progress never shows up" bug impossible to diagnose without server
+  /// access. Reported failures now surface via [_showSyncFailedSnackBar]
+  /// with the real API error (via [friendlyApiError]) instead.
+  Future<bool> _persistProgress(EpubLocation location) async {
+    try {
+      await ref
+          .read(apiClientProvider)
+          .updateEpubProgress(
+            widget.bookId,
+            // location.progress is epub.js's own 0.0-1.0 fraction, but the
+            // server stores/interprets this percentage on a 0-100 scale
+            // (confirmed via the real web frontend, which does
+            // `goToFraction(progress.percentage / 100)` to convert it
+            // back) — sending the raw 0-1 fraction left read status stuck
+            // below the server's READING threshold for anything under
+            // ~10% real progress, so books never surfaced in Continue
+            // Reading unless read well past their first chapter.
+            EpubProgress(
+              cfi: location.startCfi,
+              percentage: location.progress * 100,
+            ),
+          );
+      return true;
+    } catch (e) {
+      _lastSyncError = friendlyApiError(e);
+      return false;
+    }
+  }
+
+  void _showSyncFailedSnackBar() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Could not sync reading progress: ${_lastSyncError ?? 'unknown error'}',
+        ),
+        duration: const Duration(seconds: 5),
+      ),
+    );
   }
 
   /// `onRelocated` only fires after epub.js's own relocate event, which
@@ -186,9 +213,18 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       final location = await _controller.getCurrentLocation().timeout(
         const Duration(seconds: 3),
       );
-      await _persistProgress(location);
+      final ok = await _persistProgress(location);
+      if (!ok) {
+        // The screen is about to be popped — briefly hold so the SnackBar
+        // is actually visible before this Scaffold (and its
+        // ScaffoldMessenger) disappears with it.
+        _showSyncFailedSnackBar();
+        await Future.delayed(const Duration(milliseconds: 1200));
+      }
     } catch (_) {
-      // Best-effort — never block leaving the reader on this.
+      // getCurrentLocation() itself failed (e.g. epub.js never established
+      // a location at all — happens if you back out before it settles even
+      // once) — nothing to report, there's no position to have saved.
     }
   }
 
