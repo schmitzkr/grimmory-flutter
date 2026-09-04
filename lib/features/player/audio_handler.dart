@@ -45,6 +45,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   bool _folderBased = false;
   List<AudiobookTrack> _tracks = [];
   int _totalDurationMs = 0;
+  int? _bookFileId;
   // Whether the currently loaded book is playing from local files rather
   // than streaming — set once per loadBook() call from DownloadStorage, not
   // re-checked per request, so a download started mid-playback doesn't
@@ -195,8 +196,17 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     final AudiobookInfo info;
     if (_isDownloaded) {
       final record = await _downloadStorage.readRecord(bookId);
-      final cachedInfo = await _downloadStorage.readCachedInfo(bookId);
+      var cachedInfo = await _downloadStorage.readCachedInfo(bookId);
       if (record != null && cachedInfo != null) {
+        if (cachedInfo.bookFileId == null) {
+          // info.json written by a build that didn't parse bookFileId —
+          // without it, progress saves can't reach the server's file-level
+          // table. Best-effort refresh; offline just keeps the local cache.
+          try {
+            cachedInfo = await _apiClient.getAudiobookInfo(bookId);
+            await _downloadStorage.writeCachedInfo(bookId, cachedInfo);
+          } catch (_) {}
+        }
         book = Book(
           id: bookId,
           title: record.title,
@@ -228,6 +238,7 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     _folderBased = info.folderBased;
     _tracks = info.tracks;
     _totalDurationMs = info.durationMs;
+    _bookFileId = info.bookFileId;
     _retriedAfterRefresh = false;
     chaptersSubject.add(info.chapters);
 
@@ -427,8 +438,13 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     if (bookId == null) return;
 
     final absolutePositionMs = _toAbsoluteMs(_player.position);
+    // 0-100, rounded to one decimal like Grimmory's own player — its
+    // READING/READ thresholds (0.1 / 99.5) are on this scale, so a 0-1
+    // fraction here left every book UNREAD until 10% in and never READ.
     final percentage = _totalDurationMs > 0
-        ? (absolutePositionMs / _totalDurationMs).clamp(0.0, 1.0)
+        ? ((absolutePositionMs / _totalDurationMs * 100).clamp(0.0, 100.0) * 10)
+                  .round() /
+              10
         : 0.0;
     final progress = AudiobookProgress(
       positionMs: absolutePositionMs,
@@ -447,7 +463,11 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     }
 
     try {
-      await _apiClient.updateAudiobookProgress(bookId, progress);
+      await _apiClient.updateAudiobookProgress(
+        bookId,
+        progress,
+        bookFileId: _bookFileId,
+      );
     } catch (_) {
       // Best-effort — a dropped progress save shouldn't interrupt playback.
       // The next periodic tick (or the final save on pause/stop) will

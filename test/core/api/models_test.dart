@@ -37,11 +37,65 @@ void main() {
     final book = Book.fromJson({'id': 1, 'title': 'Untitled'});
     expect(book.authors, isEmpty);
     expect(book.seriesName, isNull);
+    expect(book.files, isEmpty);
+    expect(book.ebookFileId, isNull);
+  });
+
+  // File-level progress saves are keyed on the EPUB file's own id, not the
+  // book's — and on a book that also has an audiobook file with higher
+  // library format priority, the audiobook is the primary file, so
+  // "primary" alone would pick the wrong one.
+  test('Book.ebookFileId skips a primary audiobook file for the EPUB', () {
+    final book = Book.fromJson({
+      'id': 7,
+      'title': 'Dual format',
+      'primaryFileType': 'AUDIOBOOK',
+      'files': [
+        {'id': 70, 'bookType': 'AUDIOBOOK', 'isPrimary': true},
+        {'id': 71, 'bookType': 'EPUB', 'isPrimary': false},
+      ],
+    });
+    expect(book.files, hasLength(2));
+    expect(book.ebookFileId, 71);
+  });
+
+  test('Book.ebookFileId prefers the primary file among several ebooks', () {
+    final book = Book.fromJson({
+      'id': 8,
+      'title': 'Multi ebook',
+      'files': [
+        {'id': 80, 'bookType': 'MOBI'},
+        {'id': 81, 'bookType': 'EPUB', 'isPrimary': true},
+      ],
+    });
+    expect(book.ebookFileId, 81);
+  });
+
+  test('normalizedReadProgress treats every type as 0-100', () {
+    expect(
+      const Book(
+        id: 1,
+        title: 't',
+        primaryFileType: 'AUDIOBOOK',
+        readProgress: 42,
+      ).normalizedReadProgress,
+      closeTo(0.42, 1e-9),
+    );
+    expect(
+      const Book(
+        id: 2,
+        title: 't',
+        primaryFileType: 'EPUB',
+        readProgress: 42,
+      ).normalizedReadProgress,
+      closeTo(0.42, 1e-9),
+    );
   });
 
   test('AudiobookInfo.fromJson parses a folder-based book with tracks', () {
     final info = AudiobookInfo.fromJson({
       'bookId': 5,
+      'bookFileId': 55,
       'durationMs': 3600000,
       'folderBased': true,
       'tracks': [
@@ -62,6 +116,7 @@ void main() {
       ],
     });
     expect(info.folderBased, isTrue);
+    expect(info.bookFileId, 55);
     expect(info.tracks, hasLength(2));
     expect(info.tracks[1].cumulativeStartMs, 1800000);
   });
@@ -82,6 +137,8 @@ void main() {
       ],
     });
     expect(info.folderBased, isFalse);
+    // A cached info.json from before bookFileId was parsed still loads.
+    expect(info.bookFileId, isNull);
     expect(info.tracks, isEmpty);
     expect(info.chapters, hasLength(1));
     expect(info.chapters.first.title, 'Chapter 1');
@@ -92,7 +149,7 @@ void main() {
       positionMs: 12345,
       trackIndex: 2,
       trackPositionMs: 500,
-      percentage: 0.42,
+      percentage: 42.0,
     );
     final roundTripped = AudiobookProgress.fromJson(progress.toJson());
     expect(roundTripped, progress);

@@ -405,16 +405,31 @@ class ApiClient {
       '${_dio.options.baseUrl}/media/book/$bookId/cover';
 
   // ── Progress (AppBookController — GET/PUT .../progress) ───────────────
+  //
+  // Grimmory stores progress per *file* now (`UserBookFileProgressEntity`,
+  // keyed on `bookFileId`); the per-type request fields (`epubProgress`,
+  // `audiobookProgress`) are `@Deprecated` shims routed by the book's
+  // primary-file type. Two real bugs came from relying on the shims alone:
+  // the audiobook shim persists nothing at all (every legacy branch has an
+  // empty `case AUDIOBOOK`, and the read side only looks at the file
+  // table), and the EPUB shim is dropped outright on a book whose library
+  // format priority makes an audiobook file primary. So the save calls
+  // below send the `fileProgress` block the web client sends — same
+  // `positionData`/`positionHref` encoding — alongside the shim field.
 
   Future<AudiobookProgress?> getAudiobookProgress(int bookId) async {
     try {
       final resp = await _dio.get('/app/books/$bookId/progress');
       final data = resp.data as Map<String, dynamic>;
       final audiobookProgress = data['audiobookProgress'];
-      if (audiobookProgress == null) return null;
-      return AudiobookProgress.fromJson(
-        audiobookProgress as Map<String, dynamic>,
-      );
+      // Saves made through the deprecated shim by earlier builds of this
+      // app left a hollow file-progress row (lastReadTime only), which the
+      // server maps to `{positionMs: null, ...}` — no position to resume.
+      if (audiobookProgress == null ||
+          (audiobookProgress as Map<String, dynamic>)['positionMs'] == null) {
+        return null;
+      }
+      return AudiobookProgress.fromJson(audiobookProgress);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return null;
       rethrow;
@@ -423,11 +438,21 @@ class ApiClient {
 
   Future<void> updateAudiobookProgress(
     int bookId,
-    AudiobookProgress progress,
-  ) async {
+    AudiobookProgress progress, {
+    required int? bookFileId,
+  }) async {
     await _dio.put(
       '/app/books/$bookId/progress',
-      data: {'audiobookProgress': progress.toJson()},
+      data: {
+        'audiobookProgress': progress.toJson(),
+        if (bookFileId != null)
+          'fileProgress': {
+            'bookFileId': bookFileId,
+            'positionData': progress.positionMs.toString(),
+            'positionHref': progress.trackIndex?.toString(),
+            'progressPercent': progress.percentage,
+          },
+      },
     );
   }
 
@@ -444,10 +469,23 @@ class ApiClient {
     }
   }
 
-  Future<void> updateEpubProgress(int bookId, EpubProgress progress) async {
+  Future<void> updateEpubProgress(
+    int bookId,
+    EpubProgress progress, {
+    required int? bookFileId,
+  }) async {
     await _dio.put(
       '/app/books/$bookId/progress',
-      data: {'epubProgress': progress.toJson()},
+      data: {
+        'epubProgress': progress.toJson(),
+        if (bookFileId != null)
+          'fileProgress': {
+            'bookFileId': bookFileId,
+            'positionData': progress.cfi,
+            'positionHref': progress.href,
+            'progressPercent': progress.percentage,
+          },
+      },
     );
   }
 
