@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:grimmory/core/providers.dart';
 import 'package:grimmory/core/api/api_client.dart';
+import 'package:grimmory/features/player/progress_sync.dart';
 import 'package:grimmory/main.dart';
 
 void main() {
@@ -22,6 +23,9 @@ void main() {
           sharedPrefsProvider.overrideWithValue(prefs),
           secureStorageProvider.overrideWithValue(secureStorage),
           apiClientProvider.overrideWithValue(apiClient),
+          // GrimmoryApp keeps this alive from its root; it reads the audio
+          // handler, which this test (no AudioService) never provides.
+          audiobookProgressSyncProvider.overrideWith((_) {}),
         ],
         child: const GrimmoryApp(),
       ),
