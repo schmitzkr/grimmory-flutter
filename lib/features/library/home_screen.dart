@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/update_provider.dart';
 import '../browse/authors_screen.dart';
-import '../browse/search_screen.dart';
+import '../browse/home_search_bar.dart';
 import '../browse/series_screen.dart';
 import '../browse/shelves_screen.dart';
 import '../player/mini_player.dart';
@@ -12,6 +12,12 @@ import 'libraries_screen.dart';
 /// Post-login landing screen — bottom-nav shell over the top-level browse
 /// destinations. Each tab keeps its own state via IndexedStack rather than
 /// being rebuilt from scratch on every switch.
+///
+/// Search is promoted to a persistent [HomeSearchBar] filling the AppBar
+/// title on every tab, rather than being its own equal-weight bottom-nav
+/// destination — reachable from anywhere instead of only after switching to
+/// a dedicated Search tab, which is why that tab (and SearchTab/
+/// searchResultsProvider) no longer exists.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -22,23 +28,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _index = 0;
 
-  static const _titles = ['Home', 'Series', 'Authors', 'Shelves', 'Search'];
   static const _tabs = [
     LibrariesTab(),
     SeriesTab(),
     AuthorsTab(),
     ShelvesTab(),
-    SearchTab(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _index == 0
-            ? const HomeLibrarySelector()
-            : Text(_titles[_index]),
+        title: const HomeSearchBar(),
         actions: [
+          if (_index == 0) const HomeLibraryAction(),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.push('/settings'),
@@ -80,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.shelves),
                 label: 'Shelves',
               ),
-              NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
             ],
           ),
         ],

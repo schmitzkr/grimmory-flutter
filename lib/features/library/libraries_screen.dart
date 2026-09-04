@@ -15,8 +15,8 @@ final librariesProvider = FutureProvider<List<Library>>((ref) async {
 });
 
 /// Which library the Home tab's Recently Added grid is scoped to — `null`
-/// means "All Libraries". Set via the AppBar title's dropdown
-/// ([HomeLibrarySelector]). In-memory only: resets to "All" on cold start,
+/// means "All Libraries". Set via the AppBar's library action
+/// ([HomeLibraryAction]). In-memory only: resets to "All" on cold start,
 /// same as any other transient screen filter in this app.
 final selectedLibraryFilterProvider =
     NotifierProvider<SelectedLibraryFilterNotifier, int?>(
@@ -34,7 +34,7 @@ class SelectedLibraryFilterNotifier extends Notifier<int?> {
 /// live on the shell, not here. Continue Listening/Continue Reading stay as
 /// header carousels (each renders nothing when empty); Recently Added fills
 /// the rest of the screen as a full grid rather than a small carousel row,
-/// scoped to whichever library is picked from the AppBar title's dropdown.
+/// scoped to whichever library is picked from [HomeLibraryAction].
 class LibrariesTab extends ConsumerWidget {
   const LibrariesTab({super.key});
 
@@ -156,15 +156,18 @@ class LibrariesTab extends ConsumerWidget {
   }
 }
 
-/// AppBar title for the Home tab. With more than one library, shows the
-/// current scope ("All Libraries" or a specific name) and opens a menu to
-/// re-scope the Recently Added grid in place. With exactly one library
-/// there's nothing to switch between, so it instead links straight to that
-/// library's own full contents (`LibraryDetailScreen`, with sort/type/author
-/// filters) — Recently Added alone caps out at 30 books and was never meant
-/// to replace browsing a whole library.
-class HomeLibrarySelector extends ConsumerWidget {
-  const HomeLibrarySelector({super.key});
+/// AppBar action for the Home tab, alongside Settings — the title itself is
+/// now a persistent search bar ([HomeSearchBar]) rather than this, so this
+/// only needs to be an icon. With more than one library, shows a menu to
+/// re-scope the Recently Added grid to a specific library (or back to "All
+/// Libraries") in place; with exactly one library there's nothing to switch
+/// between, so it instead links straight to that library's own full
+/// contents (`LibraryDetailScreen`, with sort/type/author filters) —
+/// Recently Added alone caps out at 30 books and was never meant to replace
+/// browsing a whole library. Renders nothing while libraries haven't loaded
+/// yet or there are none.
+class HomeLibraryAction extends ConsumerWidget {
+  const HomeLibraryAction({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -172,22 +175,15 @@ class HomeLibrarySelector extends ConsumerWidget {
     final selectedId = ref.watch(selectedLibraryFilterProvider);
 
     if (libraries.isEmpty) {
-      return const Text('Home');
+      return const SizedBox.shrink();
     }
 
     if (libraries.length == 1) {
       final library = libraries.single;
-      return InkWell(
-        onTap: () => context.push('/libraries/${library.id}'),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(library.name, overflow: TextOverflow.ellipsis),
-            ),
-            const Icon(Icons.chevron_right),
-          ],
-        ),
+      return IconButton(
+        tooltip: library.name,
+        icon: const Icon(Icons.local_library_outlined),
+        onPressed: () => context.push('/libraries/${library.id}'),
       );
     }
 
@@ -201,6 +197,10 @@ class HomeLibrarySelector extends ConsumerWidget {
               .name;
 
     return PopupMenuButton<int?>(
+      tooltip: selectedName,
+      icon: Icon(
+        selectedId == null ? Icons.local_library_outlined : Icons.local_library,
+      ),
       initialValue: selectedId,
       onSelected: (value) =>
           ref.read(selectedLibraryFilterProvider.notifier).select(value),
@@ -209,13 +209,6 @@ class HomeLibrarySelector extends ConsumerWidget {
         for (final library in libraries)
           PopupMenuItem(value: library.id, child: Text(library.name)),
       ],
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(child: Text(selectedName, overflow: TextOverflow.ellipsis)),
-          const Icon(Icons.arrow_drop_down),
-        ],
-      ),
     );
   }
 }

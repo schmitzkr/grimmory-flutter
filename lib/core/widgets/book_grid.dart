@@ -8,16 +8,30 @@ import '../api/models.dart';
 import 'book_cover.dart';
 
 /// The 2-column cover-grid layout shared by library detail, series detail,
-/// and search results.
+/// and search results. [shrinkWrap]/[physics] default to plain
+/// `GridView.builder` behavior (an independently-scrolling, unbounded-height
+/// grid) — pass `shrinkWrap: true` and a non-scrolling [physics] when
+/// nesting this inside another scrollable (e.g. the search bar's
+/// suggestions view), so it sizes to its own content instead of demanding
+/// infinite height.
 class BookGrid extends StatelessWidget {
-  const BookGrid({required this.books, super.key});
+  const BookGrid({
+    required this.books,
+    this.shrinkWrap = false,
+    this.physics,
+    super.key,
+  });
 
   final List<Book> books;
+  final bool shrinkWrap;
+  final ScrollPhysics? physics;
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
       padding: const EdgeInsets.all(12),
+      shrinkWrap: shrinkWrap,
+      physics: physics,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 12,
