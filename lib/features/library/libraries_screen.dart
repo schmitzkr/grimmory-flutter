@@ -17,7 +17,17 @@ final librariesProvider = FutureProvider<List<Library>>((ref) async {
 /// means "All Libraries". Set via the AppBar title's dropdown
 /// ([HomeLibrarySelector]). In-memory only: resets to "All" on cold start,
 /// same as any other transient screen filter in this app.
-final selectedLibraryFilterProvider = StateProvider<int?>((ref) => null);
+final selectedLibraryFilterProvider =
+    NotifierProvider<SelectedLibraryFilterNotifier, int?>(
+      SelectedLibraryFilterNotifier.new,
+    );
+
+class SelectedLibraryFilterNotifier extends Notifier<int?> {
+  @override
+  int? build() => null;
+
+  void select(int? libraryId) => state = libraryId;
+}
 
 /// Body of the Home tab on [HomeScreen] — the AppBar/BottomNavigationBar
 /// live on the shell, not here. Continue Listening/Continue Reading stay as
@@ -71,8 +81,7 @@ class LibrariesTab extends ConsumerWidget {
                               childAspectRatio: 0.62,
                             ),
                         delegate: SliverChildBuilderDelegate(
-                          (context, index) =>
-                              BookGridTile(book: books[index]),
+                          (context, index) => BookGridTile(book: books[index]),
                           childCount: books.length,
                         ),
                       ),
@@ -145,7 +154,7 @@ class HomeLibrarySelector extends ConsumerWidget {
     return PopupMenuButton<int?>(
       initialValue: selectedId,
       onSelected: (value) =>
-          ref.read(selectedLibraryFilterProvider.notifier).state = value,
+          ref.read(selectedLibraryFilterProvider.notifier).select(value),
       itemBuilder: (context) => [
         const PopupMenuItem(value: null, child: Text('All Libraries')),
         for (final library in libraries)
@@ -154,9 +163,7 @@ class HomeLibrarySelector extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Flexible(
-            child: Text(selectedName, overflow: TextOverflow.ellipsis),
-          ),
+          Flexible(child: Text(selectedName, overflow: TextOverflow.ellipsis)),
           const Icon(Icons.arrow_drop_down),
         ],
       ),

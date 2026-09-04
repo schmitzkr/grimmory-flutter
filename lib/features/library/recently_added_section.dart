@@ -15,10 +15,5 @@ final recentlyAddedProvider = FutureProvider.family<List<Book>, int?>((
 ) async {
   final api = ref.read(apiClientProvider);
   if (libraryId == null) return api.getRecentlyAdded(limit: 30);
-  return api.getLibraryBooks(
-    libraryId,
-    sort: 'addedon',
-    dir: 'desc',
-    size: 30,
-  );
+  return api.getLibraryBooks(libraryId, sort: 'addedon', dir: 'desc', size: 30);
 });
