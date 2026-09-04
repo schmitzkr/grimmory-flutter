@@ -97,6 +97,10 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   String? _lastSyncError;
   List<EpubChapter> _chapters = [];
   Object? _error;
+  // True from the moment a back gesture/press is accepted until the final
+  // progress save lands and the screen pops — drives the saving overlay and
+  // makes a second back press during that window a no-op.
+  bool _isExiting = false;
 
   // Defaults to the system's current brightness so the reader doesn't open
   // looking inconsistent with the rest of the app; a persisted explicit
@@ -121,19 +125,28 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
     _controller.updateTheme(theme: _isDark ? _darkEpubTheme : _lightEpubTheme);
   }
 
-  @override
-  void dispose() {
-    // Every screen showing this book's progress (book detail, Continue
-    // Reading, Recently Added, a library grid) fetched its data before this
-    // reading session started, so it's holding a stale cache with no
-    // progress update in it — without this, going back showed the old
-    // progress until a manual pull-to-refresh. `ref.invalidate` on a family
-    // provider with no argument invalidates every argument instance of it.
+  /// The one exit path: persist the live position, then refresh every
+  /// screen showing this book's progress, then pop.
+  ///
+  /// The invalidation used to live in `dispose()`, which is exactly where
+  /// Riverpod 3 forbids it: every `WidgetRef` call runs
+  /// `_assertNotDisposed()` and throws a `StateError` once the element is
+  /// deactivated — silently, in a release build — so nothing was ever
+  /// invalidated and the detail/home screens kept their stale progress
+  /// until a manual pull-to-refresh. Doing it here, while still mounted,
+  /// is safe; the screens underneath are paused (off-screen `TickerMode`),
+  /// so each simply recomputes the moment it's shown again. Invalidating a
+  /// family with no argument invalidates every instance of it.
+  Future<void> _exit() async {
+    if (_isExiting) return;
+    setState(() => _isExiting = true);
+    await _saveProgressBeforeExit();
+    if (!mounted) return;
     ref.invalidate(bookProvider(widget.bookId));
     ref.invalidate(continueReadingProvider);
     ref.invalidate(recentlyAddedProvider);
     ref.invalidate(libraryBooksProvider);
-    super.dispose();
+    Navigator.of(context).pop();
   }
 
   Future<void> _load() async {
@@ -263,15 +276,23 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       // (rather than gambling on one fixed wait) keeps this working
       // across books of any size instead of just whichever one happened
       // to fit in a single guessed timeout.
+      //
+      // The first attempt is a plain read with no re-display and no wait:
+      // once a session has been open long enough for a relocate to land
+      // after location generation — i.e. nearly always, except that quick
+      // open-and-back case — the cached figure is already real, and paying
+      // the 400ms+ dance anyway is what made every back press feel laggy.
       final anchorCfi = _currentCfi ?? _initialCfi;
       var location = EpubLocation(
         startCfi: anchorCfi ?? '',
         endCfi: anchorCfi ?? '',
         progress: 0,
       );
-      for (final delayMs in const [400, 800, 1200]) {
-        if (anchorCfi != null) _controller.display(cfi: anchorCfi);
-        await Future.delayed(Duration(milliseconds: delayMs));
+      for (final delayMs in const [0, 400, 800, 1200]) {
+        if (delayMs > 0) {
+          if (anchorCfi != null) _controller.display(cfi: anchorCfi);
+          await Future.delayed(Duration(milliseconds: delayMs));
+        }
         location = await _controller.getCurrentLocation().timeout(
           const Duration(seconds: 3),
         );
@@ -341,10 +362,8 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await _saveProgressBeforeExit();
-        if (mounted) Navigator.of(context).pop();
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _exit();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -373,23 +392,30 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
             ),
           ],
         ),
-        body: EpubGestureOverlay(
-          onTapLeft: _controller.prev,
-          onTapRight: _controller.next,
-          onSwipeDown: () => _showBookmarks(context),
-          onSwipeUp: _chapters.isEmpty ? () {} : () => _showChapters(context),
-          child: EpubViewer(
-            epubController: _controller,
-            epubSource: EpubSource.fromData(_bytes!),
-            initialCfi: _initialCfi,
-            displaySettings: EpubDisplaySettings(
-              theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
+        body: Stack(
+          children: [
+            EpubGestureOverlay(
+              onTapLeft: _controller.prev,
+              onTapRight: _controller.next,
+              onSwipeDown: () => _showBookmarks(context),
+              onSwipeUp: _chapters.isEmpty
+                  ? () {}
+                  : () => _showChapters(context),
+              child: EpubViewer(
+                epubController: _controller,
+                epubSource: EpubSource.fromData(_bytes!),
+                initialCfi: _initialCfi,
+                displaySettings: EpubDisplaySettings(
+                  theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
+                ),
+                onChaptersLoaded: (chapters) {
+                  if (mounted) setState(() => _chapters = chapters);
+                },
+                onRelocated: _saveProgress,
+              ),
             ),
-            onChaptersLoaded: (chapters) {
-              if (mounted) setState(() => _chapters = chapters);
-            },
-            onRelocated: _saveProgress,
-          ),
+            if (_isExiting) const _SavingOverlay(),
+          ],
         ),
         bottomNavigationBar: const MiniPlayer(),
       ),
@@ -406,6 +432,47 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
           _controller.display(cfi: chapter.href);
           Navigator.of(context).pop();
         },
+      ),
+    );
+  }
+}
+
+/// Shown over the page while the exit save is in flight — the save can take
+/// a few hundred ms (up to a couple of seconds on a large book whose
+/// locations haven't been generated yet), and with nothing on screen that
+/// read as the back press having been ignored.
+class _SavingOverlay extends StatelessWidget {
+  const _SavingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Positioned.fill(
+      child: AbsorbPointer(
+        child: ColoredBox(
+          color: colors.scrim.withValues(alpha: 0.4),
+          child: Center(
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Saving progress…',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
