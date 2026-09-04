@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderBase;
 
 import '../book/book_detail_screen.dart' show bookProvider;
 import 'continue_listening_section.dart' show continueListeningProvider;
