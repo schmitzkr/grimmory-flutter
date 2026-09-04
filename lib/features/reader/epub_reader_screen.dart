@@ -88,6 +88,10 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   // server's own existing progress on load and updated as we go — a floor
   // no fresh save is allowed to regress below. See _persistProgress.
   double? _bestKnownPercentage;
+  // The EPUB file's own id for file-level progress saves — see
+  // ApiClient's progress section for why the bookId-only shim isn't
+  // enough. Null (shim-only saves) if the detail fetch failed.
+  int? _bookFileId;
   // Set right before a progress save fails, read by the SnackBar it
   // triggers — see _persistProgress/_showSyncFailedSnackBar.
   String? _lastSyncError;
@@ -140,12 +144,19 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       await apiClient.downloadBookFile(widget.bookId, path);
       final bytes = await File(path).readAsBytes();
       final progress = await apiClient.getEpubProgress(widget.bookId);
+      int? bookFileId;
+      try {
+        bookFileId = (await apiClient.getBook(widget.bookId)).ebookFileId;
+      } catch (_) {
+        // Reading still works without it; saves just fall back to the shim.
+      }
 
       if (!mounted) return;
       setState(() {
         _bytes = bytes;
         _initialCfi = widget.jumpToCfi ?? progress?.cfi;
         _bestKnownPercentage = progress?.percentage;
+        _bookFileId = bookFileId;
       });
     } catch (e) {
       if (!mounted) return;
@@ -204,6 +215,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
           .updateEpubProgress(
             widget.bookId,
             EpubProgress(cfi: cfi, percentage: effectivePercentage),
+            bookFileId: _bookFileId,
           );
       return true;
     } catch (e) {

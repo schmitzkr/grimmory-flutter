@@ -66,34 +66,66 @@ abstract class Book with _$Book {
     String? primaryFileType,
     // Both already present on every `AppBookSummary`/`AppBookDetail`
     // response (library/series/search/continue-reading/continue-listening
-    // all return them) — confirmed against the real DTOs — but never
-    // parsed or displayed until now. [readProgress] is NOT on a consistent
-    // scale: it's whatever raw value this app (or another Grimmory client)
-    // last sent for that book's type. Audiobook progress is computed and
-    // sent by this app as a genuine 0.0-1.0 fraction; every other type
-    // (confirmed for EPUB against the real server/web-frontend source,
-    // which divides by 100 before use) is stored and returned on a 0-100
-    // scale. Use [normalizedReadProgress] for display, not this field
-    // directly. [readStatus] is one of Grimmory's `ReadStatus` enum values
+    // all return them) — confirmed against the real DTOs. [readProgress] is
+    // on a 0-100 scale (Grimmory's `ReadingProgressService` thresholds are
+    // READING > 0.1 and READ >= 99.5 on that scale, and its own web client
+    // sends every type, audiobooks included, as 0-100). It's only ever
+    // populated from the per-book legacy columns (`mapReadProgress` reads
+    // koreader/kobo/epub/pdf/cbx percent, never the file-level audiobook
+    // row), so it's null for audiobooks. Use [normalizedReadProgress] for
+    // display. [readStatus] is one of Grimmory's `ReadStatus` enum values
     // (UNREAD, READING, RE_READING, READ, PARTIALLY_READ, PAUSED,
     // WONT_READ, ABANDONED, UNSET) — 'READ' is the only one this app
     // currently acts on (a finished-book badge).
     double? readProgress,
     String? readStatus,
+    // `AppBookDetail.files` only (absent on `AppBookSummary`) — every
+    // book-format file attached to this book, with the id the file-level
+    // progress API (`UpdateProgressRequest.fileProgress.bookFileId`) is
+    // keyed on.
+    @Default([]) List<BookFile> files,
   }) = _Book;
 
   factory Book.fromJson(Map<String, dynamic> json) => _$BookFromJson(json);
 }
 
+const _ebookFileTypes = {'EPUB', 'FB2', 'MOBI', 'AZW3'};
+
 extension BookProgressX on Book {
-  /// [readProgress] as a real 0.0-1.0 fraction, normalized per [readProgress]'s
-  /// own doc comment — safe to feed straight into a `LinearProgressIndicator`
-  /// or a percentage display for any book type.
+  /// [readProgress] as a real 0.0-1.0 fraction — safe to feed straight into
+  /// a `LinearProgressIndicator` or a percentage display for any book type.
   double? get normalizedReadProgress {
     final raw = readProgress;
     if (raw == null) return null;
-    return primaryFileType == 'AUDIOBOOK' ? raw : raw / 100;
+    return raw / 100;
   }
+
+  /// The `bookFileId` to save EPUB reading progress against: the primary
+  /// file if it's an ebook, else the first ebook-format file. Null when the
+  /// server response carried no `files` (a summary DTO) or the book has no
+  /// ebook file at all. Mirrors the web reader's `altFile?.id ??
+  /// book.primaryFile?.id` resolution.
+  int? get ebookFileId {
+    final ebooks = files.where((f) => _ebookFileTypes.contains(f.bookType));
+    if (ebooks.isEmpty) return null;
+    return ebooks.firstWhere((f) => f.isPrimary, orElse: () => ebooks.first).id;
+  }
+}
+
+/// From `AppBookFile` (`AppBookDetail.files`). [bookType] matches
+/// `BookFileType` (AUDIOBOOK/EPUB/PDF/CBX/FB2/MOBI/AZW3); [isPrimary] is
+/// whichever file the library's format priority picks.
+@freezed
+abstract class BookFile with _$BookFile {
+  const factory BookFile({
+    required int id,
+    String? bookType,
+    @Default(false) bool isPrimary,
+    @Default(false) bool folderBased,
+  }) = _BookFile;
+
+  factory BookFile.fromJson(Map<String, dynamic> json) =>
+      _$BookFileFromJson(json);
 }
 
 /// From `GET /api/v1/audiobooks/{bookId}/info` — a separate endpoint from
@@ -103,6 +135,11 @@ extension BookProgressX on Book {
 abstract class AudiobookInfo with _$AudiobookInfo {
   const factory AudiobookInfo({
     required int bookId,
+    // The audiobook `BookFileEntity` id — what file-level progress saves
+    // are keyed on (Grimmory's own player passes `audiobookInfo.bookFileId`
+    // into every progress save). Nullable only so an `info.json` cached by
+    // an older build of this app (which didn't parse it) still loads.
+    int? bookFileId,
     String? narrator,
     required int durationMs,
     // Whether this audiobook is stored as multiple files (one AudioSource
@@ -160,7 +197,15 @@ abstract class AudiobookTrack with _$AudiobookTrack {
 /// `UpdateProgressRequest.audiobookProgress` (`PUT` on the same path).
 /// [trackPositionMs] only appears on the request/save side in Grimmory's
 /// own DTOs (not the read side) — treated as optional here for both
-/// directions rather than modeling that asymmetry.
+/// directions rather than modeling that asymmetry. [percentage] is 0-100,
+/// the same scale Grimmory's web player sends and its read-status
+/// thresholds are defined on.
+///
+/// Since Grimmory moved progress to a per-file table, the deprecated
+/// `audiobookProgress` request field alone stores *nothing* for audiobooks
+/// (`ReadingProgressService`'s legacy path has an empty `case AUDIOBOOK`
+/// in every branch) — the position only persists via the `fileProgress`
+/// block `ApiClient.updateAudiobookProgress` also sends.
 @freezed
 abstract class AudiobookProgress with _$AudiobookProgress {
   const factory AudiobookProgress({
@@ -181,7 +226,7 @@ abstract class AudiobookProgress with _$AudiobookProgress {
 /// its own deprecated sibling field rather than the newer unified
 /// `BookFileProgress`, for consistency with the existing pattern here.
 /// [cfi] (a standard EPUB Canonical Fragment Identifier) is what actually
-/// resumes reading at the right spot; [percentage] is 0.0-1.0.
+/// resumes reading at the right spot; [percentage] is 0-100.
 @freezed
 abstract class EpubProgress with _$EpubProgress {
   const factory EpubProgress({
