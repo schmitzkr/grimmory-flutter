@@ -41,18 +41,7 @@ class BookGridTile extends ConsumerWidget {
         ref.watch(downloadManagerProvider).value?[book.id]?.status ==
         DownloadStatus.complete;
 
-    // `readProgress` isn't on a consistent scale across book types: this
-    // app computes and sends audiobook progress client-side as a genuine
-    // 0.0-1.0 fraction (positionMs / durationMs), but everything else
-    // (confirmed for EPUB against the real server/web-frontend source) is
-    // stored and returned on a 0-100 scale. Normalize to a 0.0-1.0 fraction
-    // here rather than at the model level, since this is the only place
-    // that renders it.
-    final normalizedProgress = book.primaryFileType == 'AUDIOBOOK'
-        ? book.readProgress
-        : book.readProgress != null
-        ? book.readProgress! / 100
-        : null;
+    final normalizedProgress = book.normalizedReadProgress;
 
     return InkWell(
       onTap: () => context.push('/books/${book.id}'),
