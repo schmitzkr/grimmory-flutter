@@ -196,24 +196,25 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     final AudiobookInfo info;
     if (_isDownloaded) {
       final record = await _downloadStorage.readRecord(bookId);
-      var cachedInfo = await _downloadStorage.readCachedInfo(bookId);
+      final cachedInfo = await _downloadStorage.readCachedInfo(bookId);
       if (record != null && cachedInfo != null) {
-        if (cachedInfo.bookFileId == null) {
+        var resolvedInfo = cachedInfo;
+        if (resolvedInfo.bookFileId == null) {
           // info.json written by a build that didn't parse bookFileId —
           // without it, progress saves can't reach the server's file-level
           // table. Best-effort refresh; offline just keeps the local cache.
           try {
-            cachedInfo = await _apiClient.getAudiobookInfo(bookId);
-            await _downloadStorage.writeCachedInfo(bookId, cachedInfo);
+            resolvedInfo = await _apiClient.getAudiobookInfo(bookId);
+            await _downloadStorage.writeCachedInfo(bookId, resolvedInfo);
           } catch (_) {}
         }
         book = Book(
           id: bookId,
           title: record.title,
           authors: record.authors,
-          narrator: cachedInfo.narrator,
+          narrator: resolvedInfo.narrator,
         );
-        info = cachedInfo;
+        info = resolvedInfo;
       } else {
         // Shouldn't happen (isDownloaded() checks record.json's presence),
         // but fall back to streaming rather than crash on a corrupt download.
