@@ -40,7 +40,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # fetch-depth: 0 (full history + tags) is required by "Compute tag and
+      # notes" below: actions/checkout defaults to a shallow depth-1 clone,
+      # which has no tags at all, so `git describe --tags` always failed
+      # silently and the notes generation always fell back to its "no last
+      # tag" branch — `git log` on a 1-commit shallow history then only ever
+      # produced a single bullet (the tip commit), no matter how many
+      # commits actually shipped since the last release. Confirmed via
+      # v0.11.0 and v0.11.1 both showing this exact one-line symptom.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Free disk space
         run: |
