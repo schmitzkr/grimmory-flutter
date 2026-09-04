@@ -21,6 +21,7 @@ class EpubGestureOverlay extends StatefulWidget {
     required this.onTapRight,
     required this.onSwipeDown,
     required this.onSwipeUp,
+    this.onTap,
     super.key,
   });
 
@@ -29,6 +30,12 @@ class EpubGestureOverlay extends StatefulWidget {
   final VoidCallback onTapRight;
   final VoidCallback onSwipeDown;
   final VoidCallback onSwipeUp;
+  // Fires on every plain tap, in every zone, in addition to (and before)
+  // any zone-specific callback above -- including the middle third, which
+  // has no zone callback of its own. Lets the reader screen react to "the
+  // user tapped somewhere" regardless of zone, e.g. to dismiss an active
+  // text selection.
+  final VoidCallback? onTap;
 
   @override
   State<EpubGestureOverlay> createState() => _EpubGestureOverlayState();
@@ -78,6 +85,7 @@ class _EpubGestureOverlayState extends State<EpubGestureOverlay> {
               // horizontal page-turn swipe, a text-selection drag) is left
               // alone for the WebView's own handling to have already seen.
               if (delta.distance < 12 && elapsedMs < 400) {
+                widget.onTap?.call();
                 final width = context.size?.width ?? 0;
                 if (width <= 0) return;
                 if (downPosition.dx < width * 0.3) {
