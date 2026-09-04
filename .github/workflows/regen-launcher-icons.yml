@@ -28,28 +28,44 @@ jobs:
       - run: flutter pub get
       - run: dart run flutter_launcher_icons
 
-      # main is branch-protected (PR + passing status checks required) and
-      # the default GITHUB_TOKEN's github-actions[bot] identity isn't in
-      # the ruleset's bypass list (confirmed via a real rejected push here,
-      # same root cause release.yml hit and fixed) -- push with a PAT
-      # belonging to the repo admin (a real bypass-eligible identity)
-      # instead. See release.yml's own "Commit version bump and tag" step
-      # for the fuller writeup of why this is the working approach (a
-      # PR-based flow was also tried there and hit a harder, unrelated wall
-      # -- GITHUB_TOKEN-authored PRs never trigger their own required
-      # checks -- so don't repeat that path here either).
+      # The dispatch target branch is protected (PR + passing status checks
+      # required). A direct push here -- even authenticated with a PAT
+      # belonging to the repo admin -- is NOT actually bypass-eligible: that
+      # was tried and confirmed rejected (a real GH013 on this exact step,
+      # twice). The only approach release.yml's own "Commit version bump via
+      # PR" step actually proved working is a genuine PR: push a side
+      # branch with the PAT (side branches aren't protected), open a real PR
+      # with the PAT (a PAT isn't the workflow's own GITHUB_TOKEN, so unlike
+      # a GITHUB_TOKEN-authored PR, this one DOES trigger pull_request-event
+      # workflows, i.e. pr-check.yml's required checks), wait for those
+      # checks, then squash-merge -- a normal compliant merge needing no
+      # bypass at all.
       - name: Commit regenerated icons
         env:
+          GH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
           RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add android/app/src/main/res
           if git diff --cached --quiet; then
             echo "No icon changes to commit"
           else
+            BRANCH="regen-icons/${{ github.run_id }}"
+            git checkout -b "$BRANCH"
             git commit -m "chore: regenerate launcher icons"
             git config --unset-all "http.https://github.com/.extraheader" || true
             git remote set-url origin "https://x-access-token:${RELEASE_PUSH_TOKEN}@github.com/${{ github.repository }}.git"
-            git push origin "HEAD:${{ github.ref_name }}"
+            git push origin "$BRANCH"
+
+            PR_URL=$(gh pr create \
+              --base "${{ github.ref_name }}" \
+              --head "$BRANCH" \
+              --title "chore: regenerate launcher icons" \
+              --body "Automated icon regeneration.")
+
+            sleep 15
+            gh pr checks "$PR_URL" --watch --interval 15
+            gh pr merge "$PR_URL" --squash --delete-branch
           fi
