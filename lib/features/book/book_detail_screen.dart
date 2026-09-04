@@ -6,10 +6,12 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_cover.dart';
+import '../bookmarks/epub_bookmarks_sheet.dart';
 import '../downloads/download_manager.dart';
 import '../downloads/download_models.dart';
 import '../player/mini_player.dart';
 import '../player/playback_provider.dart';
+import '../reader/epub_reader_args.dart';
 
 final bookProvider = FutureProvider.family<Book, int>((ref, bookId) async {
   return ref.read(apiClientProvider).getBook(bookId);
@@ -181,11 +183,53 @@ class _BookDetailBody extends ConsumerWidget {
           const SizedBox(height: 8),
           _DownloadButton(book: book),
         ] else if (isEpub) ...[
+          if (book.readStatus == 'READ')
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Text('Finished'),
+            )
+          else if ((book.normalizedReadProgress ?? 0) > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Column(
+                children: [
+                  Text('${(book.normalizedReadProgress! * 100).round()}% read'),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: 160,
+                    child: LinearProgressIndicator(
+                      value: book.normalizedReadProgress,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           FilledButton.icon(
-            onPressed: () =>
-                context.push('/books/${book.id}/read', extra: book.title),
+            onPressed: () => context.push(
+              '/books/${book.id}/read',
+              extra: EpubReaderArgs(title: book.title),
+            ),
             icon: const Icon(Icons.menu_book),
-            label: const Text('Read'),
+            label: Text(
+              (book.normalizedReadProgress ?? 0) > 0
+                  ? 'Continue Reading'
+                  : 'Start Reading',
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => showEpubBookmarksSheet(
+              context,
+              ref,
+              bookId: book.id,
+              currentCfi: null,
+              onJumpTo: (cfi) => context.push(
+                '/books/${book.id}/read',
+                extra: EpubReaderArgs(title: book.title, jumpToCfi: cfi),
+              ),
+            ),
+            icon: const Icon(Icons.bookmark_border),
+            label: const Text('Bookmarks'),
           ),
         ] else ...[
           Text(

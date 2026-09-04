@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 
-/// Adds tap-to-turn-page zones and a swipe-down gesture on top of
+/// Adds tap-to-turn-page zones and swipe-down/swipe-up gestures on top of
 /// [child] (the EPUB WebView) without disturbing its own swipe-to-turn-page
 /// and text-selection handling.
 ///
@@ -20,6 +20,7 @@ class EpubGestureOverlay extends StatefulWidget {
     required this.onTapLeft,
     required this.onTapRight,
     required this.onSwipeDown,
+    required this.onSwipeUp,
     super.key,
   });
 
@@ -27,6 +28,7 @@ class EpubGestureOverlay extends StatefulWidget {
   final VoidCallback onTapLeft;
   final VoidCallback onTapRight;
   final VoidCallback onSwipeDown;
+  final VoidCallback onSwipeUp;
 
   @override
   State<EpubGestureOverlay> createState() => _EpubGestureOverlayState();
@@ -58,13 +60,17 @@ class _EpubGestureOverlayState extends State<EpubGestureOverlay> {
               final delta = event.position - downPosition;
               final elapsedMs = event.timeStamp.inMilliseconds - downTimeMs;
 
-              // Swipe down: mostly vertical, downward, far enough, and
-              // quick enough that a deliberate slow scroll through content
-              // (were this book ever in scrolled flow) doesn't misfire.
-              if (delta.dy > 80 &&
+              // Swipe down/up: mostly vertical, far enough, and quick
+              // enough that a deliberate slow scroll through content (were
+              // this book ever in scrolled flow) doesn't misfire.
+              if (delta.dy.abs() > 80 &&
                   delta.dy.abs() > delta.dx.abs() * 1.5 &&
                   elapsedMs < 600) {
-                widget.onSwipeDown();
+                if (delta.dy > 0) {
+                  widget.onSwipeDown();
+                } else {
+                  widget.onSwipeUp();
+                }
                 return;
               }
 

@@ -15,6 +15,7 @@ import '../features/library/home_screen.dart';
 import '../features/library/library_detail_screen.dart';
 import '../features/onboarding/server_url_screen.dart';
 import '../features/player/player_screen.dart';
+import '../features/reader/epub_reader_args.dart';
 import '../features/reader/epub_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
 
@@ -104,10 +105,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/books/:id/read',
-        builder: (context, state) => EpubReaderScreen(
-          bookId: int.parse(state.pathParameters['id']!),
-          title: state.extra as String? ?? 'Book',
-        ),
+        builder: (context, state) {
+          final extra = state.extra;
+          return EpubReaderScreen(
+            bookId: int.parse(state.pathParameters['id']!),
+            title: extra is EpubReaderArgs ? extra.title : 'Book',
+            jumpToCfi: extra is EpubReaderArgs ? extra.jumpToCfi : null,
+          );
+        },
       ),
       GoRoute(
         path: '/settings',
