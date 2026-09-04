@@ -210,6 +210,24 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   Future<void> _saveProgressBeforeExit() async {
     if (_bytes == null) return;
     try {
+      // epub.js's own `percentage` figure depends on `book.locations
+      // .generate()` finishing in the background (it needs a pre-computed
+      // locations map to know where a CFI falls as a fraction of the whole
+      // book). Confirmed via a live DB check that a quick "open, read a
+      // page or two, back out" session was saving the exact right CFI every
+      // time, but a hard 0 for percentage every time too — because
+      // epub.js's cached location object is only recomputed on an actual
+      // relocate event, and the very first one (right after opening) fires
+      // before that background generation has had time to finish; it then
+      // stays frozen at that stale value until something re-triggers it.
+      // Re-displaying the last-known position forces a fresh relocate,
+      // giving generation the extra moment (it's usually done within a
+      // second or so for a typical book) to actually finish first.
+      final anchorCfi = _currentCfi ?? _initialCfi;
+      if (anchorCfi != null) {
+        _controller.display(cfi: anchorCfi);
+        await Future.delayed(const Duration(milliseconds: 400));
+      }
       final location = await _controller.getCurrentLocation().timeout(
         const Duration(seconds: 3),
       );
