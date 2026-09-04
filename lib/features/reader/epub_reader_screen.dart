@@ -10,11 +10,8 @@ import 'package:path_provider/path_provider.dart';
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
-import '../book/book_detail_screen.dart' show bookProvider;
 import '../bookmarks/epub_bookmarks_sheet.dart';
-import '../library/continue_reading_section.dart' show continueReadingProvider;
-import '../library/library_detail_screen.dart' show libraryBooksProvider;
-import '../library/recently_added_section.dart' show recentlyAddedProvider;
+import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
 import 'epub_gesture_overlay.dart';
 
@@ -128,24 +125,24 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   /// The one exit path: persist the live position, then refresh every
   /// screen showing this book's progress, then pop.
   ///
-  /// The invalidation used to live in `dispose()`, which is exactly where
+  /// The refresh used to live in `dispose()`, which is exactly where
   /// Riverpod 3 forbids it: every `WidgetRef` call runs
   /// `_assertNotDisposed()` and throws a `StateError` once the element is
   /// deactivated — silently, in a release build — so nothing was ever
-  /// invalidated and the detail/home screens kept their stale progress
-  /// until a manual pull-to-refresh. Doing it here, while still mounted,
-  /// is safe; the screens underneath are paused (off-screen `TickerMode`),
-  /// so each simply recomputes the moment it's shown again. Invalidating a
-  /// family with no argument invalidates every instance of it.
+  /// refreshed and the detail/home screens kept their stale progress until
+  /// a manual pull-to-refresh. It runs here instead, while still mounted,
+  /// through the container rather than `ref` so it doesn't care about this
+  /// widget's lifecycle; see [refreshProgressConsumers] for why a plain
+  /// `invalidate` of those (paused, off-stage) screens wasn't enough either.
   Future<void> _exit() async {
     if (_isExiting) return;
     setState(() => _isExiting = true);
     await _saveProgressBeforeExit();
     if (!mounted) return;
-    ref.invalidate(bookProvider(widget.bookId));
-    ref.invalidate(continueReadingProvider);
-    ref.invalidate(recentlyAddedProvider);
-    ref.invalidate(libraryBooksProvider);
+    refreshProgressConsumers(
+      ProviderScope.containerOf(context, listen: false),
+      bookId: widget.bookId,
+    );
     Navigator.of(context).pop();
   }
 

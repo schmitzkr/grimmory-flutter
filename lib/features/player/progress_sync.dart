@@ -1,16 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../book/book_detail_screen.dart' show bookProvider;
-import '../library/continue_listening_section.dart'
-    show continueListeningProvider;
-import '../library/library_detail_screen.dart' show libraryBooksProvider;
+import '../library/progress_refresh.dart';
 import 'playback_provider.dart';
 
 /// Keeps the screens that show an audiobook's progress (Continue Listening,
 /// the book detail, library grids) current while playback runs in the
 /// background — the audiobook counterpart to the EPUB reader's exit-time
-/// invalidation, which has no equivalent single moment here because
-/// playback outlives every screen.
+/// refresh, which has no equivalent single moment here because playback
+/// outlives every screen. Both go through [refreshProgressConsumers].
 ///
 /// Refreshes on the first accepted save after a book is loaded (so a book
 /// shows up in Continue Listening within one save interval of pressing
@@ -29,9 +26,7 @@ final audiobookProgressSyncProvider = Provider<void>((ref) {
   final subscription = handler.progressSaved.listen((event) {
     if (!event.sessionEnded && event.bookId == lastSyncedBookId) return;
     lastSyncedBookId = event.bookId;
-    ref.invalidate(continueListeningProvider);
-    ref.invalidate(bookProvider(event.bookId));
-    ref.invalidate(libraryBooksProvider);
+    refreshProgressConsumers(ref.container, bookId: event.bookId);
   });
   ref.onDispose(subscription.cancel);
 });
