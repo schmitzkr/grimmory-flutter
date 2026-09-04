@@ -45,6 +45,11 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   primaryFileType: json['primaryFileType'] as String?,
   readProgress: (json['readProgress'] as num?)?.toDouble(),
   readStatus: json['readStatus'] as String?,
+  files:
+      (json['files'] as List<dynamic>?)
+          ?.map((e) => BookFile.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
@@ -59,11 +64,27 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'primaryFileType': instance.primaryFileType,
   'readProgress': instance.readProgress,
   'readStatus': instance.readStatus,
+  'files': instance.files,
+};
+
+_BookFile _$BookFileFromJson(Map<String, dynamic> json) => _BookFile(
+  id: (json['id'] as num).toInt(),
+  bookType: json['bookType'] as String?,
+  isPrimary: json['isPrimary'] as bool? ?? false,
+  folderBased: json['folderBased'] as bool? ?? false,
+);
+
+Map<String, dynamic> _$BookFileToJson(_BookFile instance) => <String, dynamic>{
+  'id': instance.id,
+  'bookType': instance.bookType,
+  'isPrimary': instance.isPrimary,
+  'folderBased': instance.folderBased,
 };
 
 _AudiobookInfo _$AudiobookInfoFromJson(Map<String, dynamic> json) =>
     _AudiobookInfo(
       bookId: (json['bookId'] as num).toInt(),
+      bookFileId: (json['bookFileId'] as num?)?.toInt(),
       narrator: json['narrator'] as String?,
       durationMs: (json['durationMs'] as num).toInt(),
       folderBased: json['folderBased'] as bool? ?? false,
@@ -82,6 +103,7 @@ _AudiobookInfo _$AudiobookInfoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$AudiobookInfoToJson(_AudiobookInfo instance) =>
     <String, dynamic>{
       'bookId': instance.bookId,
+      'bookFileId': instance.bookFileId,
       'narrator': instance.narrator,
       'durationMs': instance.durationMs,
       'folderBased': instance.folderBased,
