@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import '../bookmarks/epub_bookmarks_sheet.dart';
 import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
 import 'epub_gesture_overlay.dart';
+import 'epub_spine_fractions.dart';
 
 /// EPUB rendering is entirely client-side via `flutter_epub_viewer`
 /// (WebView + epub.js), which parses a real local EPUB file directly —
@@ -89,6 +91,10 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   // ApiClient's progress section for why the bookId-only shim isn't
   // enough. Null (shim-only saves) if the detail fetch failed.
   int? _bookFileId;
+  // Size-based fallback for the percentage while epub.js still reports 0
+  // — see EpubSpineFractions and _percentageFor. Null if the file couldn't
+  // be parsed, in which case saves rely on epub.js alone as before.
+  EpubSpineFractions? _spine;
   // Set right before a progress save fails, read by the SnackBar it
   // triggers — see _persistProgress/_showSyncFailedSnackBar.
   String? _lastSyncError;
@@ -153,6 +159,9 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       final path = '${tempDir.path}/epub_${widget.bookId}.epub';
       await apiClient.downloadBookFile(widget.bookId, path);
       final bytes = await File(path).readAsBytes();
+      // Off the UI isolate: this inflates the zip's central directory and
+      // two small XML files, cheap but not free on a big book.
+      final spine = await compute(EpubSpineFractions.parse, bytes);
       final progress = await apiClient.getEpubProgress(widget.bookId);
       int? bookFileId;
       try {
@@ -167,6 +176,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         _initialCfi = widget.jumpToCfi ?? progress?.cfi;
         _bestKnownPercentage = progress?.percentage;
         _bookFileId = bookFileId;
+        _spine = spine;
       });
     } catch (e) {
       if (!mounted) return;
@@ -179,19 +189,25 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
     unawaited(
       _persistProgress(
         cfi: location.startCfi,
-        // location.progress is epub.js's own 0.0-1.0 fraction, but the
-        // server stores/interprets this percentage on a 0-100 scale
-        // (confirmed via the real web frontend, which does
-        // `goToFraction(progress.percentage / 100)` to convert it back) —
-        // sending the raw 0-1 fraction left read status stuck below the
-        // server's READING threshold for anything under ~10% real
-        // progress, so books never surfaced in Continue Reading unless
-        // read well past their first chapter.
-        percentage: location.progress * 100,
+        percentage: _percentageFor(location),
       ).then((ok) {
         if (!ok) _showSyncFailedSnackBar();
       }),
     );
+  }
+
+  /// The 0-100 figure to save for [location]. epub.js's own fraction
+  /// (`location.progress`, 0.0-1.0) is the precise one and wins whenever it
+  /// has one — but it stays 0 until `book.locations.generate()` has
+  /// finished *and* a relocate has fired since, which a short session never
+  /// reaches, so those fell back to saving a hard 0 that left the book
+  /// UNREAD server-side. The spine-size estimate covers exactly that gap.
+  /// The server stores/interprets the percentage on a 0-100 scale
+  /// (confirmed via the real web frontend, which does
+  /// `goToFraction(progress.percentage / 100)` to convert it back).
+  double _percentageFor(EpubLocation location) {
+    if (location.progress > 0) return location.progress * 100;
+    return _spine?.percentageAt(location.startCfi) ?? 0;
   }
 
   /// Returns whether the save actually succeeded — every caller used to
@@ -285,6 +301,11 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         endCfi: anchorCfi ?? '',
         progress: 0,
       );
+      //
+      // With a spine-size estimate available (the normal case), a 0 from
+      // that first read is answered by the estimate instead, and the timed
+      // retries are skipped entirely — they only still run for a file the
+      // fallback couldn't parse.
       for (final delayMs in const [0, 400, 800, 1200]) {
         if (delayMs > 0) {
           if (anchorCfi != null) _controller.display(cfi: anchorCfi);
@@ -294,10 +315,11 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
           const Duration(seconds: 3),
         );
         if (location.progress > 0) break;
+        if (_spine?.percentageAt(location.startCfi) != null) break;
       }
       final ok = await _persistProgress(
         cfi: location.startCfi,
-        percentage: location.progress * 100,
+        percentage: _percentageFor(location),
       );
       if (!ok) {
         // The screen is about to be popped — briefly hold so the SnackBar
