@@ -199,7 +199,10 @@ class _FormatPill extends StatelessWidget {
     final color = _colors[fileType] ?? Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
       child: Text(
         fileType,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
