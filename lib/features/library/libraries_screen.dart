@@ -60,6 +60,21 @@ class LibrariesTab extends ConsumerWidget {
             slivers: [
               const SliverToBoxAdapter(child: ContinueListeningSection()),
               const SliverToBoxAdapter(child: ContinueReadingSection()),
+              // Recently Added caps out at 30 books, so anyone scoped to a
+              // specific library still needs a way to see everything in it
+              // (the full, paginated, sort/filterable LibraryDetailScreen).
+              if (selectedLibraryId != null)
+                SliverToBoxAdapter(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () =>
+                          context.push('/libraries/$selectedLibraryId'),
+                      icon: const Icon(Icons.arrow_forward, size: 16),
+                      label: const Text('View full library'),
+                    ),
+                  ),
+                ),
               ...recentlyAdded.when(
                 data: (books) {
                   if (books.isEmpty) {
