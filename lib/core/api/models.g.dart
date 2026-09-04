@@ -70,14 +70,14 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
 _BookFile _$BookFileFromJson(Map<String, dynamic> json) => _BookFile(
   id: (json['id'] as num).toInt(),
   bookType: json['bookType'] as String?,
-  isPrimary: json['isPrimary'] as bool? ?? false,
+  isPrimary: json['primary'] as bool? ?? false,
   folderBased: json['folderBased'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$BookFileToJson(_BookFile instance) => <String, dynamic>{
   'id': instance.id,
   'bookType': instance.bookType,
-  'isPrimary': instance.isPrimary,
+  'primary': instance.isPrimary,
   'folderBased': instance.folderBased,
 };
 

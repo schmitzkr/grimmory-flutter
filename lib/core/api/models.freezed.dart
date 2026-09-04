@@ -883,7 +883,7 @@ as List<BookFile>,
 /// @nodoc
 mixin _$BookFile {
 
- int get id; String? get bookType; bool get isPrimary; bool get folderBased;
+ int get id; String? get bookType;@JsonKey(name: 'primary') bool get isPrimary; bool get folderBased;
 /// Create a copy of BookFile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -921,7 +921,7 @@ abstract mixin class $BookFileCopyWith<$Res>  {
   factory $BookFileCopyWith(BookFile value, $Res Function(BookFile) _then) = _$BookFileCopyWithImpl;
 @useResult
 $Res call({
- int id, String? bookType, bool isPrimary, bool folderBased
+ int id, String? bookType,@JsonKey(name: 'primary') bool isPrimary, bool folderBased
 });
 
 
@@ -1029,7 +1029,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? bookType,  bool isPrimary,  bool folderBased)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? bookType, @JsonKey(name: 'primary')  bool isPrimary,  bool folderBased)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BookFile() when $default != null:
 return $default(_that.id,_that.bookType,_that.isPrimary,_that.folderBased);case _:
@@ -1050,7 +1050,7 @@ return $default(_that.id,_that.bookType,_that.isPrimary,_that.folderBased);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? bookType,  bool isPrimary,  bool folderBased)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? bookType, @JsonKey(name: 'primary')  bool isPrimary,  bool folderBased)  $default,) {final _that = this;
 switch (_that) {
 case _BookFile():
 return $default(_that.id,_that.bookType,_that.isPrimary,_that.folderBased);case _:
@@ -1070,7 +1070,7 @@ return $default(_that.id,_that.bookType,_that.isPrimary,_that.folderBased);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? bookType,  bool isPrimary,  bool folderBased)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? bookType, @JsonKey(name: 'primary')  bool isPrimary,  bool folderBased)?  $default,) {final _that = this;
 switch (_that) {
 case _BookFile() when $default != null:
 return $default(_that.id,_that.bookType,_that.isPrimary,_that.folderBased);case _:
@@ -1085,12 +1085,12 @@ return $default(_that.id,_that.bookType,_that.isPrimary,_that.folderBased);case 
 @JsonSerializable()
 
 class _BookFile implements BookFile {
-  const _BookFile({required this.id, this.bookType, this.isPrimary = false, this.folderBased = false});
+  const _BookFile({required this.id, this.bookType, @JsonKey(name: 'primary') this.isPrimary = false, this.folderBased = false});
   factory _BookFile.fromJson(Map<String, dynamic> json) => _$BookFileFromJson(json);
 
 @override final  int id;
 @override final  String? bookType;
-@override@JsonKey() final  bool isPrimary;
+@override@JsonKey(name: 'primary') final  bool isPrimary;
 @override@JsonKey() final  bool folderBased;
 
 /// Create a copy of BookFile
@@ -1128,7 +1128,7 @@ abstract mixin class _$BookFileCopyWith<$Res> implements $BookFileCopyWith<$Res>
   factory _$BookFileCopyWith(_BookFile value, $Res Function(_BookFile) _then) = __$BookFileCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String? bookType, bool isPrimary, bool folderBased
+ int id, String? bookType,@JsonKey(name: 'primary') bool isPrimary, bool folderBased
 });
 
 
