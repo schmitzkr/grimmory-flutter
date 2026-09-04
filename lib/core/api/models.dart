@@ -73,17 +73,27 @@ abstract class Book with _$Book {
     // sent by this app as a genuine 0.0-1.0 fraction; every other type
     // (confirmed for EPUB against the real server/web-frontend source,
     // which divides by 100 before use) is stored and returned on a 0-100
-    // scale. `BookGridTile` normalizes this for display — don't read this
-    // field directly elsewhere without accounting for [primaryFileType].
-    // [readStatus] is one of Grimmory's `ReadStatus` enum values (UNREAD,
-    // READING, RE_READING, READ, PARTIALLY_READ, PAUSED, WONT_READ,
-    // ABANDONED, UNSET) — 'READ' is the only one this app currently acts
-    // on (a finished-book badge).
+    // scale. Use [normalizedReadProgress] for display, not this field
+    // directly. [readStatus] is one of Grimmory's `ReadStatus` enum values
+    // (UNREAD, READING, RE_READING, READ, PARTIALLY_READ, PAUSED,
+    // WONT_READ, ABANDONED, UNSET) — 'READ' is the only one this app
+    // currently acts on (a finished-book badge).
     double? readProgress,
     String? readStatus,
   }) = _Book;
 
   factory Book.fromJson(Map<String, dynamic> json) => _$BookFromJson(json);
+}
+
+extension BookProgressX on Book {
+  /// [readProgress] as a real 0.0-1.0 fraction, normalized per [readProgress]'s
+  /// own doc comment — safe to feed straight into a `LinearProgressIndicator`
+  /// or a percentage display for any book type.
+  double? get normalizedReadProgress {
+    final raw = readProgress;
+    if (raw == null) return null;
+    return primaryFileType == 'AUDIOBOOK' ? raw : raw / 100;
+  }
 }
 
 /// From `GET /api/v1/audiobooks/{bookId}/info` — a separate endpoint from

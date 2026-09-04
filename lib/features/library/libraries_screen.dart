@@ -60,21 +60,35 @@ class LibrariesTab extends ConsumerWidget {
             slivers: [
               const SliverToBoxAdapter(child: ContinueListeningSection()),
               const SliverToBoxAdapter(child: ContinueReadingSection()),
-              // Recently Added caps out at 30 books, so anyone scoped to a
-              // specific library still needs a way to see everything in it
-              // (the full, paginated, sort/filterable LibraryDetailScreen).
-              if (selectedLibraryId != null)
-                SliverToBoxAdapter(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton.icon(
-                      onPressed: () =>
-                          context.push('/libraries/$selectedLibraryId'),
-                      icon: const Icon(Icons.arrow_forward, size: 16),
-                      label: const Text('View full library'),
-                    ),
+              // A header naming this section — it used to be implicit
+              // (RecentlyAddedSection carried its own "Recently Added"
+              // label as a carousel title), lost when this became a plain
+              // grid with no title of its own. Recently Added also caps out
+              // at 30 books, so anyone scoped to a specific library still
+              // needs a way to see everything in it (the full, paginated,
+              // sort/filterable LibraryDetailScreen).
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Recently Added',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      if (selectedLibraryId != null)
+                        TextButton.icon(
+                          onPressed: () =>
+                              context.push('/libraries/$selectedLibraryId'),
+                          icon: const Icon(Icons.arrow_forward, size: 16),
+                          label: const Text('View full library'),
+                        ),
+                    ],
                   ),
                 ),
+              ),
               ...recentlyAdded.when(
                 data: (books) {
                   if (books.isEmpty) {
