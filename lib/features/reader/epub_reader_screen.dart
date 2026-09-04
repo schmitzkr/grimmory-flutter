@@ -30,6 +30,10 @@ import 'epub_gesture_overlay.dart';
 /// package's web stub even in this Android-only app, so a real `dart:io`
 /// `File` fails static type-checking against it.
 const _readerDarkModeKey = 'reader_dark_mode';
+const _readerFontSizeKey = 'reader_font_size';
+const _minFontSize = 10.0;
+const _maxFontSize = 32.0;
+const _fontSizeStep = 2.0;
 
 /// `EpubTheme.dark()`/`.light()`'s `backgroundDecoration`/`foregroundColor`
 /// never actually reach the book's own CSS — `EpubViewer` always sends a
@@ -109,12 +113,19 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       WidgetsBinding.instance.platformDispatcher.platformBrightness ==
       Brightness.dark;
 
+  // Persisted across sessions, same as [_isDark] -- defaults to
+  // flutter_epub_viewer's own default (`EpubDisplaySettings.fontSize`).
+  double _fontSize = 15;
+
   @override
   void initState() {
     super.initState();
     final prefs = ref.read(sharedPrefsProvider);
     if (prefs.containsKey(_readerDarkModeKey)) {
       _isDark = prefs.getBool(_readerDarkModeKey)!;
+    }
+    if (prefs.containsKey(_readerFontSizeKey)) {
+      _fontSize = prefs.getDouble(_readerFontSizeKey)!;
     }
     _load();
   }
@@ -123,6 +134,60 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
     setState(() => _isDark = !_isDark);
     ref.read(sharedPrefsProvider).setBool(_readerDarkModeKey, _isDark);
     _controller.updateTheme(theme: _isDark ? _darkEpubTheme : _lightEpubTheme);
+  }
+
+  /// Live text-size adjustment. `setFontSize` reaches epub.js's own
+  /// `rendition.themes.fontSize()` directly, so it takes effect (and
+  /// reflows pagination) immediately, without reloading the book -- unlike
+  /// `EpubDisplaySettings.fontSize`, which only sets the size a fresh load
+  /// starts at.
+  void _changeFontSize(double delta, StateSetter sheetSetState) {
+    final next = (_fontSize + delta).clamp(_minFontSize, _maxFontSize);
+    if (next == _fontSize) return;
+    setState(() => _fontSize = next);
+    sheetSetState(() {});
+    ref.read(sharedPrefsProvider).setDouble(_readerFontSizeKey, next);
+    unawaited(_controller.setFontSize(fontSize: next));
+  }
+
+  void _showFontSizeSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, sheetSetState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.text_decrease),
+                  tooltip: 'Decrease text size',
+                  onPressed: _fontSize <= _minFontSize
+                      ? null
+                      : () => _changeFontSize(-_fontSizeStep, sheetSetState),
+                ),
+                SizedBox(
+                  width: 48,
+                  child: Text(
+                    '${_fontSize.round()}',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.text_increase),
+                  tooltip: 'Increase text size',
+                  onPressed: _fontSize >= _maxFontSize
+                      ? null
+                      : () => _changeFontSize(_fontSizeStep, sheetSetState),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   /// The one exit path: persist the live position, then refresh every
@@ -379,6 +444,11 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
               onPressed: _toggleTheme,
             ),
             IconButton(
+              icon: const Icon(Icons.text_fields),
+              tooltip: 'Text size',
+              onPressed: () => _showFontSizeSheet(context),
+            ),
+            IconButton(
               icon: const Icon(Icons.bookmark_border),
               tooltip: 'Bookmarks',
               onPressed: () => _showBookmarks(context),
@@ -406,6 +476,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
                 epubSource: EpubSource.fromData(_bytes!),
                 initialCfi: _initialCfi,
                 displaySettings: EpubDisplaySettings(
+                  fontSize: _fontSize.round(),
                   theme: _isDark ? _darkEpubTheme : _lightEpubTheme,
                 ),
                 onChaptersLoaded: (chapters) {
