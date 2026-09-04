@@ -8,7 +8,11 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../book/book_detail_screen.dart' show bookProvider;
 import '../bookmarks/epub_bookmarks_sheet.dart';
+import '../library/continue_reading_section.dart' show continueReadingProvider;
+import '../library/library_detail_screen.dart' show libraryBooksProvider;
+import '../library/recently_added_section.dart' show recentlyAddedProvider;
 import '../player/mini_player.dart';
 import 'epub_gesture_overlay.dart';
 
@@ -58,11 +62,13 @@ class EpubReaderScreen extends ConsumerStatefulWidget {
   const EpubReaderScreen({
     required this.bookId,
     required this.title,
+    this.jumpToCfi,
     super.key,
   });
 
   final int bookId;
   final String title;
+  final String? jumpToCfi;
 
   @override
   ConsumerState<EpubReaderScreen> createState() => _EpubReaderScreenState();
@@ -102,6 +108,21 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
     _controller.updateTheme(theme: _isDark ? _darkEpubTheme : _lightEpubTheme);
   }
 
+  @override
+  void dispose() {
+    // Every screen showing this book's progress (book detail, Continue
+    // Reading, Recently Added, a library grid) fetched its data before this
+    // reading session started, so it's holding a stale cache with no
+    // progress update in it — without this, going back showed the old
+    // progress until a manual pull-to-refresh. `ref.invalidate` on a family
+    // provider with no argument invalidates every argument instance of it.
+    ref.invalidate(bookProvider(widget.bookId));
+    ref.invalidate(continueReadingProvider);
+    ref.invalidate(recentlyAddedProvider);
+    ref.invalidate(libraryBooksProvider);
+    super.dispose();
+  }
+
   Future<void> _load() async {
     try {
       final apiClient = ref.read(apiClientProvider);
@@ -114,7 +135,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       if (!mounted) return;
       setState(() {
         _bytes = bytes;
-        _initialCfi = progress?.cfi;
+        _initialCfi = widget.jumpToCfi ?? progress?.cfi;
       });
     } catch (e) {
       if (!mounted) return;
@@ -218,6 +239,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         onTapLeft: _controller.prev,
         onTapRight: _controller.next,
         onSwipeDown: () => _showBookmarks(context),
+        onSwipeUp: _chapters.isEmpty ? () {} : () => _showChapters(context),
         child: EpubViewer(
           epubController: _controller,
           epubSource: EpubSource.fromData(_bytes!),
