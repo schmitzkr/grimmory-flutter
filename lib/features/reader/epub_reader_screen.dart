@@ -84,6 +84,10 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   // position, used as the target when adding a bookmark. Not rendered
   // directly, so plain field assignment (no setState) is enough.
   String? _currentCfi;
+  // The highest percentage (0-100) confirmed for this book, seeded from the
+  // server's own existing progress on load and updated as we go — a floor
+  // no fresh save is allowed to regress below. See _persistProgress.
+  double? _bestKnownPercentage;
   // Set right before a progress save fails, read by the SnackBar it
   // triggers — see _persistProgress/_showSyncFailedSnackBar.
   String? _lastSyncError;
@@ -141,6 +145,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       setState(() {
         _bytes = bytes;
         _initialCfi = widget.jumpToCfi ?? progress?.cfi;
+        _bestKnownPercentage = progress?.percentage;
       });
     } catch (e) {
       if (!mounted) return;
@@ -151,7 +156,18 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   void _saveProgress(EpubLocation location) {
     _currentCfi = location.startCfi;
     unawaited(
-      _persistProgress(location).then((ok) {
+      _persistProgress(
+        cfi: location.startCfi,
+        // location.progress is epub.js's own 0.0-1.0 fraction, but the
+        // server stores/interprets this percentage on a 0-100 scale
+        // (confirmed via the real web frontend, which does
+        // `goToFraction(progress.percentage / 100)` to convert it back) —
+        // sending the raw 0-1 fraction left read status stuck below the
+        // server's READING threshold for anything under ~10% real
+        // progress, so books never surfaced in Continue Reading unless
+        // read well past their first chapter.
+        percentage: location.progress * 100,
+      ).then((ok) {
         if (!ok) _showSyncFailedSnackBar();
       }),
     );
@@ -162,24 +178,32 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   /// "progress never shows up" bug impossible to diagnose without server
   /// access. Reported failures now surface via [_showSyncFailedSnackBar]
   /// with the real API error (via [friendlyApiError]) instead.
-  Future<bool> _persistProgress(EpubLocation location) async {
+  ///
+  /// [percentage] is never actually sent below [_bestKnownPercentage]: a
+  /// real reported bug was progress *disappearing* on a second read of the
+  /// same book — epub.js's own percentage can come back as a stale,
+  /// premature 0 before `book.locations.generate()` finishes (see
+  /// [_saveProgressBeforeExit]'s own comment), and that shouldn't be
+  /// allowed to overwrite real, already-recorded progress just because
+  /// this particular reader session's locations map wasn't ready yet. The
+  /// position ([cfi]) is always trusted fresh regardless — only the
+  /// percentage figure has this floor.
+  Future<bool> _persistProgress({
+    required String cfi,
+    required double percentage,
+  }) async {
+    final effectivePercentage = _bestKnownPercentage == null
+        ? percentage
+        : (percentage > _bestKnownPercentage!
+              ? percentage
+              : _bestKnownPercentage!);
+    _bestKnownPercentage = effectivePercentage;
     try {
       await ref
           .read(apiClientProvider)
           .updateEpubProgress(
             widget.bookId,
-            // location.progress is epub.js's own 0.0-1.0 fraction, but the
-            // server stores/interprets this percentage on a 0-100 scale
-            // (confirmed via the real web frontend, which does
-            // `goToFraction(progress.percentage / 100)` to convert it
-            // back) — sending the raw 0-1 fraction left read status stuck
-            // below the server's READING threshold for anything under
-            // ~10% real progress, so books never surfaced in Continue
-            // Reading unless read well past their first chapter.
-            EpubProgress(
-              cfi: location.startCfi,
-              percentage: location.progress * 100,
-            ),
+            EpubProgress(cfi: cfi, percentage: effectivePercentage),
           );
       return true;
     } catch (e) {
@@ -213,25 +237,38 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       // epub.js's own `percentage` figure depends on `book.locations
       // .generate()` finishing in the background (it needs a pre-computed
       // locations map to know where a CFI falls as a fraction of the whole
-      // book). Confirmed via a live DB check that a quick "open, read a
-      // page or two, back out" session was saving the exact right CFI every
-      // time, but a hard 0 for percentage every time too — because
-      // epub.js's cached location object is only recomputed on an actual
-      // relocate event, and the very first one (right after opening) fires
-      // before that background generation has had time to finish; it then
-      // stays frozen at that stale value until something re-triggers it.
-      // Re-displaying the last-known position forces a fresh relocate,
-      // giving generation the extra moment (it's usually done within a
-      // second or so for a typical book) to actually finish first.
+      // book) — a fresh computation every time the reader opens, not
+      // cached across sessions, and how long it takes scales with the
+      // book's size. Confirmed via a live DB check that a quick "open,
+      // read a page or two, back out" session was saving the exact right
+      // CFI every time, but a hard 0 for percentage every time too —
+      // because epub.js's cached location object is only recomputed on an
+      // actual relocate event, and the very first one (right after
+      // opening) fires before that background generation has had time to
+      // finish; it then stays frozen at that stale value until something
+      // re-triggers it. Re-displaying the last-known position forces a
+      // fresh relocate each attempt; retrying with increasing delays
+      // (rather than gambling on one fixed wait) keeps this working
+      // across books of any size instead of just whichever one happened
+      // to fit in a single guessed timeout.
       final anchorCfi = _currentCfi ?? _initialCfi;
-      if (anchorCfi != null) {
-        _controller.display(cfi: anchorCfi);
-        await Future.delayed(const Duration(milliseconds: 400));
-      }
-      final location = await _controller.getCurrentLocation().timeout(
-        const Duration(seconds: 3),
+      var location = EpubLocation(
+        startCfi: anchorCfi ?? '',
+        endCfi: anchorCfi ?? '',
+        progress: 0,
       );
-      final ok = await _persistProgress(location);
+      for (final delayMs in const [400, 800, 1200]) {
+        if (anchorCfi != null) _controller.display(cfi: anchorCfi);
+        await Future.delayed(Duration(milliseconds: delayMs));
+        location = await _controller.getCurrentLocation().timeout(
+          const Duration(seconds: 3),
+        );
+        if (location.progress > 0) break;
+      }
+      final ok = await _persistProgress(
+        cfi: location.startCfi,
+        percentage: location.progress * 100,
+      );
       if (!ok) {
         // The screen is about to be popped — briefly hold so the SnackBar
         // is actually visible before this Scaffold (and its
