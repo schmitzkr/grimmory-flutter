@@ -71,6 +71,34 @@ void main() {
     expect(book.ebookFileId, 81);
   });
 
+  test('Book.fileIdFor picks the file of that exact type, primary first', () {
+    final book = Book.fromJson({
+      'id': 9,
+      'title': 'Comic with extras',
+      'primaryFileType': 'CBX',
+      'files': [
+        {'id': 90, 'bookType': 'PDF', 'primary': false},
+        {'id': 91, 'bookType': 'CBX', 'primary': false},
+        {'id': 92, 'bookType': 'CBX', 'primary': true},
+      ],
+    });
+    expect(book.fileIdFor(PageFormat.cbx), 92);
+    expect(book.fileIdFor(PageFormat.pdf), 90);
+    expect(book.ebookFileId, isNull);
+  });
+
+  test('PageProgress round-trips and tolerates a missing updatedAt', () {
+    final progress = PageProgress.fromJson({'page': 4, 'percentage': 25.0});
+    expect(progress.page, 4);
+    expect(progress.percentage, 25.0);
+    expect(progress.updatedAt, isNull);
+    expect(progress.toJson(), {
+      'page': 4,
+      'percentage': 25.0,
+      'updatedAt': null,
+    });
+  });
+
   // `AppBookFile` is a Lombok @Data class: its `boolean isPrimary` field
   // serialises under the property name `primary` (Jackson strips the `is`
   // from the generated `isPrimary()` getter), so the Dart-side field name is

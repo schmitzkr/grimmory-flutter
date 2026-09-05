@@ -194,6 +194,22 @@ Map<String, dynamic> _$EpubProgressToJson(_EpubProgress instance) =>
       'percentage': instance.percentage,
     };
 
+_PageProgress _$PageProgressFromJson(Map<String, dynamic> json) =>
+    _PageProgress(
+      page: (json['page'] as num).toInt(),
+      percentage: (json['percentage'] as num).toDouble(),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
+    );
+
+Map<String, dynamic> _$PageProgressToJson(_PageProgress instance) =>
+    <String, dynamic>{
+      'page': instance.page,
+      'percentage': instance.percentage,
+      'updatedAt': instance.updatedAt?.toIso8601String(),
+    };
+
 _Series _$SeriesFromJson(Map<String, dynamic> json) => _Series(
   seriesName: json['seriesName'] as String,
   bookCount: (json['bookCount'] as num).toInt(),
