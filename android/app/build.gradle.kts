@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // AGP 9 has Kotlin support built in — no separate kotlin-android plugin
+    // (and no kotlinOptions block), same as Flutter 3.47's own template.
+    // The Flutter Gradle Plugin must be applied after the Android plugin.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -23,16 +24,15 @@ val hasReleaseSigning =
 
 android {
     namespace = "is.schmitzkr.grimmory"
-    compileSdk = flutter.compileSdkVersion
+    // Explicit rather than flutter.compileSdkVersion (36 on Flutter 3.47):
+    // flutter_secure_storage 11 needs 37. Requires AGP 9.x — 8.11 could not
+    // resolve the SDK 37 platform even after auto-installing it.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {

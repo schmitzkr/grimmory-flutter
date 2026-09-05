@@ -20,11 +20,9 @@ dependencies:
   dio: ^5.8.0+1
 
   # Token / server-URL storage
-  # Pinned below 11: flutter_secure_storage 11 requires compileSdk 37,
-  # which AGP 8.11 (this project's) cannot resolve against the SDK 37.0
-  # platform package — bump together with the AGP 9 / Gradle 9.1 / Kotlin
-  # 2.3 toolchain upgrade, not on its own.
-  flutter_secure_storage: ^10.3.1
+  # v11 requires compileSdk 37 — set explicitly in android/app/build.gradle.kts
+  # (Flutter 3.47's own default is 36) on the AGP 9.1 toolchain.
+  flutter_secure_storage: ^11.0.0
   shared_preferences: ^2.5.2
 
   # OIDC login (Authentik or any IdP a self-hosted Grimmory instance is wired
