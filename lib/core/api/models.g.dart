@@ -320,6 +320,57 @@ Map<String, dynamic> _$ShelfToJson(_Shelf instance) => <String, dynamic>{
   'publicShelf': instance.publicShelf,
 };
 
+_CurrentUser _$CurrentUserFromJson(Map<String, dynamic> json) => _CurrentUser(
+  id: (json['id'] as num).toInt(),
+  username: json['username'] as String,
+  name: json['name'] as String?,
+  email: json['email'] as String?,
+  provisioningMethod: json['provisioningMethod'] as String?,
+  permissions: json['permissions'] == null
+      ? null
+      : UserPermissions.fromJson(json['permissions'] as Map<String, dynamic>),
+  userSettings: json['userSettings'] == null
+      ? null
+      : UserSettings.fromJson(json['userSettings'] as Map<String, dynamic>),
+);
+
+Map<String, dynamic> _$CurrentUserToJson(_CurrentUser instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'username': instance.username,
+      'name': instance.name,
+      'email': instance.email,
+      'provisioningMethod': instance.provisioningMethod,
+      'permissions': instance.permissions,
+      'userSettings': instance.userSettings,
+    };
+
+_UserPermissions _$UserPermissionsFromJson(Map<String, dynamic> json) =>
+    _UserPermissions(
+      isAdmin: json['admin'] as bool? ?? false,
+      canDownload: json['canDownload'] as bool? ?? false,
+      canUpload: json['canUpload'] as bool? ?? false,
+    );
+
+Map<String, dynamic> _$UserPermissionsToJson(_UserPermissions instance) =>
+    <String, dynamic>{
+      'admin': instance.isAdmin,
+      'canDownload': instance.canDownload,
+      'canUpload': instance.canUpload,
+    };
+
+_UserSettings _$UserSettingsFromJson(Map<String, dynamic> json) =>
+    _UserSettings(
+      dashboardConfig: json['dashboardConfig'] == null
+          ? null
+          : DashboardConfig.fromJson(
+              json['dashboardConfig'] as Map<String, dynamic>,
+            ),
+    );
+
+Map<String, dynamic> _$UserSettingsToJson(_UserSettings instance) =>
+    <String, dynamic>{'dashboardConfig': instance.dashboardConfig};
+
 _DashboardScroller _$DashboardScrollerFromJson(Map<String, dynamic> json) =>
     _DashboardScroller(
       id: json['id'] as String?,

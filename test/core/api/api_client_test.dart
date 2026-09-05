@@ -270,6 +270,40 @@ void main() {
     });
   });
 
+  group('current user', () {
+    // `BookLoreUser.UserPermissions` is a Lombok @Data class: `isAdmin`
+    // serialises as `admin`, as `BookFile.isPrimary` does as `primary`.
+    test('parses the account and reads the admin flag from "admin"', () async {
+      adapter.handler = (_) => _json({
+        'id': 1,
+        'username': 'reader',
+        'name': 'Ada Reader',
+        'email': 'ada@example.test',
+        'provisioningMethod': 'OIDC',
+        'permissions': {'admin': true, 'canDownload': true},
+        'userSettings': {'dashboardConfig': null},
+      });
+
+      final user = await client.getCurrentUser();
+      expect(adapter.requests.single.path, '/users/me');
+      expect(user.username, 'reader');
+      expect(user.displayName, 'Ada Reader');
+      expect(user.email, 'ada@example.test');
+      expect(user.signedInWithSso, isTrue);
+      expect(user.permissions?.isAdmin, isTrue);
+      expect(user.userSettings?.dashboardConfig, isNull);
+    });
+
+    test('falls back to the username as the display name', () async {
+      adapter.handler = (_) =>
+          _json({'id': 2, 'username': 'plain', 'name': ' '});
+      final user = await client.getCurrentUser();
+      expect(user.displayName, 'plain');
+      expect(user.signedInWithSso, isFalse);
+      expect(user.permissions, isNull);
+    });
+  });
+
   group('dashboard', () {
     // The web stores its dashboard layout in the user's settings on
     // /users/me; the phone reads the same field so the two agree.
@@ -320,10 +354,12 @@ void main() {
     });
 
     test('is null until the user has customised the web dashboard', () async {
-      adapter.handler = (_) => _json({'id': 1, 'userSettings': {}});
+      adapter.handler = (_) =>
+          _json({'id': 1, 'username': 'u', 'userSettings': {}});
       expect(await client.getDashboardConfig(), isNull);
 
-      adapter.handler = (_) => _json({'id': 1, 'userSettings': null});
+      adapter.handler = (_) =>
+          _json({'id': 1, 'username': 'u', 'userSettings': null});
       expect(await client.getDashboardConfig(), isNull);
     });
 

@@ -8,6 +8,7 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
+import '../auth/current_user_provider.dart';
 import 'continue_listening_section.dart';
 import 'continue_reading_section.dart';
 import 'libraries_screen.dart' show selectedLibraryFilterProvider;
@@ -123,16 +124,18 @@ List<Book> discoverPick(
   return candidates.take(max).toList();
 }
 
-/// Loaded once per session (and on pull-to-refresh). A failure falls back
-/// to the defaults rather than an error page: the rows themselves surface
-/// a dead server, and a home screen that only differs in row order is
-/// better than no home screen.
+/// Read off the signed-in account ([currentUserProvider] — one request
+/// serves this and the Settings header). A failure falls back to the
+/// defaults rather than an error page: the rows themselves surface a dead
+/// server, and a home screen that only differs in row order is better
+/// than no home screen.
 final dashboardConfigProvider = FutureProvider<List<DashboardScroller>>((
   ref,
 ) async {
   DashboardConfig? config;
   try {
-    config = await ref.read(apiClientProvider).getDashboardConfig();
+    final user = await ref.watch(currentUserProvider.future);
+    config = user.userSettings?.dashboardConfig;
   } catch (_) {
     config = null;
   }
