@@ -247,9 +247,15 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(right: 16),
-                  child: Text(
-                    '$_page / $_pageCount',
-                    style: Theme.of(context).textTheme.titleSmall,
+                  child: Semantics(
+                    label: 'Page $_page of $_pageCount',
+                    liveRegion: true,
+                    child: ExcludeSemantics(
+                      child: Text(
+                        '$_page / $_pageCount',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
                   ),
                 ),
               ),

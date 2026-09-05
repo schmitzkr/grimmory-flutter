@@ -53,10 +53,37 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showBatteryOptimizationDialog(context),
           ),
           const Divider(),
+          // Signing out and changing server are different intentions: the
+          // first keeps the server and lands on the login screen (switching
+          // accounts on the same instance), the second goes back to
+          // onboarding. Both end the session, so both confirm first.
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text('Change server / sign out'),
+            title: const Text('Sign out'),
+            subtitle: const Text('Keep the server, return to sign-in'),
             onTap: () async {
+              final ok = await _confirm(
+                context,
+                title: 'Sign out?',
+                body: 'You will need to sign in again to read or listen.',
+                action: 'Sign out',
+              );
+              if (!ok) return;
+              await ref.read(authProvider.notifier).logout();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.dns_outlined),
+            title: const Text('Change server'),
+            subtitle: const Text('Sign out and connect to a different server'),
+            onTap: () async {
+              final ok = await _confirm(
+                context,
+                title: 'Change server?',
+                body: 'This signs you out and asks for a server address again.',
+                action: 'Change server',
+              );
+              if (!ok) return;
               await ref.read(authProvider.notifier).logout();
               // The router listens to both; clearing the URL last lands on
               // /onboarding without a manual navigation.
@@ -68,6 +95,32 @@ class SettingsScreen extends ConsumerWidget {
       bottomNavigationBar: const MiniPlayer(),
     );
   }
+}
+
+Future<bool> _confirm(
+  BuildContext context, {
+  required String title,
+  required String body,
+  required String action,
+}) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(action),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }
 
 /// Who is signed in — display name, account name, e-mail, and whether the
@@ -91,6 +144,7 @@ class _SignedInAs extends ConsumerWidget {
         title: const Text('Signed in'),
         subtitle: Text('Could not load account: ${friendlyApiError(error)}'),
         trailing: IconButton(
+          tooltip: 'Retry',
           icon: const Icon(Icons.refresh),
           onPressed: () => ref.invalidate(currentUserProvider),
         ),

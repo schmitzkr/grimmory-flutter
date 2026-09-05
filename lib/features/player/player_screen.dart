@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/models.dart';
 import '../../core/utils/duration_format.dart';
@@ -26,7 +27,31 @@ class PlayerScreen extends ConsumerWidget {
     final handler = ref.read(audioHandlerProvider);
 
     if (nowPlaying == null) {
-      return const Scaffold(body: Center(child: Text('Nothing playing.')));
+      // Reached when playback stopped under an open player, or from a
+      // restored /player route — it needs a real app bar (back) and a way
+      // to something useful, not a bare sentence.
+      return Scaffold(
+        appBar: AppBar(title: const Text('Now Playing')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.headphones_outlined,
+                size: 48,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 12),
+              const Text('Nothing playing.'),
+              const SizedBox(height: 16),
+              FilledButton.tonal(
+                onPressed: () => context.go('/libraries'),
+                child: const Text('Browse your library'),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     final mediaItem = nowPlaying.mediaItem;
@@ -103,6 +128,7 @@ class PlayerScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               IconButton(
+                tooltip: 'Previous track',
                 iconSize: 32,
                 icon: const Icon(Icons.skip_previous),
                 onPressed: queue.length > 1 ? handler.skipToPrevious : null,
@@ -118,11 +144,13 @@ class PlayerScreen extends ConsumerWidget {
                 )
               else
                 IconButton(
+                  tooltip: playing ? 'Pause' : 'Play',
                   iconSize: 64,
                   icon: Icon(playing ? Icons.pause_circle : Icons.play_circle),
                   onPressed: playing ? handler.pause : handler.play,
                 ),
               IconButton(
+                tooltip: 'Next track',
                 iconSize: 32,
                 icon: const Icon(Icons.skip_next),
                 onPressed: queue.length > 1 ? handler.skipToNext : null,

@@ -228,9 +228,15 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: Text(
-                  '${_index + 1} / ${pages.length}',
-                  style: Theme.of(context).textTheme.titleSmall,
+                child: Semantics(
+                  label: 'Page ${_index + 1} of ${pages.length}',
+                  liveRegion: true,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      '${_index + 1} / ${pages.length}',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
                 ),
               ),
             ),
