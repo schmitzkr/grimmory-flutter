@@ -92,6 +92,72 @@ void main() {
     );
   });
 
+  test('Book parses the detail-only metadata fields', () {
+    final book = Book.fromJson({
+      'id': 5,
+      'title': 'Detailed',
+      'subtitle': 'A subtitle',
+      'description': '<p>Hi</p>',
+      'publisher': 'Pub',
+      'publishedDate': '2019-11-02',
+      'pageCount': 321,
+      'language': 'en',
+      'categories': ['Fantasy', 'Humor'],
+      'personalRating': 4,
+      'libraryName': 'Books',
+    });
+    expect(book.subtitle, 'A subtitle');
+    expect(book.publishedDate, '2019-11-02');
+    expect(book.pageCount, 321);
+    expect(book.categories, ['Fantasy', 'Humor']);
+    expect(book.personalRating, 4);
+    expect(book.libraryName, 'Books');
+  });
+
+  test('Book parses the detail-only metadata fields', () {
+    final book = Book.fromJson({
+      'id': 5,
+      'title': 'Detailed',
+      'subtitle': 'A subtitle',
+      'description': '<p>Hi</p>',
+      'publisher': 'Pub',
+      'publishedDate': '2019-11-02',
+      'pageCount': 321,
+      'language': 'en',
+      'categories': ['Fantasy', 'Humor'],
+      'personalRating': 4,
+      'libraryName': 'Books',
+    });
+    expect(book.subtitle, 'A subtitle');
+    expect(book.publishedDate, '2019-11-02');
+    expect(book.pageCount, 321);
+    expect(book.categories, ['Fantasy', 'Humor']);
+    expect(book.personalRating, 4);
+    expect(book.libraryName, 'Books');
+  });
+
+  test('Book parses the detail-only metadata fields', () {
+    final book = Book.fromJson({
+      'id': 5,
+      'title': 'Detailed',
+      'subtitle': 'A subtitle',
+      'description': '<p>Hi</p>',
+      'publisher': 'Pub',
+      'publishedDate': '2019-11-02',
+      'pageCount': 321,
+      'language': 'en',
+      'categories': ['Fantasy', 'Humor'],
+      'personalRating': 4,
+      'libraryName': 'Books',
+    });
+    expect(book.subtitle, 'A subtitle');
+    expect(book.publishedDate, '2019-11-02');
+    expect(book.pageCount, 321);
+    expect(book.categories, ['Fantasy', 'Humor']);
+    expect(book.personalRating, 4);
+    expect(book.libraryName, 'Books');
+  });
+
   test('Book.fileIdFor picks the file of that exact type, primary first', () {
     final book = Book.fromJson({
       'id': 9,

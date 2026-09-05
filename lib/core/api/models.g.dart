@@ -52,6 +52,18 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   libraryId: (json['libraryId'] as num?)?.toInt(),
   narrator: json['narrator'] as String?,
   description: json['description'] as String?,
+  subtitle: json['subtitle'] as String?,
+  publisher: json['publisher'] as String?,
+  publishedDate: json['publishedDate'] as String?,
+  pageCount: (json['pageCount'] as num?)?.toInt(),
+  language: json['language'] as String?,
+  categories:
+      (json['categories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  personalRating: (json['personalRating'] as num?)?.toInt(),
+  libraryName: json['libraryName'] as String?,
   primaryFileType: json['primaryFileType'] as String?,
   readProgress: (json['readProgress'] as num?)?.toDouble(),
   readStatus: json['readStatus'] as String?,
@@ -82,6 +94,14 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'libraryId': instance.libraryId,
   'narrator': instance.narrator,
   'description': instance.description,
+  'subtitle': instance.subtitle,
+  'publisher': instance.publisher,
+  'publishedDate': instance.publishedDate,
+  'pageCount': instance.pageCount,
+  'language': instance.language,
+  'categories': instance.categories,
+  'personalRating': instance.personalRating,
+  'libraryName': instance.libraryName,
   'primaryFileType': instance.primaryFileType,
   'readProgress': instance.readProgress,
   'readStatus': instance.readStatus,

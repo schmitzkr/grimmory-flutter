@@ -70,6 +70,18 @@ abstract class Book with _$Book {
     int? libraryId,
     String? narrator,
     String? description,
+    // `AppBookDetail` only — shown on the detail screen. [publishedDate] is
+    // a LocalDate string (`2021-03-09`), kept as text and reduced to a year
+    // for display; [personalRating] is 1–5 (server-validated); [categories]
+    // arrives as a Set, i.e. a JSON array.
+    String? subtitle,
+    String? publisher,
+    String? publishedDate,
+    int? pageCount,
+    String? language,
+    @Default([]) List<String> categories,
+    int? personalRating,
+    String? libraryName,
     // From `AppBookSummary`/`AppBookDetail.primaryFileType` — one of
     // AUDIOBOOK/EPUB/PDF/CBX/FB2/MOBI/AZW3 (matches Library.allowedFormats'
     // enum). Drives which action the book detail screen shows (Play vs.
