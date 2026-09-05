@@ -137,6 +137,36 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   // flutter_epub_viewer's own default (`EpubDisplaySettings.fontSize`).
   double _fontSize = 15;
 
+  // Tracks whether epub.js currently has an active text selection. A real
+  // reported bug: long-pressing to select text brings up Android's native
+  // selection toolbar/handles, but tapping elsewhere doesn't dismiss it --
+  // the WebView's own tap-to-deselect handling doesn't reliably fire here
+  // (it sets `touch-action: none` while a selection is active, to stop the
+  // page-turn swipe recognizer from stealing the user's handle-drag, and
+  // that same block appears to also swallow the plain taps meant to clear
+  // the selection). Tracking this ourselves and calling
+  // `EpubController.clearSelection()` directly on any tap sidesteps that
+  // rather than depending on it.
+  bool _hasSelection = false;
+
+  /// A page-turn zone tap (left/right third) while a selection is active
+  /// dismisses the selection instead of turning the page -- matching how
+  /// most readers treat a stray tap right after selecting text.
+  void _handlePageTurn(VoidCallback turnPage) {
+    if (_hasSelection) {
+      _controller.clearSelection();
+      return;
+    }
+    turnPage();
+  }
+
+  /// Fires on every tap, including the middle third (which has no
+  /// page-turn action of its own) -- the only zone a tap meant purely to
+  /// dismiss a selection is likely to land in.
+  void _handleAnyTap() {
+    if (_hasSelection) _controller.clearSelection();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -606,8 +636,9 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         body: Stack(
           children: [
             EpubGestureOverlay(
-              onTapLeft: _controller.prev,
-              onTapRight: _controller.next,
+              onTapLeft: () => _handlePageTurn(_controller.prev),
+              onTapRight: () => _handlePageTurn(_controller.next),
+              onTap: _handleAnyTap,
               onSwipeDown: () => _showBookmarks(context),
               onSwipeUp: _chapters.isEmpty
                   ? () {}
@@ -624,6 +655,12 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
                   if (mounted) setState(() => _chapters = chapters);
                 },
                 onRelocated: _saveProgress,
+                onSelection: (selectedText, cfiRange, selectionRect, viewRect) {
+                  _hasSelection = true;
+                },
+                onDeselection: () {
+                  _hasSelection = false;
+                },
               ),
             ),
             if (_isExiting) const _SavingOverlay(),
