@@ -17,6 +17,7 @@ import '../bookmarks/epub_bookmarks_sheet.dart';
 import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
 import 'epub_gesture_overlay.dart';
+import 'reader_chrome.dart';
 import 'epub_spine_fractions.dart';
 import '../../core/widgets/sheet_header.dart';
 
@@ -33,6 +34,7 @@ import '../../core/widgets/sheet_header.dart';
 /// `File` fails static type-checking against it.
 const _readerDarkModeKey = 'reader_dark_mode';
 const _readerFontSizeKey = 'reader_font_size';
+const _gestureHintShownKey = 'reader_gesture_hint_shown';
 const _minFontSize = 10.0;
 const _maxFontSize = 32.0;
 const _fontSizeStep = 2.0;
@@ -110,6 +112,11 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   // triggers — see _persistProgress/_showSyncFailedSnackBar.
   String? _lastSyncError;
   List<EpubChapter> _chapters = [];
+  // What the position line shows: the latest 0-100 the relocation handler
+  // computed (the same figure that gets saved), seeded from the server's
+  // known progress until the first relocation.
+  double? _shownPercent;
+  bool _chromeVisible = true;
   Object? _error;
   // A reason the book can't be opened at all (as opposed to a transient
   // load error worth retrying): the server will only ever hand out the
@@ -168,6 +175,64 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
     if (_hasSelection) _controller.clearSelection();
   }
 
+  /// Centre tap: show/hide the app bar, toolbar and system bars — unless
+  /// the tap was there to dismiss a selection.
+  void _handleCenterTap() {
+    if (_hasSelection) return;
+    _toggleChrome();
+  }
+
+  void _toggleChrome() {
+    setState(() => _chromeVisible = !_chromeVisible);
+    setReaderImmersive(!_chromeVisible);
+  }
+
+  /// One-time explanation of the tap zones and swipes, shown over the
+  /// loading screen on the very first open; the app bar's help button
+  /// brings it back any time.
+  void _maybeShowGestureHint() {
+    final prefs = ref.read(sharedPrefsProvider);
+    if (prefs.getBool(_gestureHintShownKey) ?? false) return;
+    prefs.setBool(_gestureHintShownKey, true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _showGestureHint(context);
+    });
+  }
+
+  void _showGestureHint(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reading gestures'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _HintRow(
+              Icons.swipe_left_outlined,
+              'Tap the left or right edge to turn the page (or swipe).',
+            ),
+            _HintRow(
+              Icons.fullscreen,
+              'Tap the middle to hide or show the controls.',
+            ),
+            _HintRow(Icons.swipe_down_outlined, 'Swipe down for bookmarks.'),
+            _HintRow(
+              Icons.text_fields,
+              'Text size, theme and chapters are in the bottom bar.',
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -178,11 +243,13 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
     if (prefs.containsKey(_readerFontSizeKey)) {
       _fontSize = prefs.getDouble(_readerFontSizeKey)!;
     }
+    _maybeShowGestureHint();
     _load();
   }
 
   @override
   void dispose() {
+    if (!_chromeVisible) setReaderImmersive(false);
     _saveTimer?.cancel();
     super.dispose();
   }
@@ -367,6 +434,10 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
 
   void _saveProgress(EpubLocation location) {
     _currentCfi = location.startCfi;
+    final percent = _percentageFor(location);
+    if (percent > 0 && (percent - (_shownPercent ?? -1)).abs() >= 0.5) {
+      setState(() => _shownPercent = percent);
+    }
     _pendingLocation = location;
     _saveTimer?.cancel();
     _saveTimer = Timer(_saveDebounce, _flushPendingSave);
@@ -606,13 +677,26 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         if (!didPop) _exit();
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: _chromeVisible
+            ? AppBar(
+                title: Text(title),
+                actions: [
+                  IconButton(
+                    tooltip: 'Reading gestures',
+                    icon: const Icon(Icons.help_outline),
+                    onPressed: () => _showGestureHint(context),
+                  ),
+                  FullscreenButton(onPressed: _toggleChrome),
+                ],
+              )
+            : null,
         body: Stack(
           children: [
             EpubGestureOverlay(
               onTapLeft: () => _handlePageTurn(_controller.prev),
               onTapRight: () => _handlePageTurn(_controller.next),
               onTap: _handleAnyTap,
+              onTapCenter: _handleCenterTap,
               // Swipe down still opens bookmarks; swipe up used to open the
               // chapter list until that got a toolbar button.
               onSwipeDown: () => _showBookmarks(context),
@@ -636,27 +720,33 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
                 },
               ),
             ),
+            if (!_chromeVisible) FullscreenExitButton(onPressed: _toggleChrome),
             if (_isExiting) const _SavingOverlay(),
           ],
         ),
         // The reading controls live in a bottom toolbar rather than the app
         // bar: they are within thumb reach on a tall phone, and they get
         // labels, which four unlabelled app-bar icons never had room for.
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _ReaderToolbar(
-              isDark: _isDark,
-              onToggleTheme: _toggleTheme,
-              onTextSize: () => _showFontSizeSheet(context),
-              onBookmarks: () => _showBookmarks(context),
-              onChapters: _chapters.isEmpty
-                  ? null
-                  : () => _showChapters(context),
-            ),
-            const MiniPlayer(),
-          ],
-        ),
+        bottomNavigationBar: !_chromeVisible
+            ? null
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _ReadingPosition(
+                    percent: _shownPercent ?? _bestKnownPercentage ?? 0,
+                  ),
+                  _ReaderToolbar(
+                    isDark: _isDark,
+                    onToggleTheme: _toggleTheme,
+                    onTextSize: () => _showFontSizeSheet(context),
+                    onBookmarks: () => _showBookmarks(context),
+                    onChapters: _chapters.isEmpty
+                        ? null
+                        : () => _showChapters(context),
+                  ),
+                  const MiniPlayer(),
+                ],
+              ),
       ),
     );
   }
@@ -712,6 +802,67 @@ class _SavingOverlay extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HintRow extends StatelessWidget {
+  const _HintRow(this.icon, this.text);
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 22),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+}
+
+/// How far into the book the reader is — the same 0-100 the progress save
+/// uses, as a hairline plus a percentage above the toolbar. The comic and
+/// PDF readers show "n / N"; this is the EPUB equivalent.
+class _ReadingPosition extends StatelessWidget {
+  const _ReadingPosition({required this.percent});
+
+  final double percent;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainer,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LinearProgressIndicator(
+            value: (percent / 100).clamp(0.0, 1.0),
+            minHeight: 2,
+            backgroundColor: scheme.surfaceContainerHighest,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: Row(
+              children: [
+                Text(
+                  '${percent.round()}% read',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

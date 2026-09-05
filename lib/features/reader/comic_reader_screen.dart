@@ -11,6 +11,11 @@ import '../book/book_detail_screen.dart' show bookProvider;
 import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
 import 'page_progress_saver.dart';
+import 'reader_chrome.dart';
+
+/// Per-book reading direction (manga reads right to left); the server's
+/// CBX reader settings carry no direction, so this stays on the device.
+String _rtlKey(int bookId) => 'comic_rtl_$bookId';
 
 /// Comic (CBZ/CBR/CB7 — Grimmory's `CBX`) reader. Nothing is downloaded or
 /// unpacked on the device: the server lists the readable pages
@@ -37,18 +42,33 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
   int _index = 0;
   Object? _error;
   bool _isExiting = false;
+  bool _rtl = false;
+  bool _chromeVisible = true;
 
   @override
   void initState() {
     super.initState();
+    _rtl =
+        ref.read(sharedPrefsProvider).getBool(_rtlKey(widget.bookId)) ?? false;
     _load();
   }
 
   @override
   void dispose() {
+    if (!_chromeVisible) setReaderImmersive(false);
     _saver?.dispose();
     _controller?.dispose();
     super.dispose();
+  }
+
+  void _toggleChrome() {
+    setState(() => _chromeVisible = !_chromeVisible);
+    setReaderImmersive(!_chromeVisible);
+  }
+
+  void _toggleDirection() {
+    setState(() => _rtl = !_rtl);
+    ref.read(sharedPrefsProvider).setBool(_rtlKey(widget.bookId), _rtl);
   }
 
   Future<void> _load() async {
@@ -222,30 +242,45 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        appBar: AppBar(
-          title: Text(title),
-          actions: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Semantics(
-                  label: 'Page ${_index + 1} of ${pages.length}',
-                  liveRegion: true,
-                  child: ExcludeSemantics(
-                    child: Text(
-                      '${_index + 1} / ${pages.length}',
-                      style: Theme.of(context).textTheme.titleSmall,
+        appBar: !_chromeVisible
+            ? null
+            : AppBar(
+                title: Text(title),
+                actions: [
+                  IconButton(
+                    tooltip: _rtl
+                        ? 'Reading right to left — tap for left to right'
+                        : 'Reading left to right — tap for right to left (manga)',
+                    icon: Icon(
+                      _rtl
+                          ? Icons.format_textdirection_r_to_l
+                          : Icons.format_textdirection_l_to_r,
+                    ),
+                    onPressed: _toggleDirection,
+                  ),
+                  FullscreenButton(onPressed: _toggleChrome),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Semantics(
+                        label: 'Page ${_index + 1} of ${pages.length}',
+                        liveRegion: true,
+                        child: ExcludeSemantics(
+                          child: Text(
+                            '${_index + 1} / ${pages.length}',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ),
-          ],
-        ),
         body: Stack(
           children: [
             PageView.builder(
               controller: _controller,
+              reverse: _rtl,
               itemCount: pages.length,
               onPageChanged: _onPageChanged,
               itemBuilder: (context, index) => _ComicPage(
@@ -256,29 +291,34 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
                 ),
                 headers: apiClient.authHeaders,
                 label: 'Page ${index + 1} of ${pages.length}',
+                onTap: _toggleChrome,
               ),
             ),
+            if (!_chromeVisible) FullscreenExitButton(onPressed: _toggleChrome),
             if (_isExiting) const SavingOverlay(),
           ],
         ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (pages.length > 1)
-              SafeArea(
-                top: false,
-                child: Slider(
-                  value: _index.toDouble(),
-                  min: 0,
-                  max: (pages.length - 1).toDouble(),
-                  divisions: pages.length - 1,
-                  label: '${_index + 1}',
-                  onChanged: (value) => _controller?.jumpToPage(value.round()),
-                ),
+        bottomNavigationBar: !_chromeVisible
+            ? null
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (pages.length > 1)
+                    SafeArea(
+                      top: false,
+                      child: Slider(
+                        value: _index.toDouble(),
+                        min: 0,
+                        max: (pages.length - 1).toDouble(),
+                        divisions: pages.length - 1,
+                        label: '${_index + 1}',
+                        onChanged: (value) =>
+                            _controller?.jumpToPage(value.round()),
+                      ),
+                    ),
+                  const MiniPlayer(),
+                ],
               ),
-            const MiniPlayer(),
-          ],
-        ),
       ),
     );
   }
@@ -309,31 +349,39 @@ class _ComicPage extends StatelessWidget {
     required this.url,
     required this.headers,
     required this.label,
+    required this.onTap,
   });
 
   final String url;
   final Map<String, String> headers;
   final String label;
 
+  /// A plain tap on the page (pinch/pan are the viewer's) shows or hides
+  /// the chrome.
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label: label,
       image: true,
-      child: InteractiveViewer(
-        minScale: 1,
-        maxScale: 5,
-        child: Center(
-          child: CachedNetworkImage(
-            imageUrl: url,
-            httpHeaders: headers,
-            fit: BoxFit.contain,
-            placeholder: (context, url) =>
-                const Center(child: CircularProgressIndicator()),
-            errorWidget: (context, url, error) => const Icon(
-              Icons.broken_image_outlined,
-              color: Colors.white54,
-              size: 48,
+      child: GestureDetector(
+        onTap: onTap,
+        child: InteractiveViewer(
+          minScale: 1,
+          maxScale: 5,
+          child: Center(
+            child: CachedNetworkImage(
+              imageUrl: url,
+              httpHeaders: headers,
+              fit: BoxFit.contain,
+              placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => const Icon(
+                Icons.broken_image_outlined,
+                color: Colors.white54,
+                size: 48,
+              ),
             ),
           ),
         ),

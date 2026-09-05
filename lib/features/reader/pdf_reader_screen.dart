@@ -13,6 +13,10 @@ import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
 import 'comic_reader_screen.dart' show SavingOverlay;
 import 'page_progress_saver.dart';
+import 'reader_chrome.dart';
+
+/// Shared with the EPUB reader's dark toggle: one preference, both readers.
+const _readerDarkModeKey = 'reader_dark_mode';
 
 /// PDF reader on `pdfrx` (PDFium): a continuous vertical scroll of pages
 /// with pinch-zoom, the way Grimmory's own web PDF reader lays a book out.
@@ -45,17 +49,31 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
   Object? _error;
   String? _blockedReason;
   bool _isExiting = false;
+  bool _night = false;
+  bool _chromeVisible = true;
 
   @override
   void initState() {
     super.initState();
+    _night = ref.read(sharedPrefsProvider).getBool(_readerDarkModeKey) ?? false;
     _load();
   }
 
   @override
   void dispose() {
+    if (!_chromeVisible) setReaderImmersive(false);
     _saver?.dispose();
     super.dispose();
+  }
+
+  void _toggleChrome() {
+    setState(() => _chromeVisible = !_chromeVisible);
+    setReaderImmersive(!_chromeVisible);
+  }
+
+  void _toggleNight() {
+    setState(() => _night = !_night);
+    ref.read(sharedPrefsProvider).setBool(_readerDarkModeKey, _night);
   }
 
   Future<void> _load() async {
@@ -240,71 +258,98 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
         if (!didPop) _exit();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          actions: [
-            if (_pageCount > 0)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Semantics(
-                    label: 'Page $_page of $_pageCount',
-                    liveRegion: true,
-                    child: ExcludeSemantics(
-                      child: Text(
-                        '$_page / $_pageCount',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
+        backgroundColor: _night ? Colors.black : null,
+        appBar: !_chromeVisible
+            ? null
+            : AppBar(
+                title: Text(title),
+                actions: [
+                  IconButton(
+                    tooltip: _night ? 'Day mode' : 'Night mode',
+                    icon: Icon(
+                      _night
+                          ? Icons.light_mode_outlined
+                          : Icons.dark_mode_outlined,
                     ),
+                    onPressed: _toggleNight,
                   ),
-                ),
-              ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            PdfViewer.file(
-              path,
-              controller: _controller,
-              initialPageNumber: _initialPage,
-              params: PdfViewerParams(
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                onViewerReady: _onViewerReady,
-                onPageChanged: _onPageChanged,
-                errorBannerBuilder: (context, error, stackTrace, documentRef) =>
+                  FullscreenButton(onPressed: _toggleChrome),
+                  if (_pageCount > 0)
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          'Could not open this PDF: $error',
-                          textAlign: TextAlign.center,
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Semantics(
+                          label: 'Page $_page of $_pageCount',
+                          liveRegion: true,
+                          child: ExcludeSemantics(
+                            child: Text(
+                              '$_page / $_pageCount',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ),
                         ),
                       ),
                     ),
+                ],
+              ),
+        body: Stack(
+          children: [
+            // Night mode is pdfrx's documented approach: invert the whole
+            // viewer with a difference blend, which turns white paper black
+            // and black type white and leaves images inverted (acceptable
+            // for text-heavy PDFs, which is what night reading is).
+            ColorFiltered(
+              colorFilter: _night
+                  ? const ColorFilter.mode(Colors.white, BlendMode.difference)
+                  : const ColorFilter.mode(Colors.transparent, BlendMode.dst),
+              child: PdfViewer.file(
+                path,
+                controller: _controller,
+                initialPageNumber: _initialPage,
+                params: PdfViewerParams(
+                  backgroundColor: _night
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.surface,
+                  onViewerReady: _onViewerReady,
+                  onPageChanged: _onPageChanged,
+                  errorBannerBuilder:
+                      (context, error, stackTrace, documentRef) => Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            'Could not open this PDF: $error',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                ),
               ),
             ),
+            if (!_chromeVisible) FullscreenExitButton(onPressed: _toggleChrome),
             if (_isExiting) const SavingOverlay(),
           ],
         ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_pageCount > 1)
-              SafeArea(
-                top: false,
-                child: Slider(
-                  value: _page.clamp(1, _pageCount).toDouble(),
-                  min: 1,
-                  max: _pageCount.toDouble(),
-                  divisions: _pageCount - 1,
-                  label: '$_page',
-                  onChanged: (value) =>
-                      _controller.goToPage(pageNumber: value.round()),
-                ),
+        bottomNavigationBar: !_chromeVisible
+            ? null
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_pageCount > 1)
+                    SafeArea(
+                      top: false,
+                      child: Slider(
+                        value: _page.clamp(1, _pageCount).toDouble(),
+                        min: 1,
+                        max: _pageCount.toDouble(),
+                        divisions: _pageCount - 1,
+                        label: '$_page',
+                        onChanged: (value) =>
+                            _controller.goToPage(pageNumber: value.round()),
+                      ),
+                    ),
+                  const MiniPlayer(),
+                ],
               ),
-            const MiniPlayer(),
-          ],
-        ),
       ),
     );
   }
