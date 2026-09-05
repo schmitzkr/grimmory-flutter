@@ -226,6 +226,12 @@ int naturalCompare(String a, String b) {
   return ac.length.compareTo(bc.length);
 }
 
+/// Whether a row with no books vanishes instead of showing the web's
+/// "No books found for this scroller." — true for the two Continue rows,
+/// which only exist to jump back into something already started.
+bool hidesWhenEmpty(ScrollerType kind) =>
+    kind == ScrollerType.lastListened || kind == ScrollerType.lastRead;
+
 /// The height a row body takes in all states (so a row loading or coming
 /// back empty never shifts the rows below it): a 130-wide tile with a 2:3
 /// cover and two lines of text, or the shorter square-cover version for
@@ -265,6 +271,19 @@ class DashboardScrollerView extends ConsumerWidget {
               .take(max)
               .toList(),
     );
+
+    // The two Continue rows are shortcuts back into books already started,
+    // so with nothing started there is nothing to say — they disappear
+    // rather than showing the web's "No books found" text (kept for the
+    // other rows, where an empty result is worth a word). While their first
+    // load is in flight they stay hidden too, so a row never flashes in and
+    // out; a refresh keeps showing the previous books until the new ones
+    // arrive, and an error still shows so a dead server is visible.
+    if (hidesWhenEmpty(kind)) {
+      final firstLoad = books.isLoading && !books.hasValue;
+      final empty = books.hasValue && books.value!.isEmpty;
+      if (firstLoad || empty) return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

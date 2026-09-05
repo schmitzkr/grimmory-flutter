@@ -99,6 +99,14 @@ void main() {
     });
   });
 
+  test('only the two Continue rows hide when empty', () {
+    expect(hidesWhenEmpty(ScrollerType.lastListened), isTrue);
+    expect(hidesWhenEmpty(ScrollerType.lastRead), isTrue);
+    expect(hidesWhenEmpty(ScrollerType.latestAdded), isFalse);
+    expect(hidesWhenEmpty(ScrollerType.random), isFalse);
+    expect(hidesWhenEmpty(ScrollerType.magicShelf), isFalse);
+  });
+
   group('sortBooks', () {
     Book book(
       int id,
