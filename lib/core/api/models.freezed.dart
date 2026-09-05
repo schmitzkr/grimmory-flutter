@@ -2599,7 +2599,7 @@ as double,
 /// @nodoc
 mixin _$Series {
 
- String get seriesName; int get bookCount; List<String> get authors;
+ String get seriesName; int get bookCount; List<String> get authors; int? get seriesTotal; int get booksRead; DateTime? get latestAddedOn; List<SeriesCoverBook> get coverBooks;
 /// Create a copy of Series
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2613,20 +2613,20 @@ $SeriesCopyWith<Series> get copyWith => _$SeriesCopyWithImpl<Series>(this as Ser
 @override
 bool operator ==(Object other) {
   final _this = this as Series;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Series&&(identical(other.seriesName, _this.seriesName) || other.seriesName == _this.seriesName)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount)&&const DeepCollectionEquality().equals(other.authors, _this.authors));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Series&&(identical(other.seriesName, _this.seriesName) || other.seriesName == _this.seriesName)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount)&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&(identical(other.seriesTotal, _this.seriesTotal) || other.seriesTotal == _this.seriesTotal)&&(identical(other.booksRead, _this.booksRead) || other.booksRead == _this.booksRead)&&(identical(other.latestAddedOn, _this.latestAddedOn) || other.latestAddedOn == _this.latestAddedOn)&&const DeepCollectionEquality().equals(other.coverBooks, _this.coverBooks));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Series;
-  return Object.hash(runtimeType,_this.seriesName,_this.bookCount,const DeepCollectionEquality().hash(_this.authors));
+  return Object.hash(runtimeType,_this.seriesName,_this.bookCount,const DeepCollectionEquality().hash(_this.authors),_this.seriesTotal,_this.booksRead,_this.latestAddedOn,const DeepCollectionEquality().hash(_this.coverBooks));
 }
 
 @override
 String toString() {
   final _this = this as Series;
-  return 'Series(seriesName: ${_this.seriesName}, bookCount: ${_this.bookCount}, authors: ${_this.authors})';
+  return 'Series(seriesName: ${_this.seriesName}, bookCount: ${_this.bookCount}, authors: ${_this.authors}, seriesTotal: ${_this.seriesTotal}, booksRead: ${_this.booksRead}, latestAddedOn: ${_this.latestAddedOn}, coverBooks: ${_this.coverBooks})';
 }
 
 
@@ -2637,7 +2637,7 @@ abstract mixin class $SeriesCopyWith<$Res>  {
   factory $SeriesCopyWith(Series value, $Res Function(Series) _then) = _$SeriesCopyWithImpl;
 @useResult
 $Res call({
- String seriesName, int bookCount, List<String> authors
+ String seriesName, int bookCount, List<String> authors, int? seriesTotal, int booksRead, DateTime? latestAddedOn, List<SeriesCoverBook> coverBooks
 });
 
 
@@ -2654,12 +2654,16 @@ class _$SeriesCopyWithImpl<$Res>
 
 /// Create a copy of Series
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? seriesName = null,Object? bookCount = null,Object? authors = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? seriesName = null,Object? bookCount = null,Object? authors = null,Object? seriesTotal = freezed,Object? booksRead = null,Object? latestAddedOn = freezed,Object? coverBooks = null,}) {
   return _then(Series(
 seriesName: null == seriesName ? _self.seriesName : seriesName // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
 as int,authors: null == authors ? _self.authors : authors // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,seriesTotal: freezed == seriesTotal ? _self.seriesTotal : seriesTotal // ignore: cast_nullable_to_non_nullable
+as int?,booksRead: null == booksRead ? _self.booksRead : booksRead // ignore: cast_nullable_to_non_nullable
+as int,latestAddedOn: freezed == latestAddedOn ? _self.latestAddedOn : latestAddedOn // ignore: cast_nullable_to_non_nullable
+as DateTime?,coverBooks: null == coverBooks ? _self.coverBooks : coverBooks // ignore: cast_nullable_to_non_nullable
+as List<SeriesCoverBook>,
   ));
 }
 
@@ -2744,10 +2748,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String seriesName,  int bookCount,  List<String> authors)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String seriesName,  int bookCount,  List<String> authors,  int? seriesTotal,  int booksRead,  DateTime? latestAddedOn,  List<SeriesCoverBook> coverBooks)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Series() when $default != null:
-return $default(_that.seriesName,_that.bookCount,_that.authors);case _:
+return $default(_that.seriesName,_that.bookCount,_that.authors,_that.seriesTotal,_that.booksRead,_that.latestAddedOn,_that.coverBooks);case _:
   return orElse();
 
 }
@@ -2765,10 +2769,10 @@ return $default(_that.seriesName,_that.bookCount,_that.authors);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String seriesName,  int bookCount,  List<String> authors)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String seriesName,  int bookCount,  List<String> authors,  int? seriesTotal,  int booksRead,  DateTime? latestAddedOn,  List<SeriesCoverBook> coverBooks)  $default,) {final _that = this;
 switch (_that) {
 case _Series():
-return $default(_that.seriesName,_that.bookCount,_that.authors);case _:
+return $default(_that.seriesName,_that.bookCount,_that.authors,_that.seriesTotal,_that.booksRead,_that.latestAddedOn,_that.coverBooks);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2785,10 +2789,10 @@ return $default(_that.seriesName,_that.bookCount,_that.authors);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String seriesName,  int bookCount,  List<String> authors)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String seriesName,  int bookCount,  List<String> authors,  int? seriesTotal,  int booksRead,  DateTime? latestAddedOn,  List<SeriesCoverBook> coverBooks)?  $default,) {final _that = this;
 switch (_that) {
 case _Series() when $default != null:
-return $default(_that.seriesName,_that.bookCount,_that.authors);case _:
+return $default(_that.seriesName,_that.bookCount,_that.authors,_that.seriesTotal,_that.booksRead,_that.latestAddedOn,_that.coverBooks);case _:
   return null;
 
 }
@@ -2800,7 +2804,7 @@ return $default(_that.seriesName,_that.bookCount,_that.authors);case _:
 @JsonSerializable()
 
 class _Series implements Series {
-  const _Series({required this.seriesName, required this.bookCount,  List<String> authors = const []}): _authors = authors;
+  const _Series({required this.seriesName, required this.bookCount,  List<String> authors = const [], this.seriesTotal, this.booksRead = 0, this.latestAddedOn,  List<SeriesCoverBook> coverBooks = const []}): _authors = authors,_coverBooks = coverBooks;
   factory _Series.fromJson(Map<String, dynamic> json) => _$SeriesFromJson(json);
 
 @override final  String seriesName;
@@ -2810,6 +2814,16 @@ class _Series implements Series {
   if (_authors is EqualUnmodifiableListView) return _authors;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_authors);
+}
+
+@override final  int? seriesTotal;
+@override@JsonKey() final  int booksRead;
+@override final  DateTime? latestAddedOn;
+ final  List<SeriesCoverBook> _coverBooks;
+@override@JsonKey() List<SeriesCoverBook> get coverBooks {
+  if (_coverBooks is EqualUnmodifiableListView) return _coverBooks;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_coverBooks);
 }
 
 
@@ -2826,18 +2840,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Series&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&const DeepCollectionEquality().equals(other.authors, _authors));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Series&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&const DeepCollectionEquality().equals(other.authors, _authors)&&(identical(other.seriesTotal, seriesTotal) || other.seriesTotal == seriesTotal)&&(identical(other.booksRead, booksRead) || other.booksRead == booksRead)&&(identical(other.latestAddedOn, latestAddedOn) || other.latestAddedOn == latestAddedOn)&&const DeepCollectionEquality().equals(other.coverBooks, _coverBooks));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,seriesName,bookCount,const DeepCollectionEquality().hash(_authors));
+    return Object.hash(runtimeType,seriesName,bookCount,const DeepCollectionEquality().hash(_authors),seriesTotal,booksRead,latestAddedOn,const DeepCollectionEquality().hash(_coverBooks));
 }
 
 @override
 String toString() {
-    return 'Series(seriesName: $seriesName, bookCount: $bookCount, authors: $authors)';
+    return 'Series(seriesName: $seriesName, bookCount: $bookCount, authors: $authors, seriesTotal: $seriesTotal, booksRead: $booksRead, latestAddedOn: $latestAddedOn, coverBooks: $coverBooks)';
 }
 
 
@@ -2848,7 +2862,7 @@ abstract mixin class _$SeriesCopyWith<$Res> implements $SeriesCopyWith<$Res> {
   factory _$SeriesCopyWith(_Series value, $Res Function(_Series) _then) = __$SeriesCopyWithImpl;
 @override @useResult
 $Res call({
- String seriesName, int bookCount, List<String> authors
+ String seriesName, int bookCount, List<String> authors, int? seriesTotal, int booksRead, DateTime? latestAddedOn, List<SeriesCoverBook> coverBooks
 });
 
 
@@ -2865,12 +2879,295 @@ class __$SeriesCopyWithImpl<$Res>
 
 /// Create a copy of Series
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? seriesName = null,Object? bookCount = null,Object? authors = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? seriesName = null,Object? bookCount = null,Object? authors = null,Object? seriesTotal = freezed,Object? booksRead = null,Object? latestAddedOn = freezed,Object? coverBooks = null,}) {
   return _then(_Series(
 seriesName: null == seriesName ? _self.seriesName : seriesName // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
 as int,authors: null == authors ? _self._authors : authors // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,seriesTotal: freezed == seriesTotal ? _self.seriesTotal : seriesTotal // ignore: cast_nullable_to_non_nullable
+as int?,booksRead: null == booksRead ? _self.booksRead : booksRead // ignore: cast_nullable_to_non_nullable
+as int,latestAddedOn: freezed == latestAddedOn ? _self.latestAddedOn : latestAddedOn // ignore: cast_nullable_to_non_nullable
+as DateTime?,coverBooks: null == coverBooks ? _self._coverBooks : coverBooks // ignore: cast_nullable_to_non_nullable
+as List<SeriesCoverBook>,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$SeriesCoverBook {
+
+ int get bookId; DateTime? get coverUpdatedOn; double? get seriesNumber; String? get primaryFileType;
+/// Create a copy of SeriesCoverBook
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SeriesCoverBookCopyWith<SeriesCoverBook> get copyWith => _$SeriesCoverBookCopyWithImpl<SeriesCoverBook>(this as SeriesCoverBook, _$identity);
+
+  /// Serializes this SeriesCoverBook to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as SeriesCoverBook;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SeriesCoverBook&&(identical(other.bookId, _this.bookId) || other.bookId == _this.bookId)&&(identical(other.coverUpdatedOn, _this.coverUpdatedOn) || other.coverUpdatedOn == _this.coverUpdatedOn)&&(identical(other.seriesNumber, _this.seriesNumber) || other.seriesNumber == _this.seriesNumber)&&(identical(other.primaryFileType, _this.primaryFileType) || other.primaryFileType == _this.primaryFileType));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as SeriesCoverBook;
+  return Object.hash(runtimeType,_this.bookId,_this.coverUpdatedOn,_this.seriesNumber,_this.primaryFileType);
+}
+
+@override
+String toString() {
+  final _this = this as SeriesCoverBook;
+  return 'SeriesCoverBook(bookId: ${_this.bookId}, coverUpdatedOn: ${_this.coverUpdatedOn}, seriesNumber: ${_this.seriesNumber}, primaryFileType: ${_this.primaryFileType})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SeriesCoverBookCopyWith<$Res>  {
+  factory $SeriesCoverBookCopyWith(SeriesCoverBook value, $Res Function(SeriesCoverBook) _then) = _$SeriesCoverBookCopyWithImpl;
+@useResult
+$Res call({
+ int bookId, DateTime? coverUpdatedOn, double? seriesNumber, String? primaryFileType
+});
+
+
+
+
+}
+/// @nodoc
+class _$SeriesCoverBookCopyWithImpl<$Res>
+    implements $SeriesCoverBookCopyWith<$Res> {
+  _$SeriesCoverBookCopyWithImpl(this._self, this._then);
+
+  final SeriesCoverBook _self;
+  final $Res Function(SeriesCoverBook) _then;
+
+/// Create a copy of SeriesCoverBook
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? bookId = null,Object? coverUpdatedOn = freezed,Object? seriesNumber = freezed,Object? primaryFileType = freezed,}) {
+  return _then(SeriesCoverBook(
+bookId: null == bookId ? _self.bookId : bookId // ignore: cast_nullable_to_non_nullable
+as int,coverUpdatedOn: freezed == coverUpdatedOn ? _self.coverUpdatedOn : coverUpdatedOn // ignore: cast_nullable_to_non_nullable
+as DateTime?,seriesNumber: freezed == seriesNumber ? _self.seriesNumber : seriesNumber // ignore: cast_nullable_to_non_nullable
+as double?,primaryFileType: freezed == primaryFileType ? _self.primaryFileType : primaryFileType // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [SeriesCoverBook].
+extension SeriesCoverBookPatterns on SeriesCoverBook {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SeriesCoverBook value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SeriesCoverBook() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SeriesCoverBook value)  $default,){
+final _that = this;
+switch (_that) {
+case _SeriesCoverBook():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SeriesCoverBook value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SeriesCoverBook() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int bookId,  DateTime? coverUpdatedOn,  double? seriesNumber,  String? primaryFileType)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SeriesCoverBook() when $default != null:
+return $default(_that.bookId,_that.coverUpdatedOn,_that.seriesNumber,_that.primaryFileType);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int bookId,  DateTime? coverUpdatedOn,  double? seriesNumber,  String? primaryFileType)  $default,) {final _that = this;
+switch (_that) {
+case _SeriesCoverBook():
+return $default(_that.bookId,_that.coverUpdatedOn,_that.seriesNumber,_that.primaryFileType);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int bookId,  DateTime? coverUpdatedOn,  double? seriesNumber,  String? primaryFileType)?  $default,) {final _that = this;
+switch (_that) {
+case _SeriesCoverBook() when $default != null:
+return $default(_that.bookId,_that.coverUpdatedOn,_that.seriesNumber,_that.primaryFileType);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _SeriesCoverBook implements SeriesCoverBook {
+  const _SeriesCoverBook({required this.bookId, this.coverUpdatedOn, this.seriesNumber, this.primaryFileType});
+  factory _SeriesCoverBook.fromJson(Map<String, dynamic> json) => _$SeriesCoverBookFromJson(json);
+
+@override final  int bookId;
+@override final  DateTime? coverUpdatedOn;
+@override final  double? seriesNumber;
+@override final  String? primaryFileType;
+
+/// Create a copy of SeriesCoverBook
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SeriesCoverBookCopyWith<_SeriesCoverBook> get copyWith => __$SeriesCoverBookCopyWithImpl<_SeriesCoverBook>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$SeriesCoverBookToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SeriesCoverBook&&(identical(other.bookId, bookId) || other.bookId == bookId)&&(identical(other.coverUpdatedOn, coverUpdatedOn) || other.coverUpdatedOn == coverUpdatedOn)&&(identical(other.seriesNumber, seriesNumber) || other.seriesNumber == seriesNumber)&&(identical(other.primaryFileType, primaryFileType) || other.primaryFileType == primaryFileType));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,bookId,coverUpdatedOn,seriesNumber,primaryFileType);
+}
+
+@override
+String toString() {
+    return 'SeriesCoverBook(bookId: $bookId, coverUpdatedOn: $coverUpdatedOn, seriesNumber: $seriesNumber, primaryFileType: $primaryFileType)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SeriesCoverBookCopyWith<$Res> implements $SeriesCoverBookCopyWith<$Res> {
+  factory _$SeriesCoverBookCopyWith(_SeriesCoverBook value, $Res Function(_SeriesCoverBook) _then) = __$SeriesCoverBookCopyWithImpl;
+@override @useResult
+$Res call({
+ int bookId, DateTime? coverUpdatedOn, double? seriesNumber, String? primaryFileType
+});
+
+
+
+
+}
+/// @nodoc
+class __$SeriesCoverBookCopyWithImpl<$Res>
+    implements _$SeriesCoverBookCopyWith<$Res> {
+  __$SeriesCoverBookCopyWithImpl(this._self, this._then);
+
+  final _SeriesCoverBook _self;
+  final $Res Function(_SeriesCoverBook) _then;
+
+/// Create a copy of SeriesCoverBook
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? bookId = null,Object? coverUpdatedOn = freezed,Object? seriesNumber = freezed,Object? primaryFileType = freezed,}) {
+  return _then(_SeriesCoverBook(
+bookId: null == bookId ? _self.bookId : bookId // ignore: cast_nullable_to_non_nullable
+as int,coverUpdatedOn: freezed == coverUpdatedOn ? _self.coverUpdatedOn : coverUpdatedOn // ignore: cast_nullable_to_non_nullable
+as DateTime?,seriesNumber: freezed == seriesNumber ? _self.seriesNumber : seriesNumber // ignore: cast_nullable_to_non_nullable
+as double?,primaryFileType: freezed == primaryFileType ? _self.primaryFileType : primaryFileType // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -3172,7 +3469,7 @@ as DateTime?,
 /// @nodoc
 mixin _$Author {
 
- int get id; String get name; int get bookCount; String? get description;
+ int get id; String get name; int get bookCount; String? get description; bool get hasPhoto;
 /// Create a copy of Author
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -3186,20 +3483,20 @@ $AuthorCopyWith<Author> get copyWith => _$AuthorCopyWithImpl<Author>(this as Aut
 @override
 bool operator ==(Object other) {
   final _this = this as Author;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Author&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount)&&(identical(other.description, _this.description) || other.description == _this.description));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Author&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.hasPhoto, _this.hasPhoto) || other.hasPhoto == _this.hasPhoto));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Author;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.bookCount,_this.description);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.bookCount,_this.description,_this.hasPhoto);
 }
 
 @override
 String toString() {
   final _this = this as Author;
-  return 'Author(id: ${_this.id}, name: ${_this.name}, bookCount: ${_this.bookCount}, description: ${_this.description})';
+  return 'Author(id: ${_this.id}, name: ${_this.name}, bookCount: ${_this.bookCount}, description: ${_this.description}, hasPhoto: ${_this.hasPhoto})';
 }
 
 
@@ -3210,7 +3507,7 @@ abstract mixin class $AuthorCopyWith<$Res>  {
   factory $AuthorCopyWith(Author value, $Res Function(Author) _then) = _$AuthorCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, int bookCount, String? description
+ int id, String name, int bookCount, String? description, bool hasPhoto
 });
 
 
@@ -3227,13 +3524,14 @@ class _$AuthorCopyWithImpl<$Res>
 
 /// Create a copy of Author
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? description = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? description = freezed,Object? hasPhoto = null,}) {
   return _then(Author(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
 as int,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,hasPhoto: null == hasPhoto ? _self.hasPhoto : hasPhoto // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -3318,10 +3616,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? description)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? description,  bool hasPhoto)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Author() when $default != null:
-return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
+return $default(_that.id,_that.name,_that.bookCount,_that.description,_that.hasPhoto);case _:
   return orElse();
 
 }
@@ -3339,10 +3637,10 @@ return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? description)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? description,  bool hasPhoto)  $default,) {final _that = this;
 switch (_that) {
 case _Author():
-return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
+return $default(_that.id,_that.name,_that.bookCount,_that.description,_that.hasPhoto);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -3359,10 +3657,10 @@ return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int bookCount,  String? description)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int bookCount,  String? description,  bool hasPhoto)?  $default,) {final _that = this;
 switch (_that) {
 case _Author() when $default != null:
-return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
+return $default(_that.id,_that.name,_that.bookCount,_that.description,_that.hasPhoto);case _:
   return null;
 
 }
@@ -3374,13 +3672,14 @@ return $default(_that.id,_that.name,_that.bookCount,_that.description);case _:
 @JsonSerializable()
 
 class _Author implements Author {
-  const _Author({required this.id, required this.name, this.bookCount = 0, this.description});
+  const _Author({required this.id, required this.name, this.bookCount = 0, this.description, this.hasPhoto = false});
   factory _Author.fromJson(Map<String, dynamic> json) => _$AuthorFromJson(json);
 
 @override final  int id;
 @override final  String name;
 @override@JsonKey() final  int bookCount;
 @override final  String? description;
+@override@JsonKey() final  bool hasPhoto;
 
 /// Create a copy of Author
 /// with the given fields replaced by the non-null parameter values.
@@ -3395,18 +3694,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Author&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.description, description) || other.description == description));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Author&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.description, description) || other.description == description)&&(identical(other.hasPhoto, hasPhoto) || other.hasPhoto == hasPhoto));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,bookCount,description);
+    return Object.hash(runtimeType,id,name,bookCount,description,hasPhoto);
 }
 
 @override
 String toString() {
-    return 'Author(id: $id, name: $name, bookCount: $bookCount, description: $description)';
+    return 'Author(id: $id, name: $name, bookCount: $bookCount, description: $description, hasPhoto: $hasPhoto)';
 }
 
 
@@ -3417,7 +3716,7 @@ abstract mixin class _$AuthorCopyWith<$Res> implements $AuthorCopyWith<$Res> {
   factory _$AuthorCopyWith(_Author value, $Res Function(_Author) _then) = __$AuthorCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, int bookCount, String? description
+ int id, String name, int bookCount, String? description, bool hasPhoto
 });
 
 
@@ -3434,13 +3733,14 @@ class __$AuthorCopyWithImpl<$Res>
 
 /// Create a copy of Author
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? description = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? description = freezed,Object? hasPhoto = null,}) {
   return _then(_Author(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
 as int,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,hasPhoto: null == hasPhoto ? _self.hasPhoto : hasPhoto // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -3451,7 +3751,7 @@ as String?,
 /// @nodoc
 mixin _$Shelf {
 
- int get id; String get name; int get bookCount;
+ int get id; String get name; int get bookCount; String? get icon; bool get publicShelf;
 /// Create a copy of Shelf
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -3465,20 +3765,20 @@ $ShelfCopyWith<Shelf> get copyWith => _$ShelfCopyWithImpl<Shelf>(this as Shelf, 
 @override
 bool operator ==(Object other) {
   final _this = this as Shelf;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Shelf&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Shelf&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.bookCount, _this.bookCount) || other.bookCount == _this.bookCount)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.publicShelf, _this.publicShelf) || other.publicShelf == _this.publicShelf));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Shelf;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.bookCount);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.bookCount,_this.icon,_this.publicShelf);
 }
 
 @override
 String toString() {
   final _this = this as Shelf;
-  return 'Shelf(id: ${_this.id}, name: ${_this.name}, bookCount: ${_this.bookCount})';
+  return 'Shelf(id: ${_this.id}, name: ${_this.name}, bookCount: ${_this.bookCount}, icon: ${_this.icon}, publicShelf: ${_this.publicShelf})';
 }
 
 
@@ -3489,7 +3789,7 @@ abstract mixin class $ShelfCopyWith<$Res>  {
   factory $ShelfCopyWith(Shelf value, $Res Function(Shelf) _then) = _$ShelfCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, int bookCount
+ int id, String name, int bookCount, String? icon, bool publicShelf
 });
 
 
@@ -3506,12 +3806,14 @@ class _$ShelfCopyWithImpl<$Res>
 
 /// Create a copy of Shelf
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? icon = freezed,Object? publicShelf = null,}) {
   return _then(Shelf(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
+as String?,publicShelf: null == publicShelf ? _self.publicShelf : publicShelf // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -3596,10 +3898,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? icon,  bool publicShelf)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Shelf() when $default != null:
-return $default(_that.id,_that.name,_that.bookCount);case _:
+return $default(_that.id,_that.name,_that.bookCount,_that.icon,_that.publicShelf);case _:
   return orElse();
 
 }
@@ -3617,10 +3919,10 @@ return $default(_that.id,_that.name,_that.bookCount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int bookCount,  String? icon,  bool publicShelf)  $default,) {final _that = this;
 switch (_that) {
 case _Shelf():
-return $default(_that.id,_that.name,_that.bookCount);case _:
+return $default(_that.id,_that.name,_that.bookCount,_that.icon,_that.publicShelf);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -3637,10 +3939,10 @@ return $default(_that.id,_that.name,_that.bookCount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int bookCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int bookCount,  String? icon,  bool publicShelf)?  $default,) {final _that = this;
 switch (_that) {
 case _Shelf() when $default != null:
-return $default(_that.id,_that.name,_that.bookCount);case _:
+return $default(_that.id,_that.name,_that.bookCount,_that.icon,_that.publicShelf);case _:
   return null;
 
 }
@@ -3652,12 +3954,14 @@ return $default(_that.id,_that.name,_that.bookCount);case _:
 @JsonSerializable()
 
 class _Shelf implements Shelf {
-  const _Shelf({required this.id, required this.name, this.bookCount = 0});
+  const _Shelf({required this.id, required this.name, this.bookCount = 0, this.icon, this.publicShelf = false});
   factory _Shelf.fromJson(Map<String, dynamic> json) => _$ShelfFromJson(json);
 
 @override final  int id;
 @override final  String name;
 @override@JsonKey() final  int bookCount;
+@override final  String? icon;
+@override@JsonKey() final  bool publicShelf;
 
 /// Create a copy of Shelf
 /// with the given fields replaced by the non-null parameter values.
@@ -3672,18 +3976,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Shelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Shelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.bookCount, bookCount) || other.bookCount == bookCount)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.publicShelf, publicShelf) || other.publicShelf == publicShelf));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,bookCount);
+    return Object.hash(runtimeType,id,name,bookCount,icon,publicShelf);
 }
 
 @override
 String toString() {
-    return 'Shelf(id: $id, name: $name, bookCount: $bookCount)';
+    return 'Shelf(id: $id, name: $name, bookCount: $bookCount, icon: $icon, publicShelf: $publicShelf)';
 }
 
 
@@ -3694,7 +3998,7 @@ abstract mixin class _$ShelfCopyWith<$Res> implements $ShelfCopyWith<$Res> {
   factory _$ShelfCopyWith(_Shelf value, $Res Function(_Shelf) _then) = __$ShelfCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, int bookCount
+ int id, String name, int bookCount, String? icon, bool publicShelf
 });
 
 
@@ -3711,12 +4015,14 @@ class __$ShelfCopyWithImpl<$Res>
 
 /// Create a copy of Shelf
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? bookCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? bookCount = null,Object? icon = freezed,Object? publicShelf = null,}) {
   return _then(_Shelf(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bookCount: null == bookCount ? _self.bookCount : bookCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
+as String?,publicShelf: null == publicShelf ? _self.publicShelf : publicShelf // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -3727,7 +4033,7 @@ as int,
 /// @nodoc
 mixin _$MagicShelf {
 
- int get id; String get name;
+ int get id; String get name; String? get icon; String? get iconType; bool get publicShelf;
 /// Create a copy of MagicShelf
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -3741,20 +4047,20 @@ $MagicShelfCopyWith<MagicShelf> get copyWith => _$MagicShelfCopyWithImpl<MagicSh
 @override
 bool operator ==(Object other) {
   final _this = this as MagicShelf;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MagicShelf&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MagicShelf&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.iconType, _this.iconType) || other.iconType == _this.iconType)&&(identical(other.publicShelf, _this.publicShelf) || other.publicShelf == _this.publicShelf));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as MagicShelf;
-  return Object.hash(runtimeType,_this.id,_this.name);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.icon,_this.iconType,_this.publicShelf);
 }
 
 @override
 String toString() {
   final _this = this as MagicShelf;
-  return 'MagicShelf(id: ${_this.id}, name: ${_this.name})';
+  return 'MagicShelf(id: ${_this.id}, name: ${_this.name}, icon: ${_this.icon}, iconType: ${_this.iconType}, publicShelf: ${_this.publicShelf})';
 }
 
 
@@ -3765,7 +4071,7 @@ abstract mixin class $MagicShelfCopyWith<$Res>  {
   factory $MagicShelfCopyWith(MagicShelf value, $Res Function(MagicShelf) _then) = _$MagicShelfCopyWithImpl;
 @useResult
 $Res call({
- int id, String name
+ int id, String name, String? icon, String? iconType, bool publicShelf
 });
 
 
@@ -3782,11 +4088,14 @@ class _$MagicShelfCopyWithImpl<$Res>
 
 /// Create a copy of MagicShelf
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? icon = freezed,Object? iconType = freezed,Object? publicShelf = null,}) {
   return _then(MagicShelf(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,
+as String,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
+as String?,iconType: freezed == iconType ? _self.iconType : iconType // ignore: cast_nullable_to_non_nullable
+as String?,publicShelf: null == publicShelf ? _self.publicShelf : publicShelf // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -3871,10 +4180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String? icon,  String? iconType,  bool publicShelf)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MagicShelf() when $default != null:
-return $default(_that.id,_that.name);case _:
+return $default(_that.id,_that.name,_that.icon,_that.iconType,_that.publicShelf);case _:
   return orElse();
 
 }
@@ -3892,10 +4201,10 @@ return $default(_that.id,_that.name);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String? icon,  String? iconType,  bool publicShelf)  $default,) {final _that = this;
 switch (_that) {
 case _MagicShelf():
-return $default(_that.id,_that.name);case _:
+return $default(_that.id,_that.name,_that.icon,_that.iconType,_that.publicShelf);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -3912,10 +4221,10 @@ return $default(_that.id,_that.name);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String? icon,  String? iconType,  bool publicShelf)?  $default,) {final _that = this;
 switch (_that) {
 case _MagicShelf() when $default != null:
-return $default(_that.id,_that.name);case _:
+return $default(_that.id,_that.name,_that.icon,_that.iconType,_that.publicShelf);case _:
   return null;
 
 }
@@ -3927,11 +4236,14 @@ return $default(_that.id,_that.name);case _:
 @JsonSerializable()
 
 class _MagicShelf implements MagicShelf {
-  const _MagicShelf({required this.id, required this.name});
+  const _MagicShelf({required this.id, required this.name, this.icon, this.iconType, this.publicShelf = false});
   factory _MagicShelf.fromJson(Map<String, dynamic> json) => _$MagicShelfFromJson(json);
 
 @override final  int id;
 @override final  String name;
+@override final  String? icon;
+@override final  String? iconType;
+@override@JsonKey() final  bool publicShelf;
 
 /// Create a copy of MagicShelf
 /// with the given fields replaced by the non-null parameter values.
@@ -3946,18 +4258,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MagicShelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MagicShelf&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.iconType, iconType) || other.iconType == iconType)&&(identical(other.publicShelf, publicShelf) || other.publicShelf == publicShelf));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name);
+    return Object.hash(runtimeType,id,name,icon,iconType,publicShelf);
 }
 
 @override
 String toString() {
-    return 'MagicShelf(id: $id, name: $name)';
+    return 'MagicShelf(id: $id, name: $name, icon: $icon, iconType: $iconType, publicShelf: $publicShelf)';
 }
 
 
@@ -3968,7 +4280,7 @@ abstract mixin class _$MagicShelfCopyWith<$Res> implements $MagicShelfCopyWith<$
   factory _$MagicShelfCopyWith(_MagicShelf value, $Res Function(_MagicShelf) _then) = __$MagicShelfCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name
+ int id, String name, String? icon, String? iconType, bool publicShelf
 });
 
 
@@ -3985,11 +4297,14 @@ class __$MagicShelfCopyWithImpl<$Res>
 
 /// Create a copy of MagicShelf
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? icon = freezed,Object? iconType = freezed,Object? publicShelf = null,}) {
   return _then(_MagicShelf(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,
+as String,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
+as String?,iconType: freezed == iconType ? _self.iconType : iconType // ignore: cast_nullable_to_non_nullable
+as String?,publicShelf: null == publicShelf ? _self.publicShelf : publicShelf // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -4273,7 +4588,7 @@ as int,
 /// @nodoc
 mixin _$FilterOptions {
 
- List<CountedOption> get authors;
+ List<CountedOption> get authors; List<CountedOption> get fileTypes; List<CountedOption> get readStatuses; List<CountedOption> get series; List<CountedOption> get narrators;
 /// Create a copy of FilterOptions
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -4287,20 +4602,20 @@ $FilterOptionsCopyWith<FilterOptions> get copyWith => _$FilterOptionsCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as FilterOptions;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FilterOptions&&const DeepCollectionEquality().equals(other.authors, _this.authors));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FilterOptions&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&const DeepCollectionEquality().equals(other.fileTypes, _this.fileTypes)&&const DeepCollectionEquality().equals(other.readStatuses, _this.readStatuses)&&const DeepCollectionEquality().equals(other.series, _this.series)&&const DeepCollectionEquality().equals(other.narrators, _this.narrators));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as FilterOptions;
-  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.authors));
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.authors),const DeepCollectionEquality().hash(_this.fileTypes),const DeepCollectionEquality().hash(_this.readStatuses),const DeepCollectionEquality().hash(_this.series),const DeepCollectionEquality().hash(_this.narrators));
 }
 
 @override
 String toString() {
   final _this = this as FilterOptions;
-  return 'FilterOptions(authors: ${_this.authors})';
+  return 'FilterOptions(authors: ${_this.authors}, fileTypes: ${_this.fileTypes}, readStatuses: ${_this.readStatuses}, series: ${_this.series}, narrators: ${_this.narrators})';
 }
 
 
@@ -4311,7 +4626,7 @@ abstract mixin class $FilterOptionsCopyWith<$Res>  {
   factory $FilterOptionsCopyWith(FilterOptions value, $Res Function(FilterOptions) _then) = _$FilterOptionsCopyWithImpl;
 @useResult
 $Res call({
- List<CountedOption> authors
+ List<CountedOption> authors, List<CountedOption> fileTypes, List<CountedOption> readStatuses, List<CountedOption> series, List<CountedOption> narrators
 });
 
 
@@ -4328,9 +4643,13 @@ class _$FilterOptionsCopyWithImpl<$Res>
 
 /// Create a copy of FilterOptions
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? authors = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? authors = null,Object? fileTypes = null,Object? readStatuses = null,Object? series = null,Object? narrators = null,}) {
   return _then(FilterOptions(
 authors: null == authors ? _self.authors : authors // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,fileTypes: null == fileTypes ? _self.fileTypes : fileTypes // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,readStatuses: null == readStatuses ? _self.readStatuses : readStatuses // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,series: null == series ? _self.series : series // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,narrators: null == narrators ? _self.narrators : narrators // ignore: cast_nullable_to_non_nullable
 as List<CountedOption>,
   ));
 }
@@ -4416,10 +4735,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CountedOption> authors)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CountedOption> authors,  List<CountedOption> fileTypes,  List<CountedOption> readStatuses,  List<CountedOption> series,  List<CountedOption> narrators)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FilterOptions() when $default != null:
-return $default(_that.authors);case _:
+return $default(_that.authors,_that.fileTypes,_that.readStatuses,_that.series,_that.narrators);case _:
   return orElse();
 
 }
@@ -4437,10 +4756,10 @@ return $default(_that.authors);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CountedOption> authors)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CountedOption> authors,  List<CountedOption> fileTypes,  List<CountedOption> readStatuses,  List<CountedOption> series,  List<CountedOption> narrators)  $default,) {final _that = this;
 switch (_that) {
 case _FilterOptions():
-return $default(_that.authors);case _:
+return $default(_that.authors,_that.fileTypes,_that.readStatuses,_that.series,_that.narrators);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -4457,10 +4776,10 @@ return $default(_that.authors);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CountedOption> authors)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CountedOption> authors,  List<CountedOption> fileTypes,  List<CountedOption> readStatuses,  List<CountedOption> series,  List<CountedOption> narrators)?  $default,) {final _that = this;
 switch (_that) {
 case _FilterOptions() when $default != null:
-return $default(_that.authors);case _:
+return $default(_that.authors,_that.fileTypes,_that.readStatuses,_that.series,_that.narrators);case _:
   return null;
 
 }
@@ -4472,7 +4791,7 @@ return $default(_that.authors);case _:
 @JsonSerializable()
 
 class _FilterOptions implements FilterOptions {
-  const _FilterOptions({ List<CountedOption> authors = const []}): _authors = authors;
+  const _FilterOptions({ List<CountedOption> authors = const [],  List<CountedOption> fileTypes = const [],  List<CountedOption> readStatuses = const [],  List<CountedOption> series = const [],  List<CountedOption> narrators = const []}): _authors = authors,_fileTypes = fileTypes,_readStatuses = readStatuses,_series = series,_narrators = narrators;
   factory _FilterOptions.fromJson(Map<String, dynamic> json) => _$FilterOptionsFromJson(json);
 
  final  List<CountedOption> _authors;
@@ -4480,6 +4799,34 @@ class _FilterOptions implements FilterOptions {
   if (_authors is EqualUnmodifiableListView) return _authors;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_authors);
+}
+
+ final  List<CountedOption> _fileTypes;
+@override@JsonKey() List<CountedOption> get fileTypes {
+  if (_fileTypes is EqualUnmodifiableListView) return _fileTypes;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_fileTypes);
+}
+
+ final  List<CountedOption> _readStatuses;
+@override@JsonKey() List<CountedOption> get readStatuses {
+  if (_readStatuses is EqualUnmodifiableListView) return _readStatuses;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_readStatuses);
+}
+
+ final  List<CountedOption> _series;
+@override@JsonKey() List<CountedOption> get series {
+  if (_series is EqualUnmodifiableListView) return _series;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_series);
+}
+
+ final  List<CountedOption> _narrators;
+@override@JsonKey() List<CountedOption> get narrators {
+  if (_narrators is EqualUnmodifiableListView) return _narrators;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_narrators);
 }
 
 
@@ -4496,18 +4843,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterOptions&&const DeepCollectionEquality().equals(other.authors, _authors));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterOptions&&const DeepCollectionEquality().equals(other.authors, _authors)&&const DeepCollectionEquality().equals(other.fileTypes, _fileTypes)&&const DeepCollectionEquality().equals(other.readStatuses, _readStatuses)&&const DeepCollectionEquality().equals(other.series, _series)&&const DeepCollectionEquality().equals(other.narrators, _narrators));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_authors));
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_authors),const DeepCollectionEquality().hash(_fileTypes),const DeepCollectionEquality().hash(_readStatuses),const DeepCollectionEquality().hash(_series),const DeepCollectionEquality().hash(_narrators));
 }
 
 @override
 String toString() {
-    return 'FilterOptions(authors: $authors)';
+    return 'FilterOptions(authors: $authors, fileTypes: $fileTypes, readStatuses: $readStatuses, series: $series, narrators: $narrators)';
 }
 
 
@@ -4518,7 +4865,7 @@ abstract mixin class _$FilterOptionsCopyWith<$Res> implements $FilterOptionsCopy
   factory _$FilterOptionsCopyWith(_FilterOptions value, $Res Function(_FilterOptions) _then) = __$FilterOptionsCopyWithImpl;
 @override @useResult
 $Res call({
- List<CountedOption> authors
+ List<CountedOption> authors, List<CountedOption> fileTypes, List<CountedOption> readStatuses, List<CountedOption> series, List<CountedOption> narrators
 });
 
 
@@ -4535,9 +4882,13 @@ class __$FilterOptionsCopyWithImpl<$Res>
 
 /// Create a copy of FilterOptions
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? authors = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? authors = null,Object? fileTypes = null,Object? readStatuses = null,Object? series = null,Object? narrators = null,}) {
   return _then(_FilterOptions(
 authors: null == authors ? _self._authors : authors // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,fileTypes: null == fileTypes ? _self._fileTypes : fileTypes // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,readStatuses: null == readStatuses ? _self._readStatuses : readStatuses // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,series: null == series ? _self._series : series // ignore: cast_nullable_to_non_nullable
+as List<CountedOption>,narrators: null == narrators ? _self._narrators : narrators // ignore: cast_nullable_to_non_nullable
 as List<CountedOption>,
   ));
 }

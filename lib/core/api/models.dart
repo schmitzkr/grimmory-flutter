@@ -272,16 +272,45 @@ abstract class EpubProgress with _$EpubProgress {
       _$EpubProgressFromJson(json);
 }
 
-/// From `AppSeriesSummary` (`GET /api/v1/app/series`).
+/// From `AppSeriesSummary` (`GET /api/v1/app/series`). [bookCount] is how
+/// many of the series' books this library holds; [seriesTotal] is the
+/// series' full length per metadata (null when unknown); [booksRead] is
+/// how many of the held books the user has finished. [coverBooks] is the
+/// server's own pick of up to a few books whose covers represent the
+/// series, in series order.
 @freezed
 abstract class Series with _$Series {
   const factory Series({
     required String seriesName,
     required int bookCount,
     @Default([]) List<String> authors,
+    int? seriesTotal,
+    @Default(0) int booksRead,
+    DateTime? latestAddedOn,
+    @Default([]) List<SeriesCoverBook> coverBooks,
   }) = _Series;
 
   factory Series.fromJson(Map<String, dynamic> json) => _$SeriesFromJson(json);
+}
+
+/// From `SeriesCoverBook` on [Series.coverBooks] — just enough to render a
+/// cover through the normal book cover endpoint, with the same cache-bust
+/// token a full [Book] would carry.
+@freezed
+abstract class SeriesCoverBook with _$SeriesCoverBook {
+  const factory SeriesCoverBook({
+    required int bookId,
+    DateTime? coverUpdatedOn,
+    double? seriesNumber,
+    String? primaryFileType,
+  }) = _SeriesCoverBook;
+
+  factory SeriesCoverBook.fromJson(Map<String, dynamic> json) =>
+      _$SeriesCoverBookFromJson(json);
+}
+
+extension SeriesCoverBookX on SeriesCoverBook {
+  String? get coverVersion => coverUpdatedOn?.millisecondsSinceEpoch.toString();
 }
 
 /// From `BookMark` (Java class name, capital M — same JSON field names
@@ -313,7 +342,9 @@ abstract class Bookmark with _$Bookmark {
 /// detail response, null on the list. Neither carries the author's actual
 /// books; that needs a separate `/app/books?authors=<name>` filter query
 /// (`ApiClient.getBooksByAuthor`), same author-name filter the library
-/// screen's author filter uses.
+/// screen's author filter uses. [hasPhoto] says whether
+/// `ApiClient.authorPhotoUrl` will return an image (the endpoint 404s
+/// otherwise).
 @freezed
 abstract class Author with _$Author {
   const factory Author({
@@ -321,6 +352,7 @@ abstract class Author with _$Author {
     required String name,
     @Default(0) int bookCount,
     String? description,
+    @Default(false) bool hasPhoto,
   }) = _Author;
 
   factory Author.fromJson(Map<String, dynamic> json) => _$AuthorFromJson(json);
@@ -330,12 +362,18 @@ abstract class Author with _$Author {
 /// user-curated shelf. Display-only in this app: unlike magic shelves,
 /// there's no `/app/shelves/{id}/books` endpoint to drill into one, only
 /// the summary (name + count).
+///
+/// [icon] is the web UI's icon name (a PrimeIcons class, e.g. `pi-heart`)
+/// and isn't mapped to Material icons here; [publicShelf] means the shelf
+/// is shared with every user on the server, not just its owner.
 @freezed
 abstract class Shelf with _$Shelf {
   const factory Shelf({
     required int id,
     required String name,
     @Default(0) int bookCount,
+    String? icon,
+    @Default(false) bool publicShelf,
   }) = _Shelf;
 
   factory Shelf.fromJson(Map<String, dynamic> json) => _$ShelfFromJson(json);
@@ -344,10 +382,17 @@ abstract class Shelf with _$Shelf {
 /// From `AppMagicShelfSummary` (`GET /api/v1/app/shelves/magic`) — a
 /// dynamic/query-based shelf. Unlike [Shelf], its books are browsable via
 /// `GET /api/v1/app/shelves/magic/{id}/books` (`ApiClient.getMagicShelfBooks`).
+/// [icon]/[iconType] are the web UI's icon reference (not mapped here);
+/// [publicShelf] as on [Shelf].
 @freezed
 abstract class MagicShelf with _$MagicShelf {
-  const factory MagicShelf({required int id, required String name}) =
-      _MagicShelf;
+  const factory MagicShelf({
+    required int id,
+    required String name,
+    String? icon,
+    String? iconType,
+    @Default(false) bool publicShelf,
+  }) = _MagicShelf;
 
   factory MagicShelf.fromJson(Map<String, dynamic> json) =>
       _$MagicShelfFromJson(json);
@@ -369,11 +414,19 @@ abstract class CountedOption with _$CountedOption {
 /// `AppFilterOptions` response has ~30 fields (categories, comic-specific
 /// facets, half a dozen rating-source breakdowns, etc.) built for a general
 /// ebook/comic manager, most of which don't apply to audiobooks. Unknown
-/// JSON fields are simply ignored by the generated `fromJson`.
+/// JSON fields are simply ignored by the generated `fromJson`. [fileTypes]
+/// names are `BookFileType` values (AUDIOBOOK, EPUB, …) with how many books
+/// in the library have that primary type — what drives the type filter's
+/// counts and hides groups the library doesn't contain.
 @freezed
 abstract class FilterOptions with _$FilterOptions {
-  const factory FilterOptions({@Default([]) List<CountedOption> authors}) =
-      _FilterOptions;
+  const factory FilterOptions({
+    @Default([]) List<CountedOption> authors,
+    @Default([]) List<CountedOption> fileTypes,
+    @Default([]) List<CountedOption> readStatuses,
+    @Default([]) List<CountedOption> series,
+    @Default([]) List<CountedOption> narrators,
+  }) = _FilterOptions;
 
   factory FilterOptions.fromJson(Map<String, dynamic> json) =>
       _$FilterOptionsFromJson(json);

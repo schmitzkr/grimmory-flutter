@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ class AuthorsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authors = ref.watch(authorsListProvider);
+    final apiClient = ref.watch(apiClientProvider);
 
     return AsyncValueView(
       value: authors,
@@ -31,7 +33,16 @@ class AuthorsTab extends ConsumerWidget {
             itemBuilder: (context, index) {
               final author = items[index];
               return ListTile(
-                leading: const Icon(Icons.person_outline),
+                // The photo endpoint 404s for an author without one, so
+                // only ask for it when the summary says it exists.
+                leading: author.hasPhoto
+                    ? CircleAvatar(
+                        backgroundImage: CachedNetworkImageProvider(
+                          apiClient.authorPhotoUrl(author.id),
+                          headers: apiClient.authHeaders,
+                        ),
+                      )
+                    : const CircleAvatar(child: Icon(Icons.person_outline)),
                 title: Text(author.name),
                 subtitle: Text(
                   '${author.bookCount} ${author.bookCount == 1 ? 'book' : 'books'}',

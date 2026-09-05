@@ -60,6 +60,7 @@ class ShelvesTab extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.auto_awesome_outlined),
                 title: Text(shelf.name),
+                trailing: shelf.publicShelf ? const _PublicBadge() : null,
                 onTap: () => context.push('/shelves/magic/${shelf.id}'),
               ),
           ],
@@ -72,9 +73,28 @@ class ShelvesTab extends ConsumerWidget {
                 subtitle: Text(
                   '${shelf.bookCount} ${shelf.bookCount == 1 ? 'book' : 'books'}',
                 ),
+                trailing: shelf.publicShelf ? const _PublicBadge() : null,
               ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// A shelf every user on the server can see, not just its owner — the
+/// same distinction the web UI draws with its globe icon.
+class _PublicBadge extends StatelessWidget {
+  const _PublicBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Shared with all users',
+      child: Icon(
+        Icons.public,
+        size: 20,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }

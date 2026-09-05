@@ -43,6 +43,29 @@ enum LibraryTypeFilter {
   final List<String>? fileTypes;
 }
 
+/// How many books each [LibraryTypeFilter] would show, from the library's
+/// `/app/filter-options` `fileTypes` facet (one entry per primary file
+/// type with a count). Lets the type menu label each choice with its count
+/// and hide a group the library simply doesn't contain, instead of the
+/// fixed three-way list that used to offer "Audiobooks" on an all-EPUB
+/// library.
+Map<LibraryTypeFilter, int> libraryTypeCounts(List<CountedOption> fileTypes) {
+  var total = 0;
+  final byFilter = <LibraryTypeFilter, int>{
+    LibraryTypeFilter.audiobooks: 0,
+    LibraryTypeFilter.ebooks: 0,
+  };
+  for (final option in fileTypes) {
+    total += option.count;
+    for (final filter in byFilter.keys) {
+      if (filter.fileTypes!.contains(option.name)) {
+        byFilter[filter] = byFilter[filter]! + option.count;
+      }
+    }
+  }
+  return {LibraryTypeFilter.all: total, ...byFilter};
+}
+
 /// Query key for [libraryBooksProvider] — a record, so it gets Riverpod
 /// family caching's required value equality for free.
 typedef LibraryBooksQuery = ({
@@ -100,6 +123,13 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
       type: _type,
     );
     final books = ref.watch(libraryBooksProvider(query));
+    // Counts are a nicety: while they're loading (or if they fail) the
+    // menu just shows the plain labels.
+    final fileTypes = ref
+        .watch(filterOptionsProvider(widget.libraryId))
+        .value
+        ?.fileTypes;
+    final typeCounts = fileTypes == null ? null : libraryTypeCounts(fileTypes);
 
     return Scaffold(
       appBar: AppBar(
@@ -116,7 +146,18 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
             onSelected: (value) => setState(() => _type = value),
             itemBuilder: (context) => [
               for (final option in LibraryTypeFilter.values)
-                PopupMenuItem(value: option, child: Text(option.label)),
+                if (typeCounts == null ||
+                    option == LibraryTypeFilter.all ||
+                    option == _type ||
+                    (typeCounts[option] ?? 0) > 0)
+                  PopupMenuItem(
+                    value: option,
+                    child: Text(
+                      typeCounts == null
+                          ? option.label
+                          : '${option.label} (${typeCounts[option] ?? 0})',
+                    ),
+                  ),
             ],
           ),
           if (_author != null)
