@@ -39,6 +39,38 @@ int absoluteMs({
   return tracks[trackIndex].cumulativeStartMs + trackPositionMs;
 }
 
+/// Where a relative skip of [deltaMs] from track [trackIndex] at
+/// [positionMs] lands: carried across track boundaries of a folder-based
+/// book (a −30 s from 5 s into track 3 ends 25 s before the end of track 2)
+/// and clamped at the book's two ends. [trackDurationsMs] is one entry per
+/// track in order; a single-stream book passes its one duration.
+({int trackIndex, int positionMs}) skipTarget({
+  required int trackIndex,
+  required int positionMs,
+  required int deltaMs,
+  required List<int> trackDurationsMs,
+}) {
+  if (trackDurationsMs.isEmpty) {
+    final p = positionMs + deltaMs;
+    return (trackIndex: trackIndex, positionMs: p < 0 ? 0 : p);
+  }
+  var index = trackIndex.clamp(0, trackDurationsMs.length - 1);
+  var pos = positionMs + deltaMs;
+  while (pos < 0 && index > 0) {
+    index--;
+    pos += trackDurationsMs[index];
+  }
+  while (pos >= trackDurationsMs[index] &&
+      index < trackDurationsMs.length - 1) {
+    pos -= trackDurationsMs[index];
+    index++;
+  }
+  final end = trackDurationsMs[index];
+  if (pos < 0) pos = 0;
+  if (pos > end) pos = end;
+  return (trackIndex: index, positionMs: pos);
+}
+
 /// 0-100, rounded to one decimal like Grimmory's own player — its
 /// READING/READ thresholds (0.1 / 99.5) are on this scale, so a 0-1
 /// fraction here left every book UNREAD until 10% in and never READ.
