@@ -198,6 +198,122 @@ void main() {
     });
   });
 
+  // `/app/books/continue-reading` and `/continue-listening` return [] for
+  // admin accounts (their null "all libraries" set is passed straight into
+  // a JPQL IN clause), so the carousels are built from the filtered list
+  // endpoint instead — the same recipe as the web dashboard.
+  group('continue reading/listening', () {
+    Map<String, dynamic> summary(int id, {String? lastReadTime}) => {
+      'id': id,
+      'title': 'Book $id',
+      'readStatus': 'READING',
+      'readProgress': 12.5,
+      'lastReadTime': lastReadTime,
+    };
+
+    test('reading queries the list endpoint for in-progress ebooks', () async {
+      adapter.handler = (_) => _json({'content': [], 'page': 0});
+      await client.getContinueReading();
+
+      final request = adapter.requests.single;
+      expect(request.path, '/app/books');
+      expect(request.queryParameters, {
+        'status': 'READING,RE_READING',
+        'fileType': 'EPUB,PDF,CBX,FB2,MOBI,AZW3',
+        'page': 0,
+        'size': 50,
+      });
+      // Comma-joined single values, never Dio's bracketed list encoding.
+      expect(request.uri.query, contains('status=READING%2CRE_READING'));
+      expect(request.uri.query, isNot(contains('%5B%5D')));
+    });
+
+    test('listening asks for audiobooks only', () async {
+      adapter.handler = (_) => _json({'content': [], 'page': 0});
+      await client.getContinueListening(limit: 3);
+      expect(adapter.requests.single.queryParameters['fileType'], 'AUDIOBOOK');
+    });
+
+    test('orders by lastReadTime desc, drops undated, applies limit', () async {
+      adapter.handler = (_) => _json({
+        'content': [
+          summary(1, lastReadTime: '2026-09-01T10:00:00Z'),
+          summary(2),
+          summary(3, lastReadTime: '2026-09-05T00:37:01Z'),
+          summary(4, lastReadTime: '2026-09-04T21:38:42Z'),
+        ],
+        'page': 0,
+      });
+
+      final books = await client.getContinueReading(limit: 2);
+      expect(books.map((b) => b.id), [3, 4]);
+      expect(books.first.lastReadTime, DateTime.utc(2026, 9, 5, 0, 37, 1));
+    });
+  });
+
+  group('dashboard', () {
+    // The web stores its dashboard layout in the user's settings on
+    // /users/me; the phone reads the same field so the two agree.
+    test('reads the saved layout from the user settings', () async {
+      adapter.handler = (_) => _json({
+        'id': 1,
+        'username': 'someone',
+        'userSettings': {
+          'filterMode': 'and',
+          'dashboardConfig': {
+            'scrollers': [
+              {
+                'id': '2',
+                'type': 'lastRead',
+                'title': 'dashboard.scroller.continueReading',
+                'enabled': true,
+                'order': 1,
+                'maxItems': 12,
+                'magicShelfId': null,
+                'sortField': null,
+                'sortDirection': null,
+              },
+              {
+                'id': 'x1',
+                'type': 'magicShelf',
+                'title': 'Cosy Fantasy',
+                'enabled': true,
+                'order': 2,
+                'maxItems': null,
+                'magicShelfId': 7,
+              },
+            ],
+          },
+        },
+      });
+
+      final config = await client.getDashboardConfig();
+      expect(adapter.requests.single.path, '/users/me');
+      expect(config?.scrollers, hasLength(2));
+      expect(config?.scrollers.first.kind, ScrollerType.lastRead);
+      expect(config?.scrollers.first.maxItems, 12);
+      expect(config?.scrollers.last.magicShelfId, 7);
+      expect(config?.scrollers.last.maxItems, isNull);
+    });
+
+    test('is null until the user has customised the web dashboard', () async {
+      adapter.handler = (_) => _json({'id': 1, 'userSettings': {}});
+      expect(await client.getDashboardConfig(), isNull);
+
+      adapter.handler = (_) => _json({'id': 1, 'userSettings': null});
+      expect(await client.getDashboardConfig(), isNull);
+    });
+
+    test('random books are a scoped page of the random endpoint', () async {
+      adapter.handler = (_) => _json({'content': [], 'page': 0});
+      await client.getRandomBooks(size: 40, libraryId: 3);
+
+      final request = adapter.requests.single;
+      expect(request.path, '/app/books/random');
+      expect(request.queryParameters, {'page': 0, 'size': 40, 'libraryId': 3});
+    });
+  });
+
   group('progress reads', () {
     test('audiobook parses a real row', () async {
       adapter.handler = (_) => _json({

@@ -90,6 +90,10 @@ abstract class Book with _$Book {
     // currently acts on (a finished-book badge).
     double? readProgress,
     String? readStatus,
+    // When this user last read/listened to the book (any format) — the
+    // ordering key of the Continue Reading/Listening carousels, exactly as
+    // the web dashboard sorts its own.
+    DateTime? lastReadTime,
     // `AppBookDetail.files` only (absent on `AppBookSummary`) — every
     // book-format file attached to this book, with the id the file-level
     // progress API (`UpdateProgressRequest.fileProgress.bookFileId`) is
@@ -432,6 +436,69 @@ abstract class Shelf with _$Shelf {
 /// `GET /api/v1/app/shelves/magic/{id}/books` (`ApiClient.getMagicShelfBooks`).
 /// [icon]/[iconType] are the web UI's icon reference (not mapped here);
 /// [publicShelf] as on [Shelf].
+/// One row of the web dashboard, from `userSettings.dashboardConfig.scrollers`
+/// on `GET /users/me` (`BookLoreUser.UserSettings.ScrollerConfig`). [type]
+/// is kept as the wire string so an unknown value (a scroller type added
+/// upstream later) parses and is skipped, rather than failing the whole
+/// config — see [DashboardScrollerX.kind]. [title] is either a translation
+/// key the web ships (`dashboard.scroller.continueReading`) or the user's
+/// own text. [order] is the display position; [maxItems] the per-row cap
+/// (the web's DEFAULT_MAX_ITEMS is 20 when null).
+@freezed
+abstract class DashboardScroller with _$DashboardScroller {
+  const factory DashboardScroller({
+    String? id,
+    required String type,
+    String? title,
+    @Default(true) bool enabled,
+    @Default(0) int order,
+    int? maxItems,
+    int? magicShelfId,
+  }) = _DashboardScroller;
+
+  factory DashboardScroller.fromJson(Map<String, dynamic> json) =>
+      _$DashboardScrollerFromJson(json);
+}
+
+/// `userSettings.dashboardConfig` — absent until the user has customised
+/// the web dashboard at least once, in which case the web's defaults apply
+/// (see `dashboardDefaultScrollers`).
+@freezed
+abstract class DashboardConfig with _$DashboardConfig {
+  const factory DashboardConfig({
+    @Default([]) List<DashboardScroller> scrollers,
+  }) = _DashboardConfig;
+
+  factory DashboardConfig.fromJson(Map<String, dynamic> json) =>
+      _$DashboardConfigFromJson(json);
+}
+
+/// The web dashboard's `ScrollerType` values.
+enum ScrollerType {
+  lastRead('lastRead'),
+  lastListened('lastListened'),
+  latestAdded('latestAdded'),
+  random('random'),
+  magicShelf('magicShelf');
+
+  const ScrollerType(this.wire);
+
+  /// The string stored in the user's settings.
+  final String wire;
+
+  static ScrollerType? fromWire(String value) {
+    for (final t in values) {
+      if (t.wire == value) return t;
+    }
+    return null;
+  }
+}
+
+extension DashboardScrollerX on DashboardScroller {
+  /// Null for a type this build doesn't know how to render.
+  ScrollerType? get kind => ScrollerType.fromWire(type);
+}
+
 @freezed
 abstract class MagicShelf with _$MagicShelf {
   const factory MagicShelf({

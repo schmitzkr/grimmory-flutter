@@ -55,6 +55,9 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   primaryFileType: json['primaryFileType'] as String?,
   readProgress: (json['readProgress'] as num?)?.toDouble(),
   readStatus: json['readStatus'] as String?,
+  lastReadTime: json['lastReadTime'] == null
+      ? null
+      : DateTime.parse(json['lastReadTime'] as String),
   files:
       (json['files'] as List<dynamic>?)
           ?.map((e) => BookFile.fromJson(e as Map<String, dynamic>))
@@ -79,6 +82,7 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'primaryFileType': instance.primaryFileType,
   'readProgress': instance.readProgress,
   'readStatus': instance.readStatus,
+  'lastReadTime': instance.lastReadTime?.toIso8601String(),
   'files': instance.files,
 };
 
@@ -311,6 +315,42 @@ Map<String, dynamic> _$ShelfToJson(_Shelf instance) => <String, dynamic>{
   'icon': instance.icon,
   'publicShelf': instance.publicShelf,
 };
+
+_DashboardScroller _$DashboardScrollerFromJson(Map<String, dynamic> json) =>
+    _DashboardScroller(
+      id: json['id'] as String?,
+      type: json['type'] as String,
+      title: json['title'] as String?,
+      enabled: json['enabled'] as bool? ?? true,
+      order: (json['order'] as num?)?.toInt() ?? 0,
+      maxItems: (json['maxItems'] as num?)?.toInt(),
+      magicShelfId: (json['magicShelfId'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$DashboardScrollerToJson(_DashboardScroller instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'type': instance.type,
+      'title': instance.title,
+      'enabled': instance.enabled,
+      'order': instance.order,
+      'maxItems': instance.maxItems,
+      'magicShelfId': instance.magicShelfId,
+    };
+
+_DashboardConfig _$DashboardConfigFromJson(Map<String, dynamic> json) =>
+    _DashboardConfig(
+      scrollers:
+          (json['scrollers'] as List<dynamic>?)
+              ?.map(
+                (e) => DashboardScroller.fromJson(e as Map<String, dynamic>),
+              )
+              .toList() ??
+          const [],
+    );
+
+Map<String, dynamic> _$DashboardConfigToJson(_DashboardConfig instance) =>
+    <String, dynamic>{'scrollers': instance.scrollers};
 
 _MagicShelf _$MagicShelfFromJson(Map<String, dynamic> json) => _MagicShelf(
   id: (json['id'] as num).toInt(),
