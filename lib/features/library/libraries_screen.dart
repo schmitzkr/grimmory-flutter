@@ -3,19 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
-import '../../core/api/models.dart';
-import '../../core/providers.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/empty_state.dart';
 import '../auth/current_user_provider.dart';
 import 'continue_listening_section.dart';
 import 'continue_reading_section.dart';
 import 'dashboard.dart';
+import 'libraries_provider.dart';
+import 'library_detail_screen.dart' show LibraryBooksView;
 import 'recently_added_section.dart';
-
-final librariesProvider = FutureProvider<List<Library>>((ref) async {
-  return ref.read(apiClientProvider).getLibraries();
-});
 
 /// Body of the Home tab on [HomeScreen] — the AppBar/BottomNavigationBar
 /// live on the shell, not here. Modelled on Grimmory's web dashboard: the
@@ -93,10 +89,12 @@ class HomeTab extends ConsumerWidget {
 }
 
 /// The Libraries tab: every library the account can see, each opening its
-/// full, paginated, sort/filterable contents (`LibraryDetailScreen`). This
-/// replaces the Home tab's old app-bar library filter — browsing a single
-/// library is its own destination now, one tap from anywhere, rather than
-/// a scope applied to the dashboard rows.
+/// full, paginated, sort/filterable contents (`LibraryDetailScreen`). With
+/// exactly one library there is nothing to choose between, so the tab *is*
+/// that library — its name as a header over [LibraryBooksView] — instead of
+/// a one-row list that only adds a tap. This replaces the Home tab's old
+/// app-bar library filter — browsing a single library is its own
+/// destination now, rather than a scope applied to the dashboard rows.
 class LibrariesTab extends ConsumerWidget {
   const LibrariesTab({super.key});
 
@@ -109,6 +107,29 @@ class LibrariesTab extends ConsumerWidget {
       onRetry: () => ref.invalidate(librariesProvider),
       data: (items) {
         if (items.isEmpty) return const EmptyState('No libraries found.');
+        if (items.length == 1) {
+          final library = items.single;
+          return LibraryBooksView(
+            key: ValueKey(library.id),
+            libraryId: library.id,
+            header: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Row(
+                children: [
+                  const Icon(Icons.local_library_outlined),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      library.name,
+                      style: Theme.of(context).textTheme.titleLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         return RefreshIndicator(
           onRefresh: () => ref.refresh(librariesProvider.future),
           child: ListView.separated(
