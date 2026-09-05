@@ -24,6 +24,23 @@ class EpubSpineFractions {
 
   int get length => _starts.length - 1;
 
+  /// Compact form for caching next to the downloaded file, so a reopen
+  /// skips inflating the zip again. [tryDecode] returns null for anything
+  /// that isn't a well-formed cache (then the caller just re-parses).
+  String encode() => jsonEncode(_starts);
+
+  static EpubSpineFractions? tryDecode(String cached) {
+    try {
+      final decoded = jsonDecode(cached);
+      if (decoded is! List || decoded.length < 2) return null;
+      final starts = decoded.map((v) => (v as num).toDouble()).toList();
+      if (starts.last != 1.0) return null;
+      return EpubSpineFractions._(starts);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Null when the file isn't a readable EPUB (no container/OPF/spine, or
   /// every spine document is missing) — callers just lose the fallback.
   static EpubSpineFractions? parse(Uint8List epubBytes) {

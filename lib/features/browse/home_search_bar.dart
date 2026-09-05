@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/errors.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
+import 'search_debouncer.dart';
 
 /// Search, promoted to a persistent Material 3 search bar living in
 /// [HomeScreen]'s AppBar title — reachable from every tab instead of being
@@ -20,9 +19,14 @@ class HomeSearchBar extends ConsumerStatefulWidget {
 
 class _HomeSearchBarState extends ConsumerState<HomeSearchBar> {
   final _searchController = SearchController();
+  // SearchAnchor calls suggestionsBuilder on every keystroke with no
+  // debounce of its own; this coalesces a burst into one request and drops
+  // any response that a newer keystroke has since overtaken.
+  final _debouncer = SearchDebouncer();
 
   @override
   void dispose() {
+    _debouncer.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -48,14 +52,13 @@ class _HomeSearchBarState extends ConsumerState<HomeSearchBar> {
       ];
     }
 
-    // SearchAnchor calls suggestionsBuilder on every keystroke with no
-    // debounce of its own — wait, then bail out if the text has since moved
-    // on, so a fast typist doesn't fire one request per character.
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (!mounted || controller.text.trim() != query) return const [];
-
     try {
-      final results = await ref.read(apiClientProvider).searchBooks(query);
+      final results = await _debouncer.run(
+        () => ref.read(apiClientProvider).searchBooks(query),
+      );
+      // Superseded by a newer keystroke — SearchAnchor will render that
+      // one's result instead.
+      if (results == null || !mounted) return const [];
       if (results.isEmpty) {
         return const [
           Padding(

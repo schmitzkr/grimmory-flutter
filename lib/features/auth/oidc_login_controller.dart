@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:oidc/oidc.dart';
+import 'package:oidc_core/oidc_core.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/providers.dart';
@@ -28,14 +28,19 @@ final oidcConfigProvider = Provider<OidcConfig?>((ref) {
 /// Deliberately NOT built on the `oidc` package's `OidcUserManager` — that
 /// class performs the full authorization-code-for-token exchange itself
 /// against the IdP's token endpoint and hands back a completed `OidcUser`.
-/// Grimmory's actual `/auth/oidc/callback` contract (confirmed live against
-/// grimmory.mael.is, 2026-08-30 — a validation error listed its exact
-/// required fields) wants the opposite: the raw, unexchanged PKCE result
+/// Grimmory's actual `/auth/oidc/callback` contract (confirmed against a
+/// live instance, 2026-08-30 — a validation error listed its exact required
+/// fields) wants the opposite: the raw, unexchanged PKCE result
 /// (`code`/`state`/`codeVerifier`/`nonce`/`redirectUri`), so its own backend
 /// performs the exchange itself. So this only runs the authorize-request
-/// half of the flow by hand, using `oidc_core`'s low-level PKCE/request
-/// utilities (via `package:oidc`, which re-exports `oidc_core`) — no
-/// `OidcUserManager`, no `oidc_default_store`.
+/// half of the flow by hand, using `oidc_core`'s pure-Dart PKCE/request
+/// utilities; the browser round-trip is `url_launcher` out and `app_links`
+/// back in. That is why the dependency is `oidc_core` itself rather than
+/// the `oidc` Flutter wrapper — nothing here needs its native AppAuth /
+/// Auth Tab plugins, and dropping them removes their manifest and Gradle
+/// requirements too. (Grimmory's `/auth/oidc/mobile/callback` was checked
+/// as an alternative: it runs the exact same server-side exchange, only
+/// taking form parameters instead of JSON, so there is no reason to switch.)
 final oidcLoginControllerProvider =
     AsyncNotifierProvider<OidcLoginController, void>(OidcLoginController.new);
 

@@ -210,4 +210,61 @@ void main() {
     });
     expect(bookmark.notes, 'Great scene');
   });
+
+  test('Series parses read counts and cover books', () {
+    final series = Series.fromJson({
+      'seriesName': 'The Expanse',
+      'bookCount': 9,
+      'seriesTotal': 12,
+      'booksRead': 3,
+      'latestAddedOn': '2026-09-01T00:00:00Z',
+      'coverBooks': [
+        {
+          'bookId': 41,
+          'coverUpdatedOn': '2026-08-30T10:00:00Z',
+          'seriesNumber': 1.0,
+          'primaryFileType': 'AUDIOBOOK',
+        },
+      ],
+    });
+    expect(series.seriesTotal, 12);
+    expect(series.booksRead, 3);
+    expect(series.coverBooks.single.bookId, 41);
+    expect(series.coverBooks.single.coverVersion, isNotNull);
+    expect(Series.fromJson({'seriesName': 'x', 'bookCount': 1}).booksRead, 0);
+  });
+
+  test('Author.hasPhoto and shelf publicShelf parse their Lombok keys', () {
+    expect(
+      Author.fromJson({'id': 1, 'name': 'A', 'hasPhoto': true}).hasPhoto,
+      isTrue,
+    );
+    expect(Author.fromJson({'id': 1, 'name': 'A'}).hasPhoto, isFalse);
+    expect(
+      Shelf.fromJson({'id': 2, 'name': 'S', 'publicShelf': true}).publicShelf,
+      isTrue,
+    );
+    expect(
+      MagicShelf.fromJson({
+        'id': 3,
+        'name': 'M',
+        'icon': 'pi-heart',
+        'iconType': 'prime',
+        'publicShelf': false,
+      }).icon,
+      'pi-heart',
+    );
+  });
+
+  test('FilterOptions parses the fileTypes facet', () {
+    final options = FilterOptions.fromJson({
+      'authors': [],
+      'fileTypes': [
+        {'name': 'AUDIOBOOK', 'count': 12},
+        {'name': 'EPUB', 'count': 30},
+      ],
+    });
+    expect(options.fileTypes.map((f) => f.name), ['AUDIOBOOK', 'EPUB']);
+    expect(options.readStatuses, isEmpty);
+  });
 }

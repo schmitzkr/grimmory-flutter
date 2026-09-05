@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../../core/widgets/async_value_view.dart';
+import '../../core/widgets/empty_state.dart';
 
 final shelvesListProvider = FutureProvider<List<Shelf>>((ref) async {
   return ref.read(apiClientProvider).getShelves();
@@ -30,31 +32,19 @@ class ShelvesTab extends ConsumerWidget {
     }
     final error = shelves.error ?? magicShelves.error;
     if (error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(friendlyApiError(error)),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed: () {
-                  ref.invalidate(shelvesListProvider);
-                  ref.invalidate(magicShelvesListProvider);
-                },
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+      return ErrorRetryView(
+        message: friendlyApiError(error),
+        onRetry: () {
+          ref.invalidate(shelvesListProvider);
+          ref.invalidate(magicShelvesListProvider);
+        },
       );
     }
 
     final regular = shelves.value ?? [];
     final magic = magicShelves.value ?? [];
     if (regular.isEmpty && magic.isEmpty) {
-      return const Center(child: Text('No shelves found.'));
+      return const EmptyState('No shelves found.');
     }
 
     return RefreshIndicator(
@@ -70,10 +60,8 @@ class ShelvesTab extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.auto_awesome_outlined),
                 title: Text(shelf.name),
-                onTap: () => context.push(
-                  '/shelves/magic/${shelf.id}',
-                  extra: shelf.name,
-                ),
+                trailing: shelf.publicShelf ? const _PublicBadge() : null,
+                onTap: () => context.push('/shelves/magic/${shelf.id}'),
               ),
           ],
           if (regular.isNotEmpty) ...[
@@ -85,9 +73,28 @@ class ShelvesTab extends ConsumerWidget {
                 subtitle: Text(
                   '${shelf.bookCount} ${shelf.bookCount == 1 ? 'book' : 'books'}',
                 ),
+                trailing: shelf.publicShelf ? const _PublicBadge() : null,
               ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// A shelf every user on the server can see, not just its owner — the
+/// same distinction the web UI draws with its globe icon.
+class _PublicBadge extends StatelessWidget {
+  const _PublicBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Shared with all users',
+      child: Icon(
+        Icons.public,
+        size: 20,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }

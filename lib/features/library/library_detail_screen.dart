@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/book_grid.dart';
+import '../../core/widgets/empty_state.dart';
 import '../player/mini_player.dart';
 
 /// A sort choice pairs a server-recognized [sort] key with a [dir]ection —
@@ -42,6 +43,29 @@ enum LibraryTypeFilter {
   final List<String>? fileTypes;
 }
 
+/// How many books each [LibraryTypeFilter] would show, from the library's
+/// `/app/filter-options` `fileTypes` facet (one entry per primary file
+/// type with a count). Lets the type menu label each choice with its count
+/// and hide a group the library simply doesn't contain, instead of the
+/// fixed three-way list that used to offer "Audiobooks" on an all-EPUB
+/// library.
+Map<LibraryTypeFilter, int> libraryTypeCounts(List<CountedOption> fileTypes) {
+  var total = 0;
+  final byFilter = <LibraryTypeFilter, int>{
+    LibraryTypeFilter.audiobooks: 0,
+    LibraryTypeFilter.ebooks: 0,
+  };
+  for (final option in fileTypes) {
+    total += option.count;
+    for (final filter in byFilter.keys) {
+      if (filter.fileTypes!.contains(option.name)) {
+        byFilter[filter] = byFilter[filter]! + option.count;
+      }
+    }
+  }
+  return {LibraryTypeFilter.all: total, ...byFilter};
+}
+
 /// Query key for [libraryBooksProvider] — a record, so it gets Riverpod
 /// family caching's required value equality for free.
 typedef LibraryBooksQuery = ({
@@ -51,25 +75,29 @@ typedef LibraryBooksQuery = ({
   LibraryTypeFilter type,
 });
 
-final libraryBooksProvider =
-    FutureProvider.family<List<Book>, LibraryBooksQuery>((ref, query) async {
+/// The server's `BookListRequest` rejects any list filter longer than this
+/// (`@Size(max = 20)`) with a 400.
+const _maxListFilterValues = 20;
+
+final libraryBooksProvider = FutureProvider.autoDispose
+    .family<List<Book>, LibraryBooksQuery>((ref, query) async {
       return ref
           .read(apiClientProvider)
           .getLibraryBooks(
             query.libraryId,
             sort: query.sort.sort,
             dir: query.sort.dir,
-            authors: query.author != null ? [query.author!] : null,
-            fileType: query.type.fileTypes,
+            authors: query.author != null
+                ? [query.author!].take(_maxListFilterValues).toList()
+                : null,
+            fileType: query.type.fileTypes?.take(_maxListFilterValues).toList(),
           );
     });
 
-final filterOptionsProvider = FutureProvider.family<FilterOptions, int>((
-  ref,
-  libraryId,
-) async {
-  return ref.read(apiClientProvider).getFilterOptions(libraryId: libraryId);
-});
+final filterOptionsProvider = FutureProvider.autoDispose
+    .family<FilterOptions, int>((ref, libraryId) async {
+      return ref.read(apiClientProvider).getFilterOptions(libraryId: libraryId);
+    });
 
 class LibraryDetailScreen extends ConsumerStatefulWidget {
   const LibraryDetailScreen({required this.libraryId, super.key});
@@ -95,6 +123,13 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
       type: _type,
     );
     final books = ref.watch(libraryBooksProvider(query));
+    // Counts are a nicety: while they're loading (or if they fail) the
+    // menu just shows the plain labels.
+    final fileTypes = ref
+        .watch(filterOptionsProvider(widget.libraryId))
+        .value
+        ?.fileTypes;
+    final typeCounts = fileTypes == null ? null : libraryTypeCounts(fileTypes);
 
     return Scaffold(
       appBar: AppBar(
@@ -111,7 +146,18 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
             onSelected: (value) => setState(() => _type = value),
             itemBuilder: (context) => [
               for (final option in LibraryTypeFilter.values)
-                PopupMenuItem(value: option, child: Text(option.label)),
+                if (typeCounts == null ||
+                    option == LibraryTypeFilter.all ||
+                    option == _type ||
+                    (typeCounts[option] ?? 0) > 0)
+                  PopupMenuItem(
+                    value: option,
+                    child: Text(
+                      typeCounts == null
+                          ? option.label
+                          : '${option.label} (${typeCounts[option] ?? 0})',
+                    ),
+                  ),
             ],
           ),
           if (_author != null)
@@ -140,15 +186,15 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
           ),
         ],
       ),
-      body: books.when(
+      body: AsyncValueView(
+        value: books,
+        onRetry: () => ref.invalidate(libraryBooksProvider(query)),
         data: (items) {
           if (items.isEmpty) {
-            return Center(
-              child: Text(
-                _author != null
-                    ? 'No audiobooks by "$_author" in this library.'
-                    : 'No audiobooks in this library.',
-              ),
+            return EmptyState(
+              _author != null
+                  ? 'No books by "$_author" in this library.'
+                  : 'No books in this library.',
             );
           }
           return RefreshIndicator(
@@ -156,23 +202,6 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
             child: BookGrid(books: items),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(friendlyApiError(error)),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () => ref.invalidate(libraryBooksProvider(query)),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
       bottomNavigationBar: const MiniPlayer(),
     );
@@ -211,11 +240,14 @@ class _AuthorFilterSheet extends ConsumerWidget {
               child: Text('Filter by author', style: TextStyle(fontSize: 18)),
             ),
             Expanded(
-              child: options.when(
+              child: AsyncValueView(
+                value: options,
+                errorMessage: 'Could not load authors.',
+                onRetry: () => ref.invalidate(filterOptionsProvider(libraryId)),
                 data: (data) {
                   final authors = data.authors;
                   if (authors.isEmpty) {
-                    return const Center(child: Text('No authors found.'));
+                    return const EmptyState('No authors found.');
                   }
                   return RadioGroup<String>(
                     groupValue: selected,
@@ -234,9 +266,6 @@ class _AuthorFilterSheet extends ConsumerWidget {
                     ),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) =>
-                    const Center(child: Text('Could not load authors.')),
               ),
             ),
           ],

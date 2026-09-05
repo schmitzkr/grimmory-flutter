@@ -14,6 +14,7 @@ class BookCover extends ConsumerWidget {
     this.height,
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
     this.fileType,
+    this.coverVersion,
   });
 
   final int bookId;
@@ -27,6 +28,11 @@ class BookCover extends ConsumerWidget {
   /// to show headphones unconditionally even for EPUBs.
   final String? fileType;
 
+  /// `Book.coverVersion` — appended to the URL so a regenerated cover
+  /// actually replaces the cached one instead of the old image being served
+  /// from the image cache forever.
+  final String? coverVersion;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final apiClient = ref.watch(apiClientProvider);
@@ -34,7 +40,7 @@ class BookCover extends ConsumerWidget {
     return ClipRRect(
       borderRadius: borderRadius,
       child: CachedNetworkImage(
-        imageUrl: apiClient.coverUrl(bookId),
+        imageUrl: apiClient.coverUrl(bookId, version: coverVersion),
         httpHeaders: apiClient.authHeaders,
         width: width,
         height: height,
@@ -44,7 +50,7 @@ class BookCover extends ConsumerWidget {
         // fall back to the general book cover before giving up, same order
         // Grimmory's own frontend uses (UrlHelperService).
         errorWidget: (context, url, error) => CachedNetworkImage(
-          imageUrl: apiClient.fallbackCoverUrl(bookId),
+          imageUrl: apiClient.fallbackCoverUrl(bookId, version: coverVersion),
           httpHeaders: apiClient.authHeaders,
           width: width,
           height: height,

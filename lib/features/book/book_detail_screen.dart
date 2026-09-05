@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../../core/utils/duration_format.dart';
+import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/book_cover.dart';
 import '../bookmarks/epub_bookmarks_sheet.dart';
 import '../downloads/download_manager.dart';
@@ -13,7 +15,13 @@ import '../player/mini_player.dart';
 import '../player/playback_provider.dart';
 import '../reader/epub_reader_args.dart';
 
-final bookProvider = FutureProvider.family<Book, int>((ref, bookId) async {
+/// autoDispose: a book's detail (progress, read status, files) changes
+/// behind the app's back — on the web, from another device — so it's
+/// refetched on every visit rather than cached for the process lifetime.
+final bookProvider = FutureProvider.autoDispose.family<Book, int>((
+  ref,
+  bookId,
+) async {
   return ref.read(apiClientProvider).getBook(bookId);
 });
 
@@ -21,12 +29,10 @@ final bookProvider = FutureProvider.family<Book, int>((ref, bookId) async {
 /// other format, which used to be called unconditionally here regardless
 /// of book type, breaking (silently, with no feedback) whenever a library
 /// mixed audiobooks with ebooks/comics.
-final audiobookInfoProvider = FutureProvider.family<AudiobookInfo, int>((
-  ref,
-  bookId,
-) async {
-  return ref.read(apiClientProvider).getAudiobookInfo(bookId);
-});
+final audiobookInfoProvider = FutureProvider.autoDispose
+    .family<AudiobookInfo, int>((ref, bookId) async {
+      return ref.read(apiClientProvider).getAudiobookInfo(bookId);
+    });
 
 class BookDetailScreen extends ConsumerWidget {
   const BookDetailScreen({required this.bookId, super.key});
@@ -43,25 +49,10 @@ class BookDetailScreen extends ConsumerWidget {
           book.value?.primaryFileType == 'AUDIOBOOK' ? 'Audiobook' : 'Book',
         ),
       ),
-      body: book.when(
+      body: AsyncValueView(
+        value: book,
+        onRetry: () => ref.invalidate(bookProvider(bookId)),
         data: (book) => _BookDetailBody(book: book),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(friendlyApiError(error)),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () => ref.invalidate(bookProvider(bookId)),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
       bottomNavigationBar: const MiniPlayer(),
     );
@@ -100,7 +91,11 @@ class _BookDetailBody extends ConsumerWidget {
           child: SizedBox(
             width: 200,
             height: 200,
-            child: BookCover(bookId: book.id, fileType: book.primaryFileType),
+            child: BookCover(
+              bookId: book.id,
+              fileType: book.primaryFileType,
+              coverVersion: book.coverVersion,
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -205,10 +200,7 @@ class _BookDetailBody extends ConsumerWidget {
               ),
             ),
           FilledButton.icon(
-            onPressed: () => context.push(
-              '/books/${book.id}/read',
-              extra: EpubReaderArgs(title: book.title),
-            ),
+            onPressed: () => context.push('/books/${book.id}/read'),
             icon: const Icon(Icons.menu_book),
             label: Text(
               (book.normalizedReadProgress ?? 0) > 0
@@ -225,7 +217,7 @@ class _BookDetailBody extends ConsumerWidget {
               currentCfi: null,
               onJumpTo: (cfi) => context.push(
                 '/books/${book.id}/read',
-                extra: EpubReaderArgs(title: book.title, jumpToCfi: cfi),
+                extra: EpubReaderArgs(jumpToCfi: cfi),
               ),
             ),
             icon: const Icon(Icons.bookmark_border),
@@ -256,7 +248,11 @@ class _BookDetailBody extends ConsumerWidget {
                       contentPadding: EdgeInsets.zero,
                       leading: Text('${track.index + 1}'),
                       title: Text(track.title),
-                      trailing: Text(_formatDurationMs(track.durationMs)),
+                      trailing: Text(
+                        formatDurationShort(
+                          Duration(milliseconds: track.durationMs),
+                        ),
+                      ),
                     ),
                 ] else if (info.chapters.isNotEmpty) ...[
                   const SizedBox(height: 24),
@@ -270,7 +266,11 @@ class _BookDetailBody extends ConsumerWidget {
                       contentPadding: EdgeInsets.zero,
                       leading: Text('${chapter.index + 1}'),
                       title: Text(chapter.title),
-                      trailing: Text(_formatDurationMs(chapter.durationMs)),
+                      trailing: Text(
+                        formatDurationShort(
+                          Duration(milliseconds: chapter.durationMs),
+                        ),
+                      ),
                     ),
                 ],
               ],
@@ -336,14 +336,4 @@ class _DownloadButton extends ConsumerWidget {
         );
     }
   }
-}
-
-String _formatDurationMs(int ms) {
-  final duration = Duration(milliseconds: ms);
-  final hours = duration.inHours;
-  final minutes = duration.inMinutes.remainder(60);
-  if (hours > 0) {
-    return '${hours}h ${minutes}m';
-  }
-  return '${minutes}m';
 }

@@ -9,12 +9,14 @@ part of 'models.dart';
 _AuthTokens _$AuthTokensFromJson(Map<String, dynamic> json) => _AuthTokens(
   accessToken: json['accessToken'] as String,
   refreshToken: json['refreshToken'] as String,
+  expires: (json['expires'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$AuthTokensToJson(_AuthTokens instance) =>
     <String, dynamic>{
       'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
+      'expires': instance.expires,
     };
 
 _Library _$LibraryFromJson(Map<String, dynamic> json) => _Library(
@@ -34,6 +36,14 @@ Map<String, dynamic> _$LibraryToJson(_Library instance) => <String, dynamic>{
 _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   id: (json['id'] as num).toInt(),
   title: json['title'] as String,
+  thumbnailUrl: json['thumbnailUrl'] as String?,
+  coverUpdatedOn: json['coverUpdatedOn'] == null
+      ? null
+      : DateTime.parse(json['coverUpdatedOn'] as String),
+  audiobookCoverUpdatedOn: json['audiobookCoverUpdatedOn'] == null
+      ? null
+      : DateTime.parse(json['audiobookCoverUpdatedOn'] as String),
+  primaryFileId: (json['primaryFileId'] as num?)?.toInt(),
   authors:
       (json['authors'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
@@ -55,6 +65,11 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
 Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,
+  'thumbnailUrl': instance.thumbnailUrl,
+  'coverUpdatedOn': instance.coverUpdatedOn?.toIso8601String(),
+  'audiobookCoverUpdatedOn': instance.audiobookCoverUpdatedOn
+      ?.toIso8601String(),
+  'primaryFileId': instance.primaryFileId,
   'authors': instance.authors,
   'seriesName': instance.seriesName,
   'seriesNumber': instance.seriesNumber,
@@ -185,13 +200,45 @@ _Series _$SeriesFromJson(Map<String, dynamic> json) => _Series(
   authors:
       (json['authors'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
+  seriesTotal: (json['seriesTotal'] as num?)?.toInt(),
+  booksRead: (json['booksRead'] as num?)?.toInt() ?? 0,
+  latestAddedOn: json['latestAddedOn'] == null
+      ? null
+      : DateTime.parse(json['latestAddedOn'] as String),
+  coverBooks:
+      (json['coverBooks'] as List<dynamic>?)
+          ?.map((e) => SeriesCoverBook.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$SeriesToJson(_Series instance) => <String, dynamic>{
   'seriesName': instance.seriesName,
   'bookCount': instance.bookCount,
   'authors': instance.authors,
+  'seriesTotal': instance.seriesTotal,
+  'booksRead': instance.booksRead,
+  'latestAddedOn': instance.latestAddedOn?.toIso8601String(),
+  'coverBooks': instance.coverBooks,
 };
+
+_SeriesCoverBook _$SeriesCoverBookFromJson(Map<String, dynamic> json) =>
+    _SeriesCoverBook(
+      bookId: (json['bookId'] as num).toInt(),
+      coverUpdatedOn: json['coverUpdatedOn'] == null
+          ? null
+          : DateTime.parse(json['coverUpdatedOn'] as String),
+      seriesNumber: (json['seriesNumber'] as num?)?.toDouble(),
+      primaryFileType: json['primaryFileType'] as String?,
+    );
+
+Map<String, dynamic> _$SeriesCoverBookToJson(_SeriesCoverBook instance) =>
+    <String, dynamic>{
+      'bookId': instance.bookId,
+      'coverUpdatedOn': instance.coverUpdatedOn?.toIso8601String(),
+      'seriesNumber': instance.seriesNumber,
+      'primaryFileType': instance.primaryFileType,
+    };
 
 _Bookmark _$BookmarkFromJson(Map<String, dynamic> json) => _Bookmark(
   id: (json['id'] as num).toInt(),
@@ -222,6 +269,7 @@ _Author _$AuthorFromJson(Map<String, dynamic> json) => _Author(
   name: json['name'] as String,
   bookCount: (json['bookCount'] as num?)?.toInt() ?? 0,
   description: json['description'] as String?,
+  hasPhoto: json['hasPhoto'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$AuthorToJson(_Author instance) => <String, dynamic>{
@@ -229,25 +277,41 @@ Map<String, dynamic> _$AuthorToJson(_Author instance) => <String, dynamic>{
   'name': instance.name,
   'bookCount': instance.bookCount,
   'description': instance.description,
+  'hasPhoto': instance.hasPhoto,
 };
 
 _Shelf _$ShelfFromJson(Map<String, dynamic> json) => _Shelf(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,
   bookCount: (json['bookCount'] as num?)?.toInt() ?? 0,
+  icon: json['icon'] as String?,
+  publicShelf: json['publicShelf'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$ShelfToJson(_Shelf instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'bookCount': instance.bookCount,
+  'icon': instance.icon,
+  'publicShelf': instance.publicShelf,
 };
 
-_MagicShelf _$MagicShelfFromJson(Map<String, dynamic> json) =>
-    _MagicShelf(id: (json['id'] as num).toInt(), name: json['name'] as String);
+_MagicShelf _$MagicShelfFromJson(Map<String, dynamic> json) => _MagicShelf(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  icon: json['icon'] as String?,
+  iconType: json['iconType'] as String?,
+  publicShelf: json['publicShelf'] as bool? ?? false,
+);
 
 Map<String, dynamic> _$MagicShelfToJson(_MagicShelf instance) =>
-    <String, dynamic>{'id': instance.id, 'name': instance.name};
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'icon': instance.icon,
+      'iconType': instance.iconType,
+      'publicShelf': instance.publicShelf,
+    };
 
 _CountedOption _$CountedOptionFromJson(Map<String, dynamic> json) =>
     _CountedOption(
@@ -265,7 +329,33 @@ _FilterOptions _$FilterOptionsFromJson(Map<String, dynamic> json) =>
               ?.map((e) => CountedOption.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      fileTypes:
+          (json['fileTypes'] as List<dynamic>?)
+              ?.map((e) => CountedOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      readStatuses:
+          (json['readStatuses'] as List<dynamic>?)
+              ?.map((e) => CountedOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      series:
+          (json['series'] as List<dynamic>?)
+              ?.map((e) => CountedOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      narrators:
+          (json['narrators'] as List<dynamic>?)
+              ?.map((e) => CountedOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$FilterOptionsToJson(_FilterOptions instance) =>
-    <String, dynamic>{'authors': instance.authors};
+    <String, dynamic>{
+      'authors': instance.authors,
+      'fileTypes': instance.fileTypes,
+      'readStatuses': instance.readStatuses,
+      'series': instance.series,
+      'narrators': instance.narrators,
+    };

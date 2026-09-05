@@ -19,13 +19,13 @@ class MiniPlayer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mediaItem = ref.watch(currentMediaItemProvider).value;
-    if (mediaItem == null) return const SizedBox.shrink();
+    final nowPlaying = ref.watch(nowPlayingProvider);
+    if (nowPlaying == null) return const SizedBox.shrink();
 
-    final playbackState = ref.watch(playbackStateProvider).value;
-    final playing = playbackState?.playing ?? false;
+    final mediaItem = nowPlaying.mediaItem;
+    final playing = nowPlaying.playing;
+    final bookId = nowPlaying.bookId;
     final handler = ref.read(audioHandlerProvider);
-    final bookId = mediaItem.extras?['bookId'] as int?;
 
     return Material(
       elevation: 4,

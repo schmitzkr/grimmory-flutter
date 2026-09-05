@@ -56,116 +56,128 @@ class BookGridTile extends ConsumerWidget {
         DownloadStatus.complete;
 
     final normalizedProgress = book.normalizedReadProgress;
+    final semanticLabel = book.authors.isEmpty
+        ? book.title
+        : '${book.title} by ${book.authors.join(', ')}';
 
-    return InkWell(
-      onTap: () => context.push('/books/${book.id}'),
-      borderRadius: BorderRadius.circular(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: BookCover(
-                      bookId: book.id,
-                      fileType: book.primaryFileType,
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      child: InkWell(
+        onTap: () => context.push('/books/${book.id}'),
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: BookCover(
+                        bookId: book.id,
+                        fileType: book.primaryFileType,
+                        coverVersion: book.coverVersion,
+                      ),
                     ),
-                  ),
-                  // Matches Grimmory's own web UI's top-left overlay stack
-                  // (book-type-pill-overlay + series-number-overlay in
-                  // book-card.component.html/.scss) — a format pill and a
-                  // "#N" series-order badge, the one piece of cover overlay
-                  // info that's actually about where a book sits when
-                  // sorted by series.
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (book.primaryFileType != null)
-                          _FormatPill(fileType: book.primaryFileType!),
-                        if (book.seriesNumber != null) ...[
-                          const SizedBox(height: 4),
-                          _SeriesNumberBadge(seriesNumber: book.seriesNumber!),
-                        ],
-                      ],
-                    ),
-                  ),
-                  if (book.readStatus == 'READ')
+                    // Matches Grimmory's own web UI's top-left overlay stack
+                    // (book-type-pill-overlay + series-number-overlay in
+                    // book-card.component.html/.scss) — a format pill and a
+                    // "#N" series-order badge, the one piece of cover overlay
+                    // info that's actually about where a book sits when
+                    // sorted by series.
                     Positioned(
+                      top: 6,
                       left: 6,
-                      bottom: 6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.check,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                      ),
-                    )
-                  else if ((normalizedProgress ?? 0) > 0 &&
-                      (normalizedProgress ?? 0) < 1)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(8),
-                          bottomRight: Radius.circular(8),
-                        ),
-                        child: LinearProgressIndicator(
-                          value: normalizedProgress,
-                          minHeight: 4,
-                          backgroundColor: Colors.black.withValues(alpha: 0.35),
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (book.primaryFileType != null)
+                            _FormatPill(fileType: book.primaryFileType!),
+                          if (book.seriesNumber != null) ...[
+                            const SizedBox(height: 4),
+                            _SeriesNumberBadge(
+                              seriesNumber: book.seriesNumber!,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  if (downloaded)
-                    Positioned(
-                      right: 6,
-                      bottom: 6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
+                    if (book.readStatus == 'READ')
+                      Positioned(
+                        left: 6,
+                        bottom: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.check,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.download_done,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.onPrimary,
+                      )
+                    else if ((normalizedProgress ?? 0) > 0 &&
+                        (normalizedProgress ?? 0) < 1)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(8),
+                            bottomRight: Radius.circular(8),
+                          ),
+                          child: LinearProgressIndicator(
+                            value: normalizedProgress,
+                            minHeight: 4,
+                            backgroundColor: Colors.black.withValues(
+                              alpha: 0.35,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                    if (downloaded)
+                      Positioned(
+                        right: 6,
+                        bottom: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.download_done,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            book.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          if (book.authors.isNotEmpty)
+            const SizedBox(height: 6),
             Text(
-              book.authors.join(', '),
+              book.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-        ],
+            if (book.authors.isNotEmpty)
+              Text(
+                book.authors.join(', '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -208,9 +220,10 @@ class _FormatPill extends StatelessWidget {
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.bold,
-          fontSize: 9,
+          fontSize: MediaQuery.textScalerOf(context).scale(9),
           letterSpacing: 0.3,
         ),
+        textScaler: TextScaler.noScaling,
       ),
     );
   }
@@ -238,11 +251,12 @@ class _SeriesNumberBadge extends StatelessWidget {
       ),
       child: Text(
         '#$label',
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 10,
+          fontSize: MediaQuery.textScalerOf(context).scale(10),
           fontWeight: FontWeight.w500,
         ),
+        textScaler: TextScaler.noScaling,
       ),
     );
   }

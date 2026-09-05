@@ -80,4 +80,29 @@ void main() {
       expect(EpubSpineFractions.parse(Uint8List.fromList([1, 2, 3])), isNull);
     });
   });
+
+  group('cache round-trip', () {
+    test('encode/tryDecode preserves the fractions', () {
+      final spine = EpubSpineFractions.parse(
+        _epub({
+          'META-INF/container.xml': _container,
+          'OEBPS/content.opf': _opf,
+          'OEBPS/cover.xhtml': 'x' * 100,
+          'OEBPS/text/ch 1.xhtml': 'x' * 300,
+          'OEBPS/text/ch2.xhtml': 'x' * 600,
+        }),
+      )!;
+      final decoded = EpubSpineFractions.tryDecode(spine.encode())!;
+      expect(decoded.length, spine.length);
+      expect(decoded.percentageAt('epubcfi(/6/6!/4)'), closeTo(40, 1e-9));
+    });
+
+    test('tryDecode rejects malformed caches', () {
+      expect(EpubSpineFractions.tryDecode('not json'), isNull);
+      expect(EpubSpineFractions.tryDecode('[]'), isNull);
+      expect(EpubSpineFractions.tryDecode('[0.5]'), isNull);
+      expect(EpubSpineFractions.tryDecode('[0, 0.5]'), isNull);
+      expect(EpubSpineFractions.tryDecode('{"a":1}'), isNull);
+    });
+  });
 }
