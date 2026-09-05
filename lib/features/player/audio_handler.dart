@@ -519,18 +519,24 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     final playing = _player.playing;
     playbackState.add(
       playbackState.value.copyWith(
+        // Rewind / fast-forward are the controls an audiobook listener
+        // reaches for; they take the compact notification's three slots,
+        // with track skipping still available in the expanded view.
         controls: [
           MediaControl.skipToPrevious,
+          MediaControl.rewind,
           if (playing) MediaControl.pause else MediaControl.play,
-          MediaControl.stop,
+          MediaControl.fastForward,
           MediaControl.skipToNext,
         ],
         systemActions: const {
           MediaAction.seek,
           MediaAction.seekForward,
           MediaAction.seekBackward,
+          MediaAction.rewind,
+          MediaAction.fastForward,
         },
-        androidCompactActionIndices: const [0, 1, 3],
+        androidCompactActionIndices: const [1, 2, 3],
         processingState: const {
           ProcessingState.idle: AudioProcessingState.idle,
           ProcessingState.loading: AudioProcessingState.loading,
@@ -558,6 +564,39 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> seek(Duration position) => _player.seek(position);
+
+  /// The step [rewind] and [fastForward] take — the same 30 s most
+  /// audiobook players use, and what `AudioServiceConfig` advertises to
+  /// the system so headset/Auto controls agree.
+  static const skipInterval = Duration(seconds: 30);
+
+  List<int> get _trackDurationsMs => _folderBased && _tracks.isNotEmpty
+      ? [for (final t in _tracks) t.durationMs]
+      : [_player.duration?.inMilliseconds ?? _totalDurationMs];
+
+  /// Relative seek that crosses track boundaries on a folder-based book
+  /// (see [skipTarget]) instead of stopping dead at a track's edge.
+  Future<void> skipBy(Duration delta) async {
+    final currentIndex = _player.currentIndex ?? 0;
+    final target = skipTarget(
+      trackIndex: currentIndex,
+      positionMs: _player.position.inMilliseconds,
+      deltaMs: delta.inMilliseconds,
+      trackDurationsMs: _trackDurationsMs,
+    );
+    final position = Duration(milliseconds: target.positionMs);
+    if (_folderBased && target.trackIndex != currentIndex) {
+      await _player.seek(position, index: target.trackIndex);
+    } else {
+      await _player.seek(position);
+    }
+  }
+
+  @override
+  Future<void> rewind() => skipBy(-skipInterval);
+
+  @override
+  Future<void> fastForward() => skipBy(skipInterval);
 
   /// Jumps to a specific track — folder-based books only (see
   /// [seekToBookPosition] for the single-stream, chapter-marker case).

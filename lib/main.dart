@@ -37,6 +37,8 @@ void main() async {
       androidNotificationChannelId: 'is.schmitzkr.grimmory.audio',
       androidNotificationChannelName: 'Audiobook playback',
       androidNotificationOngoing: true,
+      rewindInterval: GrimmoryAudioHandler.skipInterval,
+      fastForwardInterval: GrimmoryAudioHandler.skipInterval,
     ),
   );
 

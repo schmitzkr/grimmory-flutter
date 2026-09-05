@@ -28,6 +28,79 @@ const _tracks = [
 ];
 
 void main() {
+  group('skipTarget', () {
+    const durations = [60000, 120000, 90000];
+
+    test('stays inside the track when it can', () {
+      expect(
+        skipTarget(
+          trackIndex: 1,
+          positionMs: 50000,
+          deltaMs: 30000,
+          trackDurationsMs: durations,
+        ),
+        (trackIndex: 1, positionMs: 80000),
+      );
+    });
+
+    test('carries a rewind into the previous track', () {
+      expect(
+        skipTarget(
+          trackIndex: 1,
+          positionMs: 5000,
+          deltaMs: -30000,
+          trackDurationsMs: durations,
+        ),
+        (trackIndex: 0, positionMs: 35000),
+      );
+    });
+
+    test('carries a fast-forward into the next track', () {
+      expect(
+        skipTarget(
+          trackIndex: 0,
+          positionMs: 50000,
+          deltaMs: 30000,
+          trackDurationsMs: durations,
+        ),
+        (trackIndex: 1, positionMs: 20000),
+      );
+    });
+
+    test('clamps at the start and end of the book', () {
+      expect(
+        skipTarget(
+          trackIndex: 0,
+          positionMs: 10000,
+          deltaMs: -30000,
+          trackDurationsMs: durations,
+        ),
+        (trackIndex: 0, positionMs: 0),
+      );
+      expect(
+        skipTarget(
+          trackIndex: 2,
+          positionMs: 80000,
+          deltaMs: 30000,
+          trackDurationsMs: durations,
+        ),
+        (trackIndex: 2, positionMs: 90000),
+      );
+    });
+
+    test('a single-stream book is one track', () {
+      expect(
+        skipTarget(
+          trackIndex: 0,
+          positionMs: 100000,
+          deltaMs: -30000,
+          trackDurationsMs: const [3600000],
+        ),
+        (trackIndex: 0, positionMs: 70000),
+      );
+    });
+  });
+
   group('trackRelativeMs', () {
     test('subtracts the track start for a folder-based book', () {
       expect(
