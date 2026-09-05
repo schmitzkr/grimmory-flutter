@@ -6,6 +6,7 @@ import '../../core/api/errors.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/empty_state.dart';
 import '../auth/current_user_provider.dart';
+import '../downloads/download_manager.dart';
 import 'continue_listening_section.dart';
 import 'continue_reading_section.dart';
 import 'dashboard.dart';
@@ -30,6 +31,9 @@ class HomeTab extends ConsumerWidget {
     return AsyncValueView(
       value: libraries,
       onRetry: () => ref.invalidate(librariesProvider),
+      // Offline, every row above would fail; downloaded audiobooks still
+      // play, so the error state points there instead of dead-ending.
+      errorAction: const _DownloadsWhileOffline(),
       data: (items) {
         if (items.isEmpty) return const EmptyState('No libraries found.');
         final scrollers = ref.watch(dashboardConfigProvider);
@@ -84,6 +88,32 @@ class HomeTab extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _DownloadsWhileOffline extends ConsumerWidget {
+  const _DownloadsWhileOffline();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(downloadManagerProvider).value?.length ?? 0;
+    if (count == 0) return const SizedBox.shrink();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Downloaded audiobooks still play without a connection.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        FilledButton.tonalIcon(
+          onPressed: () => context.push('/downloads'),
+          icon: const Icon(Icons.download_done),
+          label: Text('Your downloads ($count)'),
+        ),
+      ],
     );
   }
 }
