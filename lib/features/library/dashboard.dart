@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
@@ -10,7 +9,6 @@ import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
 import 'continue_listening_section.dart';
 import 'continue_reading_section.dart';
-import 'libraries_screen.dart' show selectedLibraryFilterProvider;
 import 'recently_added_section.dart';
 
 /// The web dashboard's `DEFAULT_MAX_ITEMS` / `MAX_ITEMS`: the most books a
@@ -139,9 +137,9 @@ final dashboardConfigProvider = FutureProvider<List<DashboardScroller>>((
   return normalizeDashboard(config);
 });
 
-/// "Discover Something New", scoped like Recently Added to the Home tab's
-/// library filter. Twice the row length is requested so the status
-/// exclusion in [discoverPick] still leaves a full row.
+/// "Discover Something New" across every library (the family key is kept
+/// for a per-library variant). Twice the row length is requested so the
+/// status exclusion in [discoverPick] still leaves a full row.
 final discoverBooksProvider = FutureProvider.family<List<Book>, int?>((
   ref,
   libraryId,
@@ -241,14 +239,13 @@ class DashboardScrollerView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final libraryId = ref.watch(selectedLibraryFilterProvider);
     final kind = scroller.kind!;
     final max = scroller.maxItems ?? dashboardMaxItems;
     final AsyncValue<List<Book>> raw = switch (kind) {
       ScrollerType.lastListened => ref.watch(continueListeningProvider),
       ScrollerType.lastRead => ref.watch(continueReadingProvider),
-      ScrollerType.latestAdded => ref.watch(recentlyAddedProvider(libraryId)),
-      ScrollerType.random => ref.watch(discoverBooksProvider(libraryId)),
+      ScrollerType.latestAdded => ref.watch(recentlyAddedProvider(null)),
+      ScrollerType.random => ref.watch(discoverBooksProvider(null)),
       ScrollerType.magicShelf => ref.watch(
         magicShelfScrollerProvider(scroller.magicShelfId!),
       ),
@@ -290,15 +287,6 @@ class DashboardScrollerView extends ConsumerWidget {
                   ],
                 ),
               ),
-              // Recently Added caps out at one row, so a Home tab scoped to
-              // one library still needs a way into that library's full,
-              // paginated, filterable contents.
-              if (kind == ScrollerType.latestAdded && libraryId != null)
-                TextButton.icon(
-                  onPressed: () => context.push('/libraries/$libraryId'),
-                  icon: const Icon(Icons.arrow_forward, size: 16),
-                  label: const Text('View full library'),
-                ),
             ],
           ),
         ),

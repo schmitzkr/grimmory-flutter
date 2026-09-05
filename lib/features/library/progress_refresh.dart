@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/misc.dart' show ProviderBase;
 import '../book/book_detail_screen.dart' show bookProvider;
 import 'continue_listening_section.dart' show continueListeningProvider;
 import 'continue_reading_section.dart' show continueReadingProvider;
-import 'libraries_screen.dart' show selectedLibraryFilterProvider;
 import 'library_detail_screen.dart' show libraryBooksProvider;
 import 'recently_added_section.dart' show recentlyAddedProvider;
 
@@ -43,8 +42,6 @@ void refreshProgressConsumers(
   recompute(bookProvider(bookId));
   recompute(continueReadingProvider);
   recompute(continueListeningProvider);
-  recompute(
-    recentlyAddedProvider(container.read(selectedLibraryFilterProvider)),
-  );
+  recompute(recentlyAddedProvider(null));
   container.invalidate(libraryBooksProvider);
 }

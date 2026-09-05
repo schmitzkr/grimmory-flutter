@@ -5,7 +5,6 @@ import 'package:grimmory/core/api/models.dart';
 import 'package:grimmory/features/book/book_detail_screen.dart';
 import 'package:grimmory/features/library/continue_listening_section.dart';
 import 'package:grimmory/features/library/continue_reading_section.dart';
-import 'package:grimmory/features/library/libraries_screen.dart';
 import 'package:grimmory/features/library/library_detail_screen.dart';
 import 'package:grimmory/features/library/progress_refresh.dart';
 import 'package:grimmory/features/library/recently_added_section.dart';
@@ -93,15 +92,14 @@ void main() {
     expect(calls['book:2'], 2);
   });
 
-  test('targets the Recently Added grid for the selected library', () {
-    container.read(selectedLibraryFilterProvider.notifier).select(7);
+  test('targets the unscoped Recently Added row the Home tab shows', () {
     container.read(recentlyAddedProvider(7));
     container.read(recentlyAddedProvider(null));
 
     refreshProgressConsumers(container, bookId: 1);
 
-    expect(calls['recentlyAdded:7'], 2);
-    expect(calls['recentlyAdded:null'], 1);
+    expect(calls['recentlyAdded:null'], 2);
+    expect(calls['recentlyAdded:7'], 1);
   });
 
   test('marks library grids dirty so they refetch on their next read', () {
