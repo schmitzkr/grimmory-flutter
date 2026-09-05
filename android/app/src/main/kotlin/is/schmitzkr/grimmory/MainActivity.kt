@@ -108,7 +108,14 @@ class MainActivity : AudioServiceActivity() {
             // a second, separate process alongside it -- two copies running
             // at once. The delay just gives the installer activity a moment
             // to actually launch before this process exits.
+            //
+            // Killing the process alone still left this activity's task in
+            // Recents (a dead task card the installer's "Open" then sits
+            // beside as a second GrimReader), so the task is finished and
+            // removed first — nothing of the old install survives to be
+            // duplicated.
             Handler(Looper.getMainLooper()).postDelayed({
+                finishAndRemoveTask()
                 Process.killProcess(Process.myPid())
             }, 1000)
         } else {

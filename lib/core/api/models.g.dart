@@ -55,6 +55,9 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   primaryFileType: json['primaryFileType'] as String?,
   readProgress: (json['readProgress'] as num?)?.toDouble(),
   readStatus: json['readStatus'] as String?,
+  lastReadTime: json['lastReadTime'] == null
+      ? null
+      : DateTime.parse(json['lastReadTime'] as String),
   files:
       (json['files'] as List<dynamic>?)
           ?.map((e) => BookFile.fromJson(e as Map<String, dynamic>))
@@ -79,6 +82,7 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'primaryFileType': instance.primaryFileType,
   'readProgress': instance.readProgress,
   'readStatus': instance.readStatus,
+  'lastReadTime': instance.lastReadTime?.toIso8601String(),
   'files': instance.files,
 };
 

@@ -1,4 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Declared explicitly on purpose. Flutter's debug/profile manifests
+         add INTERNET automatically, release builds do not — and until
+         v0.11.12 the release APK only had it because a transitive plugin
+         (jni_flutter, via the old flutter_appauth-based OIDC stack)
+         happened to declare it. Dropping that dependency shipped a
+         release that could not open a single connection. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
