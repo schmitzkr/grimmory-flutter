@@ -7,6 +7,7 @@ import '../../core/utils/duration_format.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/empty_state.dart';
 import '../player/playback_provider.dart';
+import '../../core/widgets/sheet_header.dart';
 
 /// autoDispose: bookmarks are edited from the web too, so each sheet opens
 /// on a fresh list instead of whatever this process fetched first.
@@ -92,10 +93,7 @@ class BookmarksSheet extends ConsumerWidget {
         expand: false,
         builder: (context, scrollController) => Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Bookmarks', style: TextStyle(fontSize: 18)),
-            ),
+            const SheetHeader('Bookmarks'),
             ListTile(
               leading: const Icon(Icons.add),
               title: const Text('Add bookmark at current position'),

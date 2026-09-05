@@ -37,9 +37,8 @@ class UpdateBanner extends ConsumerWidget {
                 child: Text(
                   'Update available: v${release.version} — tap to see '
                   "what's new",
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colors.onPrimaryContainer,
-                    fontSize: 13,
                   ),
                 ),
               ),

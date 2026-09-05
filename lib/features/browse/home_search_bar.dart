@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,6 +7,9 @@ import '../../core/api/errors.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/book_grid.dart';
 import 'search_debouncer.dart';
+import 'search_history.dart';
+
+const _historyKey = 'recent_searches';
 
 /// Search, promoted to a persistent Material 3 search bar living in
 /// [HomeScreen]'s AppBar title — reachable from every tab instead of being
@@ -31,12 +36,35 @@ class _HomeSearchBarState extends ConsumerState<HomeSearchBar> {
     super.dispose();
   }
 
+  List<String> get _history =>
+      ref.read(sharedPrefsProvider).getStringList(_historyKey) ?? const [];
+
+  Future<void> _remember(String query) async {
+    final next = rememberSearch(_history, query);
+    await ref.read(sharedPrefsProvider).setStringList(_historyKey, next);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SearchAnchor.bar(
       searchController: _searchController,
       barHintText: 'Search by title, author, narrator…',
       barElevation: const WidgetStatePropertyAll(0),
+      // A clear button while there is text — the view's field has none of
+      // its own, so emptying a query meant backspacing through it.
+      viewTrailing: [
+        ValueListenableBuilder(
+          valueListenable: _searchController,
+          builder: (context, value, _) => value.text.isEmpty
+              ? const SizedBox.shrink()
+              : IconButton(
+                  tooltip: 'Clear',
+                  icon: const Icon(Icons.close),
+                  onPressed: _searchController.clear,
+                ),
+        ),
+      ],
+      onSubmitted: (query) => _remember(query),
       suggestionsBuilder: (context, controller) => _buildResults(controller),
     );
   }
@@ -44,10 +72,31 @@ class _HomeSearchBarState extends ConsumerState<HomeSearchBar> {
   Future<Iterable<Widget>> _buildResults(SearchController controller) async {
     final query = controller.text.trim();
     if (query.isEmpty) {
-      return const [
-        Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(child: Text('Start typing to search.')),
+      final history = _history;
+      if (history.isEmpty) {
+        return const [
+          Padding(
+            padding: EdgeInsets.all(24),
+            child: Center(child: Text('Start typing to search.')),
+          ),
+        ];
+      }
+      return [
+        for (final past in history)
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: Text(past),
+            onTap: () => controller.text = past,
+          ),
+        ListTile(
+          leading: const Icon(Icons.delete_sweep_outlined),
+          title: const Text('Clear search history'),
+          onTap: () async {
+            await ref.read(sharedPrefsProvider).remove(_historyKey);
+            // Re-run the (empty) query so the list disappears.
+            controller.text = ' ';
+            controller.clear();
+          },
         ),
       ];
     }
@@ -67,7 +116,18 @@ class _HomeSearchBarState extends ConsumerState<HomeSearchBar> {
           ),
         ];
       }
+      // A query that produced results is worth remembering.
+      unawaited(_remember(query));
       return [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Text(
+            '${results.length} ${results.length == 1 ? 'result' : 'results'}',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
         BookGrid(
           books: results,
           shrinkWrap: true,

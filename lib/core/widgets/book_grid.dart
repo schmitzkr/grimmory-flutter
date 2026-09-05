@@ -32,8 +32,11 @@ class BookGrid extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       shrinkWrap: shrinkWrap,
       physics: physics,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      // Columns follow the width: two on a phone, more on a tablet, a
+      // foldable's inner screen or in landscape — a fixed two columns made
+      // covers enormous there.
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 200,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         // Tall enough for a 2:3 cover plus two lines of text; a square

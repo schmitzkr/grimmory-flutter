@@ -8,6 +8,7 @@ import '../../core/widgets/book_grid.dart';
 import '../../core/widgets/empty_state.dart';
 import '../player/mini_player.dart';
 import 'libraries_provider.dart';
+import '../../core/widgets/sheet_header.dart';
 
 /// A sort choice pairs a server-recognized [sort] key with a [dir]ection —
 /// see `ApiClient.getLibraryBooks`'s doc comment for the full confirmed set
@@ -195,6 +196,7 @@ class _LibraryBooksViewState extends ConsumerState<LibraryBooksView> {
                       : Icons.category,
                   label: _type.label,
                   active: _type != LibraryTypeFilter.all,
+                  menu: true,
                 ),
               ),
               const SizedBox(width: 4),
@@ -222,7 +224,11 @@ class _LibraryBooksViewState extends ConsumerState<LibraryBooksView> {
                   for (final option in LibrarySort.values)
                     PopupMenuItem(value: option, child: Text(option.label)),
                 ],
-                child: _ToolbarChip(icon: Icons.sort, label: _sort.label),
+                child: _ToolbarChip(
+                  icon: Icons.sort,
+                  label: _sort.label,
+                  menu: true,
+                ),
               ),
             ],
           ),
@@ -268,12 +274,16 @@ class _ToolbarChip extends StatelessWidget {
     required this.icon,
     required this.label,
     this.active = false,
+    this.menu = false,
     this.onClear,
   });
 
   final IconData icon;
   final String label;
   final bool active;
+
+  /// Opens a menu on tap — shown with a dropdown caret so it reads as one.
+  final bool menu;
   final VoidCallback? onClear;
 
   @override
@@ -281,9 +291,16 @@ class _ToolbarChip extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final color = active ? scheme.primary : scheme.onSurfaceVariant;
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 200, minHeight: 44),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+      constraints: const BoxConstraints(maxWidth: 220, minHeight: 40),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.only(left: 10, right: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: active ? scheme.primary : scheme.outlineVariant,
+          ),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -298,6 +315,7 @@ class _ToolbarChip extends StatelessWidget {
                 ).textTheme.labelLarge?.copyWith(color: color),
               ),
             ),
+            if (menu) Icon(Icons.arrow_drop_down, size: 20, color: color),
             if (onClear != null)
               IconButton(
                 tooltip: 'Clear filter',
@@ -331,10 +349,7 @@ class _AuthorFilterSheet extends ConsumerWidget {
         expand: false,
         builder: (context, scrollController) => Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Filter by author', style: TextStyle(fontSize: 18)),
-            ),
+            const SheetHeader('Filter by author'),
             Expanded(
               child: AsyncValueView(
                 value: options,
