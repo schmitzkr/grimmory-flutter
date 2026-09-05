@@ -447,6 +447,57 @@ void main() {
     });
   });
 
+  group('read status and rating', () {
+    test('status goes to /status as the enum name', () async {
+      await client.updateReadStatus(7, 'READ');
+      final request = adapter.requests.single;
+      expect(request.method, 'PUT');
+      expect(request.path, '/app/books/7/status');
+      expect(request.data, {'status': 'READ'});
+    });
+
+    test('rating goes to /rating as an integer', () async {
+      await client.updatePersonalRating(7, 4);
+      final request = adapter.requests.single;
+      expect(request.path, '/app/books/7/rating');
+      expect(request.data, {'rating': 4});
+    });
+  });
+
+  group('read status and rating', () {
+    test('status goes to /status as the enum name', () async {
+      await client.updateReadStatus(7, 'READ');
+      final request = adapter.requests.single;
+      expect(request.method, 'PUT');
+      expect(request.path, '/app/books/7/status');
+      expect(request.data, {'status': 'READ'});
+    });
+
+    test('rating goes to /rating as an integer', () async {
+      await client.updatePersonalRating(7, 4);
+      final request = adapter.requests.single;
+      expect(request.path, '/app/books/7/rating');
+      expect(request.data, {'rating': 4});
+    });
+  });
+
+  group('read status and rating', () {
+    test('status goes to /status as the enum name', () async {
+      await client.updateReadStatus(7, 'READ');
+      final request = adapter.requests.single;
+      expect(request.method, 'PUT');
+      expect(request.path, '/app/books/7/status');
+      expect(request.data, {'status': 'READ'});
+    });
+
+    test('rating goes to /rating as an integer', () async {
+      await client.updatePersonalRating(7, 4);
+      final request = adapter.requests.single;
+      expect(request.path, '/app/books/7/rating');
+      expect(request.data, {'rating': 4});
+    });
+  });
+
   group('comic pages', () {
     test('lists page numbers filtered by bookType', () async {
       adapter.handler = (_) => _json([1, 2, 3]);

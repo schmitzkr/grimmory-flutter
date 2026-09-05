@@ -691,6 +691,19 @@ class ApiClient {
     );
   }
 
+  /// `PUT /app/books/{id}/status` — one of Grimmory's `ReadStatus` values
+  /// (UNREAD, READING, RE_READING, READ, PARTIALLY_READ, PAUSED, WONT_READ,
+  /// ABANDONED, UNSET). Also what the web's status menu calls.
+  Future<void> updateReadStatus(int bookId, String status) async {
+    await _dio.put('/app/books/$bookId/status', data: {'status': status});
+  }
+
+  /// `PUT /app/books/{id}/rating` — the personal rating, 1–5 (the server
+  /// rejects anything else with a 400).
+  Future<void> updatePersonalRating(int bookId, int rating) async {
+    await _dio.put('/app/books/$bookId/rating', data: {'rating': rating});
+  }
+
   // ── Comics (CbxReaderController + BookMediaController) ────────────────
 
   /// `GET /cbx/{bookId}/pages` — the page numbers the server can render,
