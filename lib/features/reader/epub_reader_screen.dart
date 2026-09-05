@@ -274,23 +274,22 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
     try {
       final apiClient = ref.read(apiClientProvider);
 
-      // Best-effort: reading still works without the detail (saves just
-      // fall back to the bookId-only shim), but when it *is* available it
-      // both supplies the file id and rules out a book the server can't
-      // serve — `/books/{id}/download` only ever returns the primary file,
-      // and the one per-file download lives under OPDS behind basic auth.
+      // Best-effort: reading still works without the detail (the download
+      // falls back to the primary file and saves to the bookId-only shim),
+      // but when it *is* available it names the exact ebook file to fetch,
+      // so a dual-format book whose primary file is the audiobook still
+      // opens — and a book with no ebook file at all is refused up front.
       Book? book;
       try {
         book = await apiClient.getBook(widget.bookId);
       } catch (_) {}
-      if (book != null && !book.primaryFileIsEbook) {
+      final ebookFileId = book?.ebookFileId;
+      if (book != null && ebookFileId == null && !book.primaryFileIsEbook) {
         if (!mounted) return;
         setState(
           () => _blockedReason =
-              "This book's primary file is a "
-              '${book!.primaryFileType?.toLowerCase() ?? 'non-ebook'} file, '
-              'and Grimmory only serves the primary file to apps. Read it on '
-              'the web, or change the library format priority.',
+              'This book has no ebook file — its only file is '
+              '${book!.primaryFileType?.toLowerCase() ?? 'not an ebook'}.',
         );
         return;
       }
@@ -303,7 +302,11 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       // rather than pulling the whole book down and re-parsing its spine
       // on every open. Retry after an error clears both (see build).
       if (!await file.exists() || await file.length() == 0) {
-        await apiClient.downloadBookFile(widget.bookId, path);
+        await apiClient.downloadBookFile(
+          widget.bookId,
+          path,
+          fileId: ebookFileId,
+        );
         if (await spineCache.exists()) await spineCache.delete();
       }
       final bytes = await file.readAsBytes();

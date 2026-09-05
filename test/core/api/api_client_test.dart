@@ -251,6 +251,25 @@ void main() {
     });
   });
 
+  group('book file download', () {
+    // Dio's download() needs a real response stream; only the URL matters
+    // here, so the fake answers with an empty body and the file is thrown
+    // away.
+    test('fetches a specific file by id, else the primary file', () async {
+      adapter.handler = (_) => ResponseBody.fromString('', 200);
+      final dir = Directory.systemTemp.createTempSync('grimmory-dl');
+      addTearDown(() => dir.deleteSync(recursive: true));
+
+      await client.downloadBookFile(7, '${dir.path}/a.epub', fileId: 71);
+      await client.downloadBookFile(7, '${dir.path}/b.epub');
+
+      expect(adapter.requests.map((r) => r.path), [
+        '/books/7/files/71/download',
+        '/books/7/download',
+      ]);
+    });
+  });
+
   group('dashboard', () {
     // The web stores its dashboard layout in the user's settings on
     // /users/me; the phone reads the same field so the two agree.

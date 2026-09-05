@@ -69,6 +69,7 @@ class _BookDetailBody extends ConsumerWidget {
     final isAudiobook = book.primaryFileType == 'AUDIOBOOK';
     final isEpub = book.primaryFileType == 'EPUB';
     final isComic = book.primaryFileType == 'CBX';
+    final isPdf = book.primaryFileType == 'PDF';
     final audiobookInfo = isAudiobook
         ? ref.watch(audiobookInfoProvider(book.id))
         : null;
@@ -209,6 +210,17 @@ class _BookDetailBody extends ConsumerWidget {
           FilledButton.icon(
             onPressed: () => context.push('/books/${book.id}/comic'),
             icon: const Icon(Icons.auto_stories_outlined),
+            label: Text(
+              (book.normalizedReadProgress ?? 0) > 0
+                  ? 'Continue Reading'
+                  : 'Start Reading',
+            ),
+          ),
+        ] else if (isPdf) ...[
+          _ReadingProgress(book: book),
+          FilledButton.icon(
+            onPressed: () => context.push('/books/${book.id}/pdf'),
+            icon: const Icon(Icons.picture_as_pdf_outlined),
             label: Text(
               (book.normalizedReadProgress ?? 0) > 0
                   ? 'Continue Reading'
