@@ -20,11 +20,9 @@ dependencies:
   dio: ^5.8.0+1
 
   # Token / server-URL storage
-  # Pinned below 11: flutter_secure_storage 11 requires compileSdk 37,
-  # which AGP 8.11 (this project's) cannot resolve against the SDK 37.0
-  # platform package — bump together with the AGP 9 / Gradle 9.1 / Kotlin
-  # 2.3 toolchain upgrade, not on its own.
-  flutter_secure_storage: ^10.3.1
+  # v11 requires compileSdk 37 — set explicitly in android/app/build.gradle.kts
+  # (Flutter 3.47's own default is 36) on the AGP 9.1 toolchain.
+  flutter_secure_storage: ^11.0.0
   shared_preferences: ^2.5.2
 
   # OIDC login (Authentik or any IdP a self-hosted Grimmory instance is wired
@@ -68,6 +66,20 @@ dependencies:
   cupertino_icons: ^1.0.8
   # Private, permission-free storage location for offline audiobook downloads
   path_provider: ^2.1.5
+
+# flutter_epub_viewer 2.0.0 depends on flutter_inappwebview ^6.1.5, whose
+# Android plugin (flutter_inappwebview_android 1.1.3) still calls
+# getDefaultProguardFile('proguard-android.txt') — removed in AGP 9, so the
+# debug build fails while evaluating that plugin. The 1.2.0-beta line already
+# switched to proguard-android-optimize.txt; it needs the matching
+# platform-interface and app-facing betas. Drop all three overrides once
+# flutter_inappwebview 6.2.0 (or a 6.1.x with the fix) ships stable and
+# flutter_epub_viewer picks it up. Only this plugin in the lockfile uses the
+# removed file (checked 2026-09-05).
+dependency_overrides:
+  flutter_inappwebview: 6.2.0-beta.3
+  flutter_inappwebview_android: 1.2.0-beta.3
+  flutter_inappwebview_platform_interface: 1.4.0-beta.3
 
 dev_dependencies:
   flutter_test:
