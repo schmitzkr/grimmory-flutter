@@ -6,6 +6,7 @@ import '../browse/authors_screen.dart';
 import '../browse/home_search_bar.dart';
 import '../browse/series_screen.dart';
 import '../browse/shelves_screen.dart';
+import '../downloads/downloads_screen.dart' show DownloadsAction;
 import '../player/mini_player.dart';
 import 'libraries_screen.dart';
 
@@ -42,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const HomeSearchBar(),
         actions: [
+          const DownloadsAction(),
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),

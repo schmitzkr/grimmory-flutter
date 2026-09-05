@@ -14,12 +14,17 @@ class AsyncValueView<T> extends StatelessWidget {
     required this.data,
     required this.onRetry,
     this.errorMessage,
+    this.errorAction,
     super.key,
   });
 
   final AsyncValue<T> value;
   final Widget Function(T data) data;
   final VoidCallback onRetry;
+
+  /// Shown under Retry in the error state — a way somewhere useful when
+  /// retrying won't help (the Home tab offers the downloads while offline).
+  final Widget? errorAction;
 
   /// Fixed copy for the error state instead of the mapped API error — for
   /// secondary content (a bookmark list, a filter sheet) where the exact
@@ -34,6 +39,7 @@ class AsyncValueView<T> extends StatelessWidget {
       error: (error, _) => ErrorRetryView(
         message: errorMessage ?? friendlyApiError(error),
         onRetry: onRetry,
+        action: errorAction,
       ),
     );
   }
@@ -45,11 +51,13 @@ class ErrorRetryView extends StatelessWidget {
   const ErrorRetryView({
     required this.message,
     required this.onRetry,
+    this.action,
     super.key,
   });
 
   final String message;
   final VoidCallback onRetry;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +70,7 @@ class ErrorRetryView extends StatelessWidget {
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 12),
             FilledButton(onPressed: onRetry, child: const Text('Retry')),
+            if (action != null) ...[const SizedBox(height: 8), action!],
           ],
         ),
       ),

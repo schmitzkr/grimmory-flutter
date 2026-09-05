@@ -13,6 +13,7 @@ import '../bookmarks/epub_bookmarks_sheet.dart';
 import '../browse/authors_screen.dart' show authorsListProvider;
 import '../downloads/download_manager.dart';
 import '../downloads/download_models.dart';
+import '../downloads/downloads_screen.dart' show confirmRemoveDownload;
 import '../library/progress_refresh.dart';
 import '../onboarding/server_url_provider.dart';
 import '../player/mini_player.dart';
@@ -743,7 +744,11 @@ class _DownloadButton extends ConsumerWidget {
         );
       case DownloadStatus.complete:
         return OutlinedButton.icon(
-          onPressed: () => notifier.delete(book.id),
+          onPressed: () async {
+            if (await confirmRemoveDownload(context, record!)) {
+              await notifier.delete(book.id);
+            }
+          },
           icon: const Icon(Icons.delete_outline),
           label: const Text('Downloaded — remove'),
         );
