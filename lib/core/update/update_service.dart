@@ -130,6 +130,31 @@ final appReleasesProvider = FutureProvider.autoDispose<List<AppRelease>>(
   (ref) => fetchRecentReleases(),
 );
 
+/// The build that is actually running — `pubspec.yaml`'s `version`
+/// (`0.11.18`) and build number (`41`) as the installed APK reports them.
+/// Never changes while the process lives, so it is read once.
+final installedVersionProvider = FutureProvider<InstalledVersion>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return InstalledVersion(version: info.version, buildNumber: info.buildNumber);
+});
+
+class InstalledVersion {
+  const InstalledVersion({required this.version, required this.buildNumber});
+
+  final String version;
+  final String buildNumber;
+
+  /// `v0.11.18 (41)`; just `v0.11.18` when the build number is blank.
+  String get label => formatInstalledVersion(version, buildNumber);
+
+  /// Whether a release entry is this build — release tags carry the
+  /// version alone, without the build number.
+  bool matches(AppRelease release) => release.version == version;
+}
+
+String formatInstalledVersion(String version, String buildNumber) =>
+    buildNumber.isEmpty ? 'v$version' : 'v$version ($buildNumber)';
+
 sealed class UpdateInstallResult {
   const UpdateInstallResult();
 }

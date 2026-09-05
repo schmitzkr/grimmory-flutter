@@ -37,6 +37,10 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.new_releases_outlined),
             title: const Text("What's new"),
+            subtitle: Text(switch (ref.watch(installedVersionProvider).value) {
+              final v? => 'Installed ${v.label}',
+              null => 'Installed version…',
+            }),
             onTap: () => showWhatsNewSheet(context, ref),
           ),
           const Divider(),

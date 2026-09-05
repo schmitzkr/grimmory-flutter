@@ -204,6 +204,7 @@ class _WhatsNewSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final releases = ref.watch(appReleasesProvider);
+    final installed = ref.watch(installedVersionProvider).value;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.5,
@@ -220,6 +221,14 @@ class _WhatsNewSheet extends ConsumerWidget {
                   "What's new",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
+                const Spacer(),
+                if (installed != null)
+                  Text(
+                    'Installed ${installed.label}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -239,8 +248,11 @@ class _WhatsNewSheet extends ConsumerWidget {
                   ),
                   itemCount: list.length,
                   separatorBuilder: (_, _) => const Divider(height: 32),
-                  itemBuilder: (_, i) =>
-                      _ReleaseEntry(release: list[i], isLatest: i == 0),
+                  itemBuilder: (_, i) => _ReleaseEntry(
+                    release: list[i],
+                    isLatest: i == 0,
+                    isInstalled: installed?.matches(list[i]) ?? false,
+                  ),
                 );
               },
             ),
@@ -251,11 +263,44 @@ class _WhatsNewSheet extends ConsumerWidget {
   }
 }
 
+class _Badge extends StatelessWidget {
+  const _Badge(this.text, {required this.background, required this.foreground});
+
+  final String text;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: foreground),
+      ),
+    );
+  }
+}
+
 class _ReleaseEntry extends StatelessWidget {
-  const _ReleaseEntry({required this.release, required this.isLatest});
+  const _ReleaseEntry({
+    required this.release,
+    required this.isLatest,
+    required this.isInstalled,
+  });
 
   final AppRelease release;
   final bool isLatest;
+
+  /// This entry is the build that is running — so the reader can see at a
+  /// glance how far behind (or not) the phone is.
+  final bool isInstalled;
 
   @override
   Widget build(BuildContext context) {
@@ -274,18 +319,18 @@ class _ReleaseEntry extends StatelessWidget {
             ),
             if (isLatest) ...[
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'latest',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                ),
+              _Badge(
+                'latest',
+                background: theme.colorScheme.primaryContainer,
+                foreground: theme.colorScheme.onPrimaryContainer,
+              ),
+            ],
+            if (isInstalled) ...[
+              const SizedBox(width: 8),
+              _Badge(
+                'installed',
+                background: theme.colorScheme.secondaryContainer,
+                foreground: theme.colorScheme.onSecondaryContainer,
               ),
             ],
           ],
