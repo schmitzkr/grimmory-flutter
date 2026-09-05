@@ -10,11 +10,7 @@ import '../../core/providers.dart';
 import '../book/book_detail_screen.dart' show bookProvider;
 import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
-import 'page_progress.dart';
-
-/// Debounce for the passive per-page saves — flipping through a few pages
-/// collapses into one PUT; the exit path always makes the final save.
-const _saveDebounce = Duration(milliseconds: 1500);
+import 'page_progress_saver.dart';
 
 /// Comic (CBZ/CBR/CB7 — Grimmory's `CBX`) reader. Nothing is downloaded or
 /// unpacked on the device: the server lists the readable pages
@@ -23,7 +19,7 @@ const _saveDebounce = Duration(milliseconds: 1500);
 /// viewer over the same authenticated image loading `BookCover` uses.
 ///
 /// Progress is the 1-based page number plus a percentage computed the way
-/// the web reader does ([pagePercentage]); saves go through the same
+/// the web reader does; saves go through [PageProgressSaver] onto the same
 /// file-level progress path as the EPUB reader.
 class ComicReaderScreen extends ConsumerStatefulWidget {
   const ComicReaderScreen({required this.bookId, super.key});
@@ -37,18 +33,10 @@ class ComicReaderScreen extends ConsumerStatefulWidget {
 class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
   List<int>? _pages;
   PageController? _controller;
+  PageProgressSaver? _saver;
   int _index = 0;
-  int? _bookFileId;
   Object? _error;
   bool _isExiting = false;
-  String? _lastSyncError;
-
-  // Passive-save plumbing — same shape as the EPUB reader: at most one save
-  // on the wire, the newest page wins, the exit save waits for any in-flight
-  // one so it can't be overtaken.
-  int? _pendingIndex;
-  Timer? _saveTimer;
-  Future<void>? _inFlightSave;
 
   @override
   void initState() {
@@ -58,7 +46,7 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
 
   @override
   void dispose() {
-    _saveTimer?.cancel();
+    _saver?.dispose();
     _controller?.dispose();
     super.dispose();
   }
@@ -89,8 +77,18 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
       setState(() {
         _pages = pages;
         _index = initial;
-        _bookFileId = bookFileId;
         _controller = PageController(initialPage: initial);
+        _saver = PageProgressSaver(
+          pageCount: pages.length,
+          pageNumberAt: (index) => pages[index],
+          persist: (progress) => apiClient.updatePageProgress(
+            widget.bookId,
+            progress,
+            format: PageFormat.cbx,
+            bookFileId: bookFileId,
+          ),
+          onError: _showSyncFailedSnackBar,
+        );
       });
       _precacheAround(initial);
     } catch (e) {
@@ -102,9 +100,7 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
   void _onPageChanged(int index) {
     setState(() => _index = index);
     _precacheAround(index);
-    _pendingIndex = index;
-    _saveTimer?.cancel();
-    _saveTimer = Timer(_saveDebounce, _flushPendingSave);
+    _saver?.pageChanged(index);
   }
 
   /// The next page is what a reader is about to look at; warming it keeps
@@ -131,52 +127,12 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
     }
   }
 
-  void _flushPendingSave() {
-    if (_inFlightSave != null) return;
-    final index = _pendingIndex;
-    if (index == null) return;
-    _pendingIndex = null;
-    _inFlightSave = _persist(index)
-        .then((ok) {
-          if (!ok) _showSyncFailedSnackBar();
-        })
-        .whenComplete(() {
-          _inFlightSave = null;
-          if (_pendingIndex != null && mounted) _flushPendingSave();
-        });
-  }
-
-  Future<bool> _persist(int index) async {
-    final pages = _pages;
-    if (pages == null || pages.isEmpty) return true;
-    try {
-      await ref
-          .read(apiClientProvider)
-          .updatePageProgress(
-            widget.bookId,
-            PageProgress(
-              page: pages[index],
-              percentage: pagePercentage(
-                pageIndex: index,
-                pageCount: pages.length,
-              ),
-            ),
-            format: PageFormat.cbx,
-            bookFileId: _bookFileId,
-          );
-      return true;
-    } catch (e) {
-      _lastSyncError = friendlyApiError(e);
-      return false;
-    }
-  }
-
-  void _showSyncFailedSnackBar() {
+  void _showSyncFailedSnackBar(Object error) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Could not sync reading progress: ${_lastSyncError ?? 'unknown error'}',
+          'Could not sync reading progress: ${friendlyApiError(error)}',
         ),
         duration: const Duration(seconds: 5),
       ),
@@ -189,13 +145,11 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
   Future<void> _exit() async {
     if (_isExiting) return;
     setState(() => _isExiting = true);
-    _saveTimer?.cancel();
-    _pendingIndex = null;
-    await _inFlightSave;
-    if (_pages != null && _pages!.isNotEmpty) {
-      final ok = await _persist(_index);
+    final saver = _saver;
+    if (saver != null && (_pages?.isNotEmpty ?? false)) {
+      final ok = await saver.saveNow(_index);
+      // The snackbar is already up (onError); give it a moment to be read.
       if (!ok && mounted) {
-        _showSyncFailedSnackBar();
         await Future.delayed(const Duration(milliseconds: 1200));
       }
     }
@@ -298,15 +252,7 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
                 label: 'Page ${index + 1} of ${pages.length}',
               ),
             ),
-            if (_isExiting)
-              Positioned.fill(
-                child: AbsorbPointer(
-                  child: ColoredBox(
-                    color: Colors.black54,
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                ),
-              ),
+            if (_isExiting) const SavingOverlay(),
           ],
         ),
         bottomNavigationBar: Column(
@@ -326,6 +272,24 @@ class _ComicReaderScreenState extends ConsumerState<ComicReaderScreen> {
               ),
             const MiniPlayer(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Dims the page and swallows taps while the exit save runs — shared with
+/// the PDF reader.
+class SavingOverlay extends StatelessWidget {
+  const SavingOverlay({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Positioned.fill(
+      child: AbsorbPointer(
+        child: ColoredBox(
+          color: Colors.black54,
+          child: Center(child: CircularProgressIndicator()),
         ),
       ),
     );

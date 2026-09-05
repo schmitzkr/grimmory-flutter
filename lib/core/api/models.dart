@@ -130,10 +130,12 @@ extension BookProgressX on Book {
   }
 
   /// Whether the file Grimmory treats as this book's primary one is an
-  /// ebook. `GET /books/{id}/download` only ever serves the primary file
-  /// (the sole per-file download lives under OPDS, behind basic auth the
-  /// app can't use), so on a dual-format book whose library format priority
-  /// puts the audiobook first, the reader has nothing it can open.
+  /// ebook — what the primary-only `GET /books/{id}/download` would hand
+  /// back. Only consulted as a last resort now: with the book detail in
+  /// hand the readers fetch a specific file by id ([ebookFileId],
+  /// [fileIdFor]) through `ApiClient.downloadBookFile`, so a dual-format
+  /// book whose library format priority puts the audiobook first still
+  /// opens.
   bool get primaryFileIsEbook => _ebookFileTypes.contains(primaryFileType);
 
   /// The `bookFileId` to save EPUB reading progress against: the primary

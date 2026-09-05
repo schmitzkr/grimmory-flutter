@@ -18,6 +18,7 @@ import '../features/player/player_screen.dart';
 import '../features/reader/comic_reader_screen.dart';
 import '../features/reader/epub_reader_args.dart';
 import '../features/reader/epub_reader_screen.dart';
+import '../features/reader/pdf_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
 
 /// Single app-wide router, redirect-gated on [authProvider] and
@@ -118,6 +119,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/books/:id/comic',
         builder: (context, state) =>
             ComicReaderScreen(bookId: int.parse(state.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: '/books/:id/pdf',
+        builder: (context, state) =>
+            PdfReaderScreen(bookId: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/settings',

@@ -384,13 +384,27 @@ class ApiClient {
     return Book.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  /// Downloads the book's raw file (whatever format it actually is — EPUB,
-  /// PDF, etc.) to [destinationPath], via `BookController.downloadBook`
-  /// (not app-namespaced; requires the account's `canDownload()` permission
-  /// or admin). Runs through this class's own `_dio`, so the auth
-  /// interceptor attaches the bearer token automatically.
-  Future<void> downloadBookFile(int bookId, String destinationPath) async {
-    await _dio.download('/books/$bookId/download', destinationPath);
+  /// Downloads one of the book's raw files to [destinationPath], through
+  /// this class's own `_dio` so the bearer token goes with it.
+  ///
+  /// With [fileId], `GET /books/{bookId}/files/{fileId}/download`
+  /// (`AdditionalFileController`, JWT + book-access check, present since
+  /// v3.3.3): any file attached to the book, book-format or not — its
+  /// repository query filters on nothing but the two ids. That is how a
+  /// dual-format book whose primary file is the audiobook still gives up
+  /// its EPUB or PDF. Without [fileId], the older
+  /// `GET /books/{bookId}/download` (`BookController`), which only ever
+  /// serves the *primary* file — kept for the case where the book detail
+  /// (and so the file ids) could not be fetched.
+  Future<void> downloadBookFile(
+    int bookId,
+    String destinationPath, {
+    int? fileId,
+  }) async {
+    final path = fileId == null
+        ? '/books/$bookId/download'
+        : '/books/$bookId/files/$fileId/download';
+    await _dio.download(path, destinationPath);
   }
 
   /// Streams [url] (absolute — e.g. [streamUrl]/[trackStreamUrl]) to
