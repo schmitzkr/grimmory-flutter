@@ -612,10 +612,9 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
               onTapLeft: () => _handlePageTurn(_controller.prev),
               onTapRight: () => _handlePageTurn(_controller.next),
               onTap: _handleAnyTap,
+              // Swipe down still opens bookmarks; swipe up used to open the
+              // chapter list until that got a toolbar button.
               onSwipeDown: () => _showBookmarks(context),
-              onSwipeUp: _chapters.isEmpty
-                  ? () {}
-                  : () => _showChapters(context),
               child: EpubViewer(
                 epubController: _controller,
                 epubSource: EpubSource.fromData(_bytes!),
