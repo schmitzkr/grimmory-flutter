@@ -588,10 +588,6 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  /// Kept for the chapter list; same operation as [seekToBookPosition].
-  Future<void> seekToChapterStart(int startTimeMs) =>
-      seekToBookPosition(startTimeMs);
-
   @override
   Future<void> skipToNext() => _player.seekToNext();
 

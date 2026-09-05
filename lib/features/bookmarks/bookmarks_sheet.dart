@@ -48,9 +48,7 @@ Future<void> showBookmarksSheet(
       onTap: (ref, bookmark) {
         final positionMs = bookmark.positionMs;
         if (positionMs == null) return false;
-        // Despite the name this seeks to any book-wide position, chapter
-        // start or not — see GrimmoryAudioHandler.
-        ref.read(audioHandlerProvider).seekToChapterStart(positionMs);
+        ref.read(audioHandlerProvider).seekToBookPosition(positionMs);
         return true;
       },
     ),
