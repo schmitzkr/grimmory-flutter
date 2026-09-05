@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'playback_provider.dart';
+import '../../core/widgets/sheet_header.dart';
 
 /// Not part of the confirmed API surface — standard audiobook-app feature,
 /// cheap to add, no server interaction needed. Flagged as an assumption in
@@ -95,10 +96,7 @@ class _SleepTimerSheet extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text('Sleep timer', style: TextStyle(fontSize: 18)),
-          ),
+          const SheetHeader('Sleep timer'),
           for (final preset in _presets)
             ListTile(
               title: Text('${preset.inMinutes} minutes'),

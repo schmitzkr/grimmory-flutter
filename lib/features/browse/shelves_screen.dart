@@ -66,12 +66,16 @@ class ShelvesTab extends ConsumerWidget {
           ],
           if (regular.isNotEmpty) ...[
             const _SectionHeader('Collections'),
+            // The server has no endpoint to list a regular shelf's books, so
+            // these rows cannot open anything — rendered disabled, and
+            // saying so, rather than looking tappable and doing nothing.
             for (final shelf in regular)
               ListTile(
+                enabled: false,
                 leading: const Icon(Icons.folder_outlined),
                 title: Text(shelf.name),
                 subtitle: Text(
-                  '${shelf.bookCount} ${shelf.bookCount == 1 ? 'book' : 'books'}',
+                  '${shelf.bookCount} ${shelf.bookCount == 1 ? 'book' : 'books'} · browse on the web',
                 ),
                 trailing: shelf.publicShelf ? const _PublicBadge() : null,
               ),

@@ -37,9 +37,18 @@ class AuthorsTab extends ConsumerWidget {
                 // only ask for it when the summary says it exists.
                 leading: author.hasPhoto
                     ? CircleAvatar(
-                        backgroundImage: CachedNetworkImageProvider(
-                          apiClient.authorPhotoUrl(author.id),
-                          headers: apiClient.authHeaders,
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: apiClient.authorPhotoUrl(author.id),
+                            httpHeaders: apiClient.authHeaders,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            // A photo the server lists but cannot serve
+                            // used to leave an empty circle.
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.person_outline),
+                          ),
                         ),
                       )
                     : const CircleAvatar(child: Icon(Icons.person_outline)),

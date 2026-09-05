@@ -18,6 +18,7 @@ import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
 import 'epub_gesture_overlay.dart';
 import 'epub_spine_fractions.dart';
+import '../../core/widgets/sheet_header.dart';
 
 /// EPUB rendering is entirely client-side via `flutter_epub_viewer`
 /// (WebView + epub.js), which parses a real local EPUB file directly —
@@ -835,10 +836,7 @@ class _ChapterList extends StatelessWidget {
         builder: (context, scrollController) => ListView(
           controller: scrollController,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Chapters', style: TextStyle(fontSize: 18)),
-            ),
+            const SheetHeader('Chapters'),
             for (final chapter in chapters) ..._tiles(chapter),
           ],
         ),
