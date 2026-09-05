@@ -22,6 +22,7 @@ class EpubGestureOverlay extends StatefulWidget {
     required this.onSwipeDown,
     this.onSwipeUp,
     this.onTap,
+    this.onTapCenter,
     super.key,
   });
 
@@ -34,6 +35,10 @@ class EpubGestureOverlay extends StatefulWidget {
   /// toolbar button, so an unhandled upward swipe is simply left to the
   /// WebView.
   final VoidCallback? onSwipeUp;
+
+  /// A tap in the middle third — the zone with no page-turn action, so a
+  /// natural place for "show/hide the controls".
+  final VoidCallback? onTapCenter;
   // Fires on every plain tap, in every zone, in addition to (and before)
   // any zone-specific callback above -- including the middle third, which
   // has no zone callback of its own. Lets the reader screen react to "the
@@ -98,9 +103,11 @@ class _EpubGestureOverlayState extends State<EpubGestureOverlay> {
                   widget.onTapLeft();
                 } else if (downPosition.dx > width * 0.7) {
                   widget.onTapRight();
+                } else {
+                  // Middle third: no page-turn action; the page's own
+                  // content (links, selection) still gets the tap too.
+                  widget.onTapCenter?.call();
                 }
-                // Middle third: left for the page's own content (links,
-                // text selection) — no page-turn action here.
               }
             },
           ),
