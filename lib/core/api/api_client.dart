@@ -474,6 +474,11 @@ class ApiClient {
   static String _versioned(String url, String? version) =>
       version == null ? url : '$url?v=${Uri.encodeQueryComponent(version)}';
 
+  /// `BookMediaController` — `GET /media/author/{authorId}/photo`. 404s for
+  /// an author without one, so gate on [Author.hasPhoto] before using it.
+  String authorPhotoUrl(int authorId) =>
+      '${_dio.options.baseUrl}/media/author/$authorId/photo';
+
   // ── Progress (AppBookController — GET/PUT .../progress) ───────────────
   //
   // Grimmory stores progress per *file* now (`UserBookFileProgressEntity`,
