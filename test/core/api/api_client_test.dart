@@ -300,6 +300,8 @@ void main() {
                 'order': 2,
                 'maxItems': null,
                 'magicShelfId': 7,
+                'sortField': 'addedOn',
+                'sortDirection': 'desc',
               },
             ],
           },
@@ -312,6 +314,8 @@ void main() {
       expect(config?.scrollers.first.kind, ScrollerType.lastRead);
       expect(config?.scrollers.first.maxItems, 12);
       expect(config?.scrollers.last.magicShelfId, 7);
+      expect(config?.scrollers.last.sortField, 'addedOn');
+      expect(config?.scrollers.last.sortDirection, 'desc');
       expect(config?.scrollers.last.maxItems, isNull);
     });
 

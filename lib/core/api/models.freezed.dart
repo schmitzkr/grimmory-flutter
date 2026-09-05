@@ -571,7 +571,7 @@ as int,
 /// @nodoc
 mixin _$Book {
 
- int get id; String get title; String? get thumbnailUrl; DateTime? get coverUpdatedOn; DateTime? get audiobookCoverUpdatedOn; int? get primaryFileId; List<String> get authors; String? get seriesName; double? get seriesNumber; int? get libraryId; String? get narrator; String? get description; String? get primaryFileType; double? get readProgress; String? get readStatus; DateTime? get lastReadTime; List<BookFile> get files;
+ int get id; String get title; String? get thumbnailUrl; DateTime? get coverUpdatedOn; DateTime? get audiobookCoverUpdatedOn; int? get primaryFileId; List<String> get authors; String? get seriesName; double? get seriesNumber; int? get libraryId; String? get narrator; String? get description; String? get primaryFileType; double? get readProgress; String? get readStatus; DateTime? get addedOn; DateTime? get lastReadTime; List<BookFile> get files;
 /// Create a copy of Book
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -585,20 +585,20 @@ $BookCopyWith<Book> get copyWith => _$BookCopyWithImpl<Book>(this as Book, _$ide
 @override
 bool operator ==(Object other) {
   final _this = this as Book;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Book&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.thumbnailUrl, _this.thumbnailUrl) || other.thumbnailUrl == _this.thumbnailUrl)&&(identical(other.coverUpdatedOn, _this.coverUpdatedOn) || other.coverUpdatedOn == _this.coverUpdatedOn)&&(identical(other.audiobookCoverUpdatedOn, _this.audiobookCoverUpdatedOn) || other.audiobookCoverUpdatedOn == _this.audiobookCoverUpdatedOn)&&(identical(other.primaryFileId, _this.primaryFileId) || other.primaryFileId == _this.primaryFileId)&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&(identical(other.seriesName, _this.seriesName) || other.seriesName == _this.seriesName)&&(identical(other.seriesNumber, _this.seriesNumber) || other.seriesNumber == _this.seriesNumber)&&(identical(other.libraryId, _this.libraryId) || other.libraryId == _this.libraryId)&&(identical(other.narrator, _this.narrator) || other.narrator == _this.narrator)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.primaryFileType, _this.primaryFileType) || other.primaryFileType == _this.primaryFileType)&&(identical(other.readProgress, _this.readProgress) || other.readProgress == _this.readProgress)&&(identical(other.readStatus, _this.readStatus) || other.readStatus == _this.readStatus)&&(identical(other.lastReadTime, _this.lastReadTime) || other.lastReadTime == _this.lastReadTime)&&const DeepCollectionEquality().equals(other.files, _this.files));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Book&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.thumbnailUrl, _this.thumbnailUrl) || other.thumbnailUrl == _this.thumbnailUrl)&&(identical(other.coverUpdatedOn, _this.coverUpdatedOn) || other.coverUpdatedOn == _this.coverUpdatedOn)&&(identical(other.audiobookCoverUpdatedOn, _this.audiobookCoverUpdatedOn) || other.audiobookCoverUpdatedOn == _this.audiobookCoverUpdatedOn)&&(identical(other.primaryFileId, _this.primaryFileId) || other.primaryFileId == _this.primaryFileId)&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&(identical(other.seriesName, _this.seriesName) || other.seriesName == _this.seriesName)&&(identical(other.seriesNumber, _this.seriesNumber) || other.seriesNumber == _this.seriesNumber)&&(identical(other.libraryId, _this.libraryId) || other.libraryId == _this.libraryId)&&(identical(other.narrator, _this.narrator) || other.narrator == _this.narrator)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.primaryFileType, _this.primaryFileType) || other.primaryFileType == _this.primaryFileType)&&(identical(other.readProgress, _this.readProgress) || other.readProgress == _this.readProgress)&&(identical(other.readStatus, _this.readStatus) || other.readStatus == _this.readStatus)&&(identical(other.addedOn, _this.addedOn) || other.addedOn == _this.addedOn)&&(identical(other.lastReadTime, _this.lastReadTime) || other.lastReadTime == _this.lastReadTime)&&const DeepCollectionEquality().equals(other.files, _this.files));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Book;
-  return Object.hash(runtimeType,_this.id,_this.title,_this.thumbnailUrl,_this.coverUpdatedOn,_this.audiobookCoverUpdatedOn,_this.primaryFileId,const DeepCollectionEquality().hash(_this.authors),_this.seriesName,_this.seriesNumber,_this.libraryId,_this.narrator,_this.description,_this.primaryFileType,_this.readProgress,_this.readStatus,_this.lastReadTime,const DeepCollectionEquality().hash(_this.files));
+  return Object.hash(runtimeType,_this.id,_this.title,_this.thumbnailUrl,_this.coverUpdatedOn,_this.audiobookCoverUpdatedOn,_this.primaryFileId,const DeepCollectionEquality().hash(_this.authors),_this.seriesName,_this.seriesNumber,_this.libraryId,_this.narrator,_this.description,_this.primaryFileType,_this.readProgress,_this.readStatus,_this.addedOn,_this.lastReadTime,const DeepCollectionEquality().hash(_this.files));
 }
 
 @override
 String toString() {
   final _this = this as Book;
-  return 'Book(id: ${_this.id}, title: ${_this.title}, thumbnailUrl: ${_this.thumbnailUrl}, coverUpdatedOn: ${_this.coverUpdatedOn}, audiobookCoverUpdatedOn: ${_this.audiobookCoverUpdatedOn}, primaryFileId: ${_this.primaryFileId}, authors: ${_this.authors}, seriesName: ${_this.seriesName}, seriesNumber: ${_this.seriesNumber}, libraryId: ${_this.libraryId}, narrator: ${_this.narrator}, description: ${_this.description}, primaryFileType: ${_this.primaryFileType}, readProgress: ${_this.readProgress}, readStatus: ${_this.readStatus}, lastReadTime: ${_this.lastReadTime}, files: ${_this.files})';
+  return 'Book(id: ${_this.id}, title: ${_this.title}, thumbnailUrl: ${_this.thumbnailUrl}, coverUpdatedOn: ${_this.coverUpdatedOn}, audiobookCoverUpdatedOn: ${_this.audiobookCoverUpdatedOn}, primaryFileId: ${_this.primaryFileId}, authors: ${_this.authors}, seriesName: ${_this.seriesName}, seriesNumber: ${_this.seriesNumber}, libraryId: ${_this.libraryId}, narrator: ${_this.narrator}, description: ${_this.description}, primaryFileType: ${_this.primaryFileType}, readProgress: ${_this.readProgress}, readStatus: ${_this.readStatus}, addedOn: ${_this.addedOn}, lastReadTime: ${_this.lastReadTime}, files: ${_this.files})';
 }
 
 
@@ -609,7 +609,7 @@ abstract mixin class $BookCopyWith<$Res>  {
   factory $BookCopyWith(Book value, $Res Function(Book) _then) = _$BookCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, String? thumbnailUrl, DateTime? coverUpdatedOn, DateTime? audiobookCoverUpdatedOn, int? primaryFileId, List<String> authors, String? seriesName, double? seriesNumber, int? libraryId, String? narrator, String? description, String? primaryFileType, double? readProgress, String? readStatus, DateTime? lastReadTime, List<BookFile> files
+ int id, String title, String? thumbnailUrl, DateTime? coverUpdatedOn, DateTime? audiobookCoverUpdatedOn, int? primaryFileId, List<String> authors, String? seriesName, double? seriesNumber, int? libraryId, String? narrator, String? description, String? primaryFileType, double? readProgress, String? readStatus, DateTime? addedOn, DateTime? lastReadTime, List<BookFile> files
 });
 
 
@@ -626,7 +626,7 @@ class _$BookCopyWithImpl<$Res>
 
 /// Create a copy of Book
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? thumbnailUrl = freezed,Object? coverUpdatedOn = freezed,Object? audiobookCoverUpdatedOn = freezed,Object? primaryFileId = freezed,Object? authors = null,Object? seriesName = freezed,Object? seriesNumber = freezed,Object? libraryId = freezed,Object? narrator = freezed,Object? description = freezed,Object? primaryFileType = freezed,Object? readProgress = freezed,Object? readStatus = freezed,Object? lastReadTime = freezed,Object? files = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? thumbnailUrl = freezed,Object? coverUpdatedOn = freezed,Object? audiobookCoverUpdatedOn = freezed,Object? primaryFileId = freezed,Object? authors = null,Object? seriesName = freezed,Object? seriesNumber = freezed,Object? libraryId = freezed,Object? narrator = freezed,Object? description = freezed,Object? primaryFileType = freezed,Object? readProgress = freezed,Object? readStatus = freezed,Object? addedOn = freezed,Object? lastReadTime = freezed,Object? files = null,}) {
   return _then(Book(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -643,7 +643,8 @@ as String?,description: freezed == description ? _self.description : description
 as String?,primaryFileType: freezed == primaryFileType ? _self.primaryFileType : primaryFileType // ignore: cast_nullable_to_non_nullable
 as String?,readProgress: freezed == readProgress ? _self.readProgress : readProgress // ignore: cast_nullable_to_non_nullable
 as double?,readStatus: freezed == readStatus ? _self.readStatus : readStatus // ignore: cast_nullable_to_non_nullable
-as String?,lastReadTime: freezed == lastReadTime ? _self.lastReadTime : lastReadTime // ignore: cast_nullable_to_non_nullable
+as String?,addedOn: freezed == addedOn ? _self.addedOn : addedOn // ignore: cast_nullable_to_non_nullable
+as DateTime?,lastReadTime: freezed == lastReadTime ? _self.lastReadTime : lastReadTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,files: null == files ? _self.files : files // ignore: cast_nullable_to_non_nullable
 as List<BookFile>,
   ));
@@ -730,10 +731,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String? thumbnailUrl,  DateTime? coverUpdatedOn,  DateTime? audiobookCoverUpdatedOn,  int? primaryFileId,  List<String> authors,  String? seriesName,  double? seriesNumber,  int? libraryId,  String? narrator,  String? description,  String? primaryFileType,  double? readProgress,  String? readStatus,  DateTime? lastReadTime,  List<BookFile> files)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String? thumbnailUrl,  DateTime? coverUpdatedOn,  DateTime? audiobookCoverUpdatedOn,  int? primaryFileId,  List<String> authors,  String? seriesName,  double? seriesNumber,  int? libraryId,  String? narrator,  String? description,  String? primaryFileType,  double? readProgress,  String? readStatus,  DateTime? addedOn,  DateTime? lastReadTime,  List<BookFile> files)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Book() when $default != null:
-return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_that.audiobookCoverUpdatedOn,_that.primaryFileId,_that.authors,_that.seriesName,_that.seriesNumber,_that.libraryId,_that.narrator,_that.description,_that.primaryFileType,_that.readProgress,_that.readStatus,_that.lastReadTime,_that.files);case _:
+return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_that.audiobookCoverUpdatedOn,_that.primaryFileId,_that.authors,_that.seriesName,_that.seriesNumber,_that.libraryId,_that.narrator,_that.description,_that.primaryFileType,_that.readProgress,_that.readStatus,_that.addedOn,_that.lastReadTime,_that.files);case _:
   return orElse();
 
 }
@@ -751,10 +752,10 @@ return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String? thumbnailUrl,  DateTime? coverUpdatedOn,  DateTime? audiobookCoverUpdatedOn,  int? primaryFileId,  List<String> authors,  String? seriesName,  double? seriesNumber,  int? libraryId,  String? narrator,  String? description,  String? primaryFileType,  double? readProgress,  String? readStatus,  DateTime? lastReadTime,  List<BookFile> files)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String? thumbnailUrl,  DateTime? coverUpdatedOn,  DateTime? audiobookCoverUpdatedOn,  int? primaryFileId,  List<String> authors,  String? seriesName,  double? seriesNumber,  int? libraryId,  String? narrator,  String? description,  String? primaryFileType,  double? readProgress,  String? readStatus,  DateTime? addedOn,  DateTime? lastReadTime,  List<BookFile> files)  $default,) {final _that = this;
 switch (_that) {
 case _Book():
-return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_that.audiobookCoverUpdatedOn,_that.primaryFileId,_that.authors,_that.seriesName,_that.seriesNumber,_that.libraryId,_that.narrator,_that.description,_that.primaryFileType,_that.readProgress,_that.readStatus,_that.lastReadTime,_that.files);case _:
+return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_that.audiobookCoverUpdatedOn,_that.primaryFileId,_that.authors,_that.seriesName,_that.seriesNumber,_that.libraryId,_that.narrator,_that.description,_that.primaryFileType,_that.readProgress,_that.readStatus,_that.addedOn,_that.lastReadTime,_that.files);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -771,10 +772,10 @@ return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String? thumbnailUrl,  DateTime? coverUpdatedOn,  DateTime? audiobookCoverUpdatedOn,  int? primaryFileId,  List<String> authors,  String? seriesName,  double? seriesNumber,  int? libraryId,  String? narrator,  String? description,  String? primaryFileType,  double? readProgress,  String? readStatus,  DateTime? lastReadTime,  List<BookFile> files)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String? thumbnailUrl,  DateTime? coverUpdatedOn,  DateTime? audiobookCoverUpdatedOn,  int? primaryFileId,  List<String> authors,  String? seriesName,  double? seriesNumber,  int? libraryId,  String? narrator,  String? description,  String? primaryFileType,  double? readProgress,  String? readStatus,  DateTime? addedOn,  DateTime? lastReadTime,  List<BookFile> files)?  $default,) {final _that = this;
 switch (_that) {
 case _Book() when $default != null:
-return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_that.audiobookCoverUpdatedOn,_that.primaryFileId,_that.authors,_that.seriesName,_that.seriesNumber,_that.libraryId,_that.narrator,_that.description,_that.primaryFileType,_that.readProgress,_that.readStatus,_that.lastReadTime,_that.files);case _:
+return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_that.audiobookCoverUpdatedOn,_that.primaryFileId,_that.authors,_that.seriesName,_that.seriesNumber,_that.libraryId,_that.narrator,_that.description,_that.primaryFileType,_that.readProgress,_that.readStatus,_that.addedOn,_that.lastReadTime,_that.files);case _:
   return null;
 
 }
@@ -786,7 +787,7 @@ return $default(_that.id,_that.title,_that.thumbnailUrl,_that.coverUpdatedOn,_th
 @JsonSerializable()
 
 class _Book implements Book {
-  const _Book({required this.id, required this.title, this.thumbnailUrl, this.coverUpdatedOn, this.audiobookCoverUpdatedOn, this.primaryFileId,  List<String> authors = const [], this.seriesName, this.seriesNumber, this.libraryId, this.narrator, this.description, this.primaryFileType, this.readProgress, this.readStatus, this.lastReadTime,  List<BookFile> files = const []}): _authors = authors,_files = files;
+  const _Book({required this.id, required this.title, this.thumbnailUrl, this.coverUpdatedOn, this.audiobookCoverUpdatedOn, this.primaryFileId,  List<String> authors = const [], this.seriesName, this.seriesNumber, this.libraryId, this.narrator, this.description, this.primaryFileType, this.readProgress, this.readStatus, this.addedOn, this.lastReadTime,  List<BookFile> files = const []}): _authors = authors,_files = files;
   factory _Book.fromJson(Map<String, dynamic> json) => _$BookFromJson(json);
 
 @override final  int id;
@@ -810,6 +811,7 @@ class _Book implements Book {
 @override final  String? primaryFileType;
 @override final  double? readProgress;
 @override final  String? readStatus;
+@override final  DateTime? addedOn;
 @override final  DateTime? lastReadTime;
  final  List<BookFile> _files;
 @override@JsonKey() List<BookFile> get files {
@@ -832,18 +834,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Book&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl)&&(identical(other.coverUpdatedOn, coverUpdatedOn) || other.coverUpdatedOn == coverUpdatedOn)&&(identical(other.audiobookCoverUpdatedOn, audiobookCoverUpdatedOn) || other.audiobookCoverUpdatedOn == audiobookCoverUpdatedOn)&&(identical(other.primaryFileId, primaryFileId) || other.primaryFileId == primaryFileId)&&const DeepCollectionEquality().equals(other.authors, _authors)&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.seriesNumber, seriesNumber) || other.seriesNumber == seriesNumber)&&(identical(other.libraryId, libraryId) || other.libraryId == libraryId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.description, description) || other.description == description)&&(identical(other.primaryFileType, primaryFileType) || other.primaryFileType == primaryFileType)&&(identical(other.readProgress, readProgress) || other.readProgress == readProgress)&&(identical(other.readStatus, readStatus) || other.readStatus == readStatus)&&(identical(other.lastReadTime, lastReadTime) || other.lastReadTime == lastReadTime)&&const DeepCollectionEquality().equals(other.files, _files));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Book&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.thumbnailUrl, thumbnailUrl) || other.thumbnailUrl == thumbnailUrl)&&(identical(other.coverUpdatedOn, coverUpdatedOn) || other.coverUpdatedOn == coverUpdatedOn)&&(identical(other.audiobookCoverUpdatedOn, audiobookCoverUpdatedOn) || other.audiobookCoverUpdatedOn == audiobookCoverUpdatedOn)&&(identical(other.primaryFileId, primaryFileId) || other.primaryFileId == primaryFileId)&&const DeepCollectionEquality().equals(other.authors, _authors)&&(identical(other.seriesName, seriesName) || other.seriesName == seriesName)&&(identical(other.seriesNumber, seriesNumber) || other.seriesNumber == seriesNumber)&&(identical(other.libraryId, libraryId) || other.libraryId == libraryId)&&(identical(other.narrator, narrator) || other.narrator == narrator)&&(identical(other.description, description) || other.description == description)&&(identical(other.primaryFileType, primaryFileType) || other.primaryFileType == primaryFileType)&&(identical(other.readProgress, readProgress) || other.readProgress == readProgress)&&(identical(other.readStatus, readStatus) || other.readStatus == readStatus)&&(identical(other.addedOn, addedOn) || other.addedOn == addedOn)&&(identical(other.lastReadTime, lastReadTime) || other.lastReadTime == lastReadTime)&&const DeepCollectionEquality().equals(other.files, _files));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,title,thumbnailUrl,coverUpdatedOn,audiobookCoverUpdatedOn,primaryFileId,const DeepCollectionEquality().hash(_authors),seriesName,seriesNumber,libraryId,narrator,description,primaryFileType,readProgress,readStatus,lastReadTime,const DeepCollectionEquality().hash(_files));
+    return Object.hash(runtimeType,id,title,thumbnailUrl,coverUpdatedOn,audiobookCoverUpdatedOn,primaryFileId,const DeepCollectionEquality().hash(_authors),seriesName,seriesNumber,libraryId,narrator,description,primaryFileType,readProgress,readStatus,addedOn,lastReadTime,const DeepCollectionEquality().hash(_files));
 }
 
 @override
 String toString() {
-    return 'Book(id: $id, title: $title, thumbnailUrl: $thumbnailUrl, coverUpdatedOn: $coverUpdatedOn, audiobookCoverUpdatedOn: $audiobookCoverUpdatedOn, primaryFileId: $primaryFileId, authors: $authors, seriesName: $seriesName, seriesNumber: $seriesNumber, libraryId: $libraryId, narrator: $narrator, description: $description, primaryFileType: $primaryFileType, readProgress: $readProgress, readStatus: $readStatus, lastReadTime: $lastReadTime, files: $files)';
+    return 'Book(id: $id, title: $title, thumbnailUrl: $thumbnailUrl, coverUpdatedOn: $coverUpdatedOn, audiobookCoverUpdatedOn: $audiobookCoverUpdatedOn, primaryFileId: $primaryFileId, authors: $authors, seriesName: $seriesName, seriesNumber: $seriesNumber, libraryId: $libraryId, narrator: $narrator, description: $description, primaryFileType: $primaryFileType, readProgress: $readProgress, readStatus: $readStatus, addedOn: $addedOn, lastReadTime: $lastReadTime, files: $files)';
 }
 
 
@@ -854,7 +856,7 @@ abstract mixin class _$BookCopyWith<$Res> implements $BookCopyWith<$Res> {
   factory _$BookCopyWith(_Book value, $Res Function(_Book) _then) = __$BookCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, String? thumbnailUrl, DateTime? coverUpdatedOn, DateTime? audiobookCoverUpdatedOn, int? primaryFileId, List<String> authors, String? seriesName, double? seriesNumber, int? libraryId, String? narrator, String? description, String? primaryFileType, double? readProgress, String? readStatus, DateTime? lastReadTime, List<BookFile> files
+ int id, String title, String? thumbnailUrl, DateTime? coverUpdatedOn, DateTime? audiobookCoverUpdatedOn, int? primaryFileId, List<String> authors, String? seriesName, double? seriesNumber, int? libraryId, String? narrator, String? description, String? primaryFileType, double? readProgress, String? readStatus, DateTime? addedOn, DateTime? lastReadTime, List<BookFile> files
 });
 
 
@@ -871,7 +873,7 @@ class __$BookCopyWithImpl<$Res>
 
 /// Create a copy of Book
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? thumbnailUrl = freezed,Object? coverUpdatedOn = freezed,Object? audiobookCoverUpdatedOn = freezed,Object? primaryFileId = freezed,Object? authors = null,Object? seriesName = freezed,Object? seriesNumber = freezed,Object? libraryId = freezed,Object? narrator = freezed,Object? description = freezed,Object? primaryFileType = freezed,Object? readProgress = freezed,Object? readStatus = freezed,Object? lastReadTime = freezed,Object? files = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? thumbnailUrl = freezed,Object? coverUpdatedOn = freezed,Object? audiobookCoverUpdatedOn = freezed,Object? primaryFileId = freezed,Object? authors = null,Object? seriesName = freezed,Object? seriesNumber = freezed,Object? libraryId = freezed,Object? narrator = freezed,Object? description = freezed,Object? primaryFileType = freezed,Object? readProgress = freezed,Object? readStatus = freezed,Object? addedOn = freezed,Object? lastReadTime = freezed,Object? files = null,}) {
   return _then(_Book(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -888,7 +890,8 @@ as String?,description: freezed == description ? _self.description : description
 as String?,primaryFileType: freezed == primaryFileType ? _self.primaryFileType : primaryFileType // ignore: cast_nullable_to_non_nullable
 as String?,readProgress: freezed == readProgress ? _self.readProgress : readProgress // ignore: cast_nullable_to_non_nullable
 as double?,readStatus: freezed == readStatus ? _self.readStatus : readStatus // ignore: cast_nullable_to_non_nullable
-as String?,lastReadTime: freezed == lastReadTime ? _self.lastReadTime : lastReadTime // ignore: cast_nullable_to_non_nullable
+as String?,addedOn: freezed == addedOn ? _self.addedOn : addedOn // ignore: cast_nullable_to_non_nullable
+as DateTime?,lastReadTime: freezed == lastReadTime ? _self.lastReadTime : lastReadTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,files: null == files ? _self._files : files // ignore: cast_nullable_to_non_nullable
 as List<BookFile>,
   ));
@@ -4312,7 +4315,7 @@ as bool,
 /// @nodoc
 mixin _$DashboardScroller {
 
- String? get id; String get type; String? get title; bool get enabled; int get order; int? get maxItems; int? get magicShelfId;
+ String? get id; String get type; String? get title; bool get enabled; int get order; int? get maxItems; int? get magicShelfId; String? get sortField; String? get sortDirection;
 /// Create a copy of DashboardScroller
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -4326,20 +4329,20 @@ $DashboardScrollerCopyWith<DashboardScroller> get copyWith => _$DashboardScrolle
 @override
 bool operator ==(Object other) {
   final _this = this as DashboardScroller;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardScroller&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.enabled, _this.enabled) || other.enabled == _this.enabled)&&(identical(other.order, _this.order) || other.order == _this.order)&&(identical(other.maxItems, _this.maxItems) || other.maxItems == _this.maxItems)&&(identical(other.magicShelfId, _this.magicShelfId) || other.magicShelfId == _this.magicShelfId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardScroller&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.enabled, _this.enabled) || other.enabled == _this.enabled)&&(identical(other.order, _this.order) || other.order == _this.order)&&(identical(other.maxItems, _this.maxItems) || other.maxItems == _this.maxItems)&&(identical(other.magicShelfId, _this.magicShelfId) || other.magicShelfId == _this.magicShelfId)&&(identical(other.sortField, _this.sortField) || other.sortField == _this.sortField)&&(identical(other.sortDirection, _this.sortDirection) || other.sortDirection == _this.sortDirection));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as DashboardScroller;
-  return Object.hash(runtimeType,_this.id,_this.type,_this.title,_this.enabled,_this.order,_this.maxItems,_this.magicShelfId);
+  return Object.hash(runtimeType,_this.id,_this.type,_this.title,_this.enabled,_this.order,_this.maxItems,_this.magicShelfId,_this.sortField,_this.sortDirection);
 }
 
 @override
 String toString() {
   final _this = this as DashboardScroller;
-  return 'DashboardScroller(id: ${_this.id}, type: ${_this.type}, title: ${_this.title}, enabled: ${_this.enabled}, order: ${_this.order}, maxItems: ${_this.maxItems}, magicShelfId: ${_this.magicShelfId})';
+  return 'DashboardScroller(id: ${_this.id}, type: ${_this.type}, title: ${_this.title}, enabled: ${_this.enabled}, order: ${_this.order}, maxItems: ${_this.maxItems}, magicShelfId: ${_this.magicShelfId}, sortField: ${_this.sortField}, sortDirection: ${_this.sortDirection})';
 }
 
 
@@ -4350,7 +4353,7 @@ abstract mixin class $DashboardScrollerCopyWith<$Res>  {
   factory $DashboardScrollerCopyWith(DashboardScroller value, $Res Function(DashboardScroller) _then) = _$DashboardScrollerCopyWithImpl;
 @useResult
 $Res call({
- String? id, String type, String? title, bool enabled, int order, int? maxItems, int? magicShelfId
+ String? id, String type, String? title, bool enabled, int order, int? maxItems, int? magicShelfId, String? sortField, String? sortDirection
 });
 
 
@@ -4367,7 +4370,7 @@ class _$DashboardScrollerCopyWithImpl<$Res>
 
 /// Create a copy of DashboardScroller
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? type = null,Object? title = freezed,Object? enabled = null,Object? order = null,Object? maxItems = freezed,Object? magicShelfId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? type = null,Object? title = freezed,Object? enabled = null,Object? order = null,Object? maxItems = freezed,Object? magicShelfId = freezed,Object? sortField = freezed,Object? sortDirection = freezed,}) {
   return _then(DashboardScroller(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -4376,7 +4379,9 @@ as String?,enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nu
 as bool,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,maxItems: freezed == maxItems ? _self.maxItems : maxItems // ignore: cast_nullable_to_non_nullable
 as int?,magicShelfId: freezed == magicShelfId ? _self.magicShelfId : magicShelfId // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,sortField: freezed == sortField ? _self.sortField : sortField // ignore: cast_nullable_to_non_nullable
+as String?,sortDirection: freezed == sortDirection ? _self.sortDirection : sortDirection // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -4461,10 +4466,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId,  String? sortField,  String? sortDirection)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DashboardScroller() when $default != null:
-return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId);case _:
+return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId,_that.sortField,_that.sortDirection);case _:
   return orElse();
 
 }
@@ -4482,10 +4487,10 @@ return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId,  String? sortField,  String? sortDirection)  $default,) {final _that = this;
 switch (_that) {
 case _DashboardScroller():
-return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId);case _:
+return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId,_that.sortField,_that.sortDirection);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -4502,10 +4507,10 @@ return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId,  String? sortField,  String? sortDirection)?  $default,) {final _that = this;
 switch (_that) {
 case _DashboardScroller() when $default != null:
-return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId);case _:
+return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId,_that.sortField,_that.sortDirection);case _:
   return null;
 
 }
@@ -4517,7 +4522,7 @@ return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.
 @JsonSerializable()
 
 class _DashboardScroller implements DashboardScroller {
-  const _DashboardScroller({this.id, required this.type, this.title, this.enabled = true, this.order = 0, this.maxItems, this.magicShelfId});
+  const _DashboardScroller({this.id, required this.type, this.title, this.enabled = true, this.order = 0, this.maxItems, this.magicShelfId, this.sortField, this.sortDirection});
   factory _DashboardScroller.fromJson(Map<String, dynamic> json) => _$DashboardScrollerFromJson(json);
 
 @override final  String? id;
@@ -4527,6 +4532,8 @@ class _DashboardScroller implements DashboardScroller {
 @override@JsonKey() final  int order;
 @override final  int? maxItems;
 @override final  int? magicShelfId;
+@override final  String? sortField;
+@override final  String? sortDirection;
 
 /// Create a copy of DashboardScroller
 /// with the given fields replaced by the non-null parameter values.
@@ -4541,18 +4548,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardScroller&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.title, title) || other.title == title)&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.order, order) || other.order == order)&&(identical(other.maxItems, maxItems) || other.maxItems == maxItems)&&(identical(other.magicShelfId, magicShelfId) || other.magicShelfId == magicShelfId));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardScroller&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.title, title) || other.title == title)&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.order, order) || other.order == order)&&(identical(other.maxItems, maxItems) || other.maxItems == maxItems)&&(identical(other.magicShelfId, magicShelfId) || other.magicShelfId == magicShelfId)&&(identical(other.sortField, sortField) || other.sortField == sortField)&&(identical(other.sortDirection, sortDirection) || other.sortDirection == sortDirection));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,type,title,enabled,order,maxItems,magicShelfId);
+    return Object.hash(runtimeType,id,type,title,enabled,order,maxItems,magicShelfId,sortField,sortDirection);
 }
 
 @override
 String toString() {
-    return 'DashboardScroller(id: $id, type: $type, title: $title, enabled: $enabled, order: $order, maxItems: $maxItems, magicShelfId: $magicShelfId)';
+    return 'DashboardScroller(id: $id, type: $type, title: $title, enabled: $enabled, order: $order, maxItems: $maxItems, magicShelfId: $magicShelfId, sortField: $sortField, sortDirection: $sortDirection)';
 }
 
 
@@ -4563,7 +4570,7 @@ abstract mixin class _$DashboardScrollerCopyWith<$Res> implements $DashboardScro
   factory _$DashboardScrollerCopyWith(_DashboardScroller value, $Res Function(_DashboardScroller) _then) = __$DashboardScrollerCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String type, String? title, bool enabled, int order, int? maxItems, int? magicShelfId
+ String? id, String type, String? title, bool enabled, int order, int? maxItems, int? magicShelfId, String? sortField, String? sortDirection
 });
 
 
@@ -4580,7 +4587,7 @@ class __$DashboardScrollerCopyWithImpl<$Res>
 
 /// Create a copy of DashboardScroller
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? type = null,Object? title = freezed,Object? enabled = null,Object? order = null,Object? maxItems = freezed,Object? magicShelfId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? type = null,Object? title = freezed,Object? enabled = null,Object? order = null,Object? maxItems = freezed,Object? magicShelfId = freezed,Object? sortField = freezed,Object? sortDirection = freezed,}) {
   return _then(_DashboardScroller(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -4589,7 +4596,9 @@ as String?,enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nu
 as bool,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,maxItems: freezed == maxItems ? _self.maxItems : maxItems // ignore: cast_nullable_to_non_nullable
 as int?,magicShelfId: freezed == magicShelfId ? _self.magicShelfId : magicShelfId // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,sortField: freezed == sortField ? _self.sortField : sortField // ignore: cast_nullable_to_non_nullable
+as String?,sortDirection: freezed == sortDirection ? _self.sortDirection : sortDirection // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
