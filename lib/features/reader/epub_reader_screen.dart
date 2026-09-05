@@ -605,47 +605,16 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
         if (!didPop) _exit();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          actions: [
-            IconButton(
-              icon: Icon(
-                _isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              ),
-              tooltip: _isDark
-                  ? 'Switch to light theme'
-                  : 'Switch to dark theme',
-              onPressed: _toggleTheme,
-            ),
-            IconButton(
-              icon: const Icon(Icons.text_fields),
-              tooltip: 'Text size',
-              onPressed: () => _showFontSizeSheet(context),
-            ),
-            IconButton(
-              icon: const Icon(Icons.bookmark_border),
-              tooltip: 'Bookmarks',
-              onPressed: () => _showBookmarks(context),
-            ),
-            IconButton(
-              icon: const Icon(Icons.menu_book_outlined),
-              tooltip: 'Chapters',
-              onPressed: _chapters.isEmpty
-                  ? null
-                  : () => _showChapters(context),
-            ),
-          ],
-        ),
+        appBar: AppBar(title: Text(title)),
         body: Stack(
           children: [
             EpubGestureOverlay(
               onTapLeft: () => _handlePageTurn(_controller.prev),
               onTapRight: () => _handlePageTurn(_controller.next),
               onTap: _handleAnyTap,
+              // Swipe down still opens bookmarks; swipe up used to open the
+              // chapter list until that got a toolbar button.
               onSwipeDown: () => _showBookmarks(context),
-              onSwipeUp: _chapters.isEmpty
-                  ? () {}
-                  : () => _showChapters(context),
               child: EpubViewer(
                 epubController: _controller,
                 epubSource: EpubSource.fromData(_bytes!),
@@ -669,7 +638,24 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
             if (_isExiting) const _SavingOverlay(),
           ],
         ),
-        bottomNavigationBar: const MiniPlayer(),
+        // The reading controls live in a bottom toolbar rather than the app
+        // bar: they are within thumb reach on a tall phone, and they get
+        // labels, which four unlabelled app-bar icons never had room for.
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ReaderToolbar(
+              isDark: _isDark,
+              onToggleTheme: _toggleTheme,
+              onTextSize: () => _showFontSizeSheet(context),
+              onBookmarks: () => _showBookmarks(context),
+              onChapters: _chapters.isEmpty
+                  ? null
+                  : () => _showChapters(context),
+            ),
+            const MiniPlayer(),
+          ],
+        ),
       ),
     );
   }
@@ -723,6 +709,108 @@ class _SavingOverlay extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The reader's controls, evenly spread across a bottom bar: theme, text
+/// size, bookmarks, chapters. Chapters is disabled (not hidden) until the
+/// book's table of contents has loaded, so the bar never shifts.
+class _ReaderToolbar extends StatelessWidget {
+  const _ReaderToolbar({
+    required this.isDark,
+    required this.onToggleTheme,
+    required this.onTextSize,
+    required this.onBookmarks,
+    required this.onChapters,
+  });
+
+  final bool isDark;
+  final VoidCallback onToggleTheme;
+  final VoidCallback onTextSize;
+  final VoidCallback onBookmarks;
+  final VoidCallback? onChapters;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: [
+              _ToolbarButton(
+                icon: isDark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                label: isDark ? 'Light' : 'Dark',
+                onPressed: onToggleTheme,
+              ),
+              _ToolbarButton(
+                icon: Icons.text_fields,
+                label: 'Text size',
+                onPressed: onTextSize,
+              ),
+              _ToolbarButton(
+                icon: Icons.bookmark_border,
+                label: 'Bookmarks',
+                onPressed: onBookmarks,
+              ),
+              _ToolbarButton(
+                icon: Icons.menu_book_outlined,
+                label: 'Chapters',
+                onPressed: onChapters,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Icon over a one-word label, filling an equal share of the bar.
+class _ToolbarButton extends StatelessWidget {
+  const _ToolbarButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final color = onPressed == null
+        ? scheme.onSurface.withValues(alpha: 0.38)
+        : scheme.onSurfaceVariant;
+    return Expanded(
+      child: Semantics(
+        button: true,
+        enabled: onPressed != null,
+        label: label,
+        child: InkWell(
+          onTap: onPressed,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: color),
+              ),
+            ],
           ),
         ),
       ),

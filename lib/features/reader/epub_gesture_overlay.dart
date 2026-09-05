@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 
-/// Adds tap-to-turn-page zones and swipe-down/swipe-up gestures on top of
-/// [child] (the EPUB WebView) without disturbing its own swipe-to-turn-page
+/// Adds tap-to-turn-page zones and a swipe-down gesture (plus an optional
+/// swipe-up one) on top of [child] (the EPUB WebView) without disturbing its own swipe-to-turn-page
 /// and text-selection handling.
 ///
 /// Deliberately built on [Listener] (raw pointer routing) rather than a
@@ -20,7 +20,7 @@ class EpubGestureOverlay extends StatefulWidget {
     required this.onTapLeft,
     required this.onTapRight,
     required this.onSwipeDown,
-    required this.onSwipeUp,
+    this.onSwipeUp,
     this.onTap,
     super.key,
   });
@@ -29,7 +29,11 @@ class EpubGestureOverlay extends StatefulWidget {
   final VoidCallback onTapLeft;
   final VoidCallback onTapRight;
   final VoidCallback onSwipeDown;
-  final VoidCallback onSwipeUp;
+
+  /// Optional: the reader stopped using swipe-up once Chapters got a
+  /// toolbar button, so an unhandled upward swipe is simply left to the
+  /// WebView.
+  final VoidCallback? onSwipeUp;
   // Fires on every plain tap, in every zone, in addition to (and before)
   // any zone-specific callback above -- including the middle third, which
   // has no zone callback of its own. Lets the reader screen react to "the
@@ -75,10 +79,12 @@ class _EpubGestureOverlayState extends State<EpubGestureOverlay> {
                   elapsedMs < 600) {
                 if (delta.dy > 0) {
                   widget.onSwipeDown();
-                } else {
-                  widget.onSwipeUp();
+                  return;
                 }
-                return;
+                if (widget.onSwipeUp != null) {
+                  widget.onSwipeUp!();
+                  return;
+                }
               }
 
               // Tap: minimal movement, quick — anything else (a real
