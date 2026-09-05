@@ -226,9 +226,13 @@ int naturalCompare(String a, String b) {
   return ac.length.compareTo(bc.length);
 }
 
-/// The height every row body takes in all states, so a row loading or
-/// coming back empty never shifts the rows below it.
-const _rowHeight = 210.0;
+/// The height a row body takes in all states (so a row loading or coming
+/// back empty never shifts the rows below it): a 130-wide tile with a 2:3
+/// cover and two lines of text, or the shorter square-cover version for
+/// Continue Listening, whose books are all audiobooks — the web's
+/// `useSquareCovers` for the `lastListened` scroller.
+double _rowHeight(ScrollerType kind) =>
+    kind == ScrollerType.lastListened ? 190 : 250;
 
 /// One dashboard row — the web's `DashboardScroller`: a title, then a
 /// horizontal strip of covers, or the web's per-row empty/error text in its
@@ -294,7 +298,7 @@ class DashboardScrollerView extends ConsumerWidget {
           ),
         ),
         SizedBox(
-          height: _rowHeight,
+          height: _rowHeight(kind),
           child: books.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => _RowMessage(

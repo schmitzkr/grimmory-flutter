@@ -71,6 +71,27 @@ void main() {
     expect(book.ebookFileId, 81);
   });
 
+  // The web draws book cards in a 2:3 paperback shape and audiobooks
+  // square; the tile follows the primary file's type.
+  test('Book.coverAspectRatio is square for audiobooks, 2:3 otherwise', () {
+    expect(
+      const Book(
+        id: 1,
+        title: 'a',
+        primaryFileType: 'AUDIOBOOK',
+      ).coverAspectRatio,
+      1,
+    );
+    expect(
+      const Book(id: 2, title: 'b', primaryFileType: 'EPUB').coverAspectRatio,
+      closeTo(2 / 3, 1e-9),
+    );
+    expect(
+      const Book(id: 3, title: 'c').coverAspectRatio,
+      closeTo(2 / 3, 1e-9),
+    );
+  });
+
   test('Book.fileIdFor picks the file of that exact type, primary first', () {
     final book = Book.fromJson({
       'id': 9,

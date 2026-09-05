@@ -36,7 +36,9 @@ class BookGrid extends StatelessWidget {
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.62,
+        // Tall enough for a 2:3 cover plus two lines of text; a square
+        // audiobook cover simply leaves room below it, as on the web.
+        childAspectRatio: 0.54,
       ),
       itemCount: books.length,
       itemBuilder: (context, index) => BookGridTile(book: books[index]),
@@ -70,95 +72,98 @@ class BookGridTile extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: BookCover(
-                        bookId: book.id,
-                        fileType: book.primaryFileType,
-                        coverVersion: book.coverVersion,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: AspectRatio(
+                  aspectRatio: book.coverAspectRatio,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: BookCover(
+                          bookId: book.id,
+                          fileType: book.primaryFileType,
+                          coverVersion: book.coverVersion,
+                        ),
                       ),
-                    ),
-                    // Matches Grimmory's own web UI's top-left overlay stack
-                    // (book-type-pill-overlay + series-number-overlay in
-                    // book-card.component.html/.scss) — a format pill and a
-                    // "#N" series-order badge, the one piece of cover overlay
-                    // info that's actually about where a book sits when
-                    // sorted by series.
-                    Positioned(
-                      top: 6,
-                      left: 6,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (book.primaryFileType != null)
-                            _FormatPill(fileType: book.primaryFileType!),
-                          if (book.seriesNumber != null) ...[
-                            const SizedBox(height: 4),
-                            _SeriesNumberBadge(
-                              seriesNumber: book.seriesNumber!,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    if (book.readStatus == 'READ')
+                      // Matches Grimmory's own web UI's top-left overlay stack
+                      // (book-type-pill-overlay + series-number-overlay in
+                      // book-card.component.html/.scss) — a format pill and a
+                      // "#N" series-order badge, the one piece of cover overlay
+                      // info that's actually about where a book sits when
+                      // sorted by series.
                       Positioned(
+                        top: 6,
                         left: 6,
-                        bottom: 6,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.check,
-                            size: 14,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (book.primaryFileType != null)
+                              _FormatPill(fileType: book.primaryFileType!),
+                            if (book.seriesNumber != null) ...[
+                              const SizedBox(height: 4),
+                              _SeriesNumberBadge(
+                                seriesNumber: book.seriesNumber!,
+                              ),
+                            ],
+                          ],
                         ),
-                      )
-                    else if ((normalizedProgress ?? 0) > 0 &&
-                        (normalizedProgress ?? 0) < 1)
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(8),
-                            bottomRight: Radius.circular(8),
+                      ),
+                      if (book.readStatus == 'READ')
+                        Positioned(
+                          left: 6,
+                          bottom: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.check,
+                              size: 14,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
                           ),
-                          child: LinearProgressIndicator(
-                            value: normalizedProgress,
-                            minHeight: 4,
-                            backgroundColor: Colors.black.withValues(
-                              alpha: 0.35,
+                        )
+                      else if ((normalizedProgress ?? 0) > 0 &&
+                          (normalizedProgress ?? 0) < 1)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(8),
+                              bottomRight: Radius.circular(8),
+                            ),
+                            child: LinearProgressIndicator(
+                              value: normalizedProgress,
+                              minHeight: 4,
+                              backgroundColor: Colors.black.withValues(
+                                alpha: 0.35,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    if (downloaded)
-                      Positioned(
-                        right: 6,
-                        bottom: 6,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.download_done,
-                            size: 14,
-                            color: Theme.of(context).colorScheme.onPrimary,
+                      if (downloaded)
+                        Positioned(
+                          right: 6,
+                          bottom: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.download_done,
+                              size: 14,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
