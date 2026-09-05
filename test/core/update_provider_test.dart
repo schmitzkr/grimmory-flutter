@@ -3,6 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grimmory/core/update_provider.dart';
 
 void main() {
+  test('installed version label includes the build number when present', () {
+    expect(formatInstalledVersion('0.11.18', '41'), 'v0.11.18 (41)');
+    expect(formatInstalledVersion('0.11.18', ''), 'v0.11.18');
+    const installed = InstalledVersion(version: '0.11.18', buildNumber: '41');
+    expect(installed.label, 'v0.11.18 (41)');
+  });
+
   group('parseVersion', () {
     test('splits dotted integers', () {
       expect(parseVersion('0.11.9'), [0, 11, 9]);
