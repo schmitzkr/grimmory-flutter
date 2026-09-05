@@ -20,6 +20,16 @@ import 'models.dart';
 /// — this client uses that namespace wherever it covers a need, falling
 /// back to the general endpoints only where the app namespace doesn't
 /// cover something (audiobook streaming/info, bookmarks).
+/// The Continue Reading/Listening order: books with a recorded
+/// [Book.lastReadTime], newest first, cut to [limit]. A book with no
+/// timestamp has never actually been opened by this user (a status set by
+/// hand on the web, say) and is left out, as the web dashboard leaves it out.
+List<Book> inProgressOrder(Iterable<Book> books, {required int limit}) {
+  final dated = books.where((b) => b.lastReadTime != null).toList()
+    ..sort((a, b) => b.lastReadTime!.compareTo(a.lastReadTime!));
+  return dated.take(limit).toList();
+}
+
 class ApiClient {
   late final Dio _dio;
   final SharedPreferences _prefs;
@@ -395,30 +405,66 @@ class ApiClient {
     return _extractPageContent(resp.data).map(Book.fromJson).toList();
   }
 
-  Future<List<Book>> getContinueListening({int limit = 10}) async {
-    final resp = await _dio.get(
-      '/app/books/continue-listening',
-      queryParameters: {'limit': limit},
-    );
-    return (resp.data as List)
-        .map((b) => Book.fromJson(b as Map<String, dynamic>))
-        .toList();
-  }
+  /// Continue Listening — the audiobooks this user is partway through,
+  /// most recently played first. See [_inProgressBooks] for why this does
+  /// not call `/app/books/continue-listening`.
+  Future<List<Book>> getContinueListening({int limit = 10}) =>
+      _inProgressBooks(fileTypes: const ['AUDIOBOOK'], limit: limit);
 
-  /// `/app/books/continue-reading` — the non-audiobook counterpart to
-  /// [getContinueListening], confirmed against the real
-  /// `AppBookController`/`AppBookService`/`UserBookProgressRepository`
-  /// source (`findTopContinueReadingBookIds` explicitly filters
-  /// `bookType <> AUDIOBOOK`). Existed server-side the whole time; this app
-  /// just never called it.
-  Future<List<Book>> getContinueReading({int limit = 10}) async {
+  /// Continue Reading — the non-audiobook counterpart. The file-type split
+  /// mirrors the server's own `findTopContinueReadingBookIds`
+  /// (`bookType <> AUDIOBOOK`): a dual-format book that is being both read
+  /// and listened to shows in both carousels, as on the web.
+  Future<List<Book>> getContinueReading({int limit = 10}) =>
+      _inProgressBooks(fileTypes: _readableFileTypes, limit: limit);
+
+  static const _readableFileTypes = [
+    'EPUB',
+    'PDF',
+    'CBX',
+    'FB2',
+    'MOBI',
+    'AZW3',
+  ];
+
+  /// `GET /app/books` filtered to READING/RE_READING and the given file
+  /// types, then ordered by [Book.lastReadTime] here — the same client-side
+  /// recipe as Grimmory's web dashboard.
+  ///
+  /// Not the purpose-built `/app/books/continue-reading` and
+  /// `/continue-listening`: for an **admin** account
+  /// `AppBookService.getAccessibleLibraryIds` returns `null` (meaning "all
+  /// libraries"), and those two endpoints hand that null straight into a
+  /// JPQL `b.library.id IN :libraryIds`, which matches nothing — so an admin
+  /// always gets an empty list even with books in progress (v3.3.3 and
+  /// `develop` alike, 2026-09-05). Every other list endpoint goes through
+  /// `AppBookSpecification.inLibraries`, which treats null as no filter,
+  /// which is why this one works. Ordering is done here rather than with
+  /// `sort=lastReadTime`, because that sort field joins the per-user
+  /// progress collection across *all* users.
+  ///
+  /// [fileTypes] and the statuses are sent comma-joined in a single value:
+  /// Spring's conversion splits that into the record's `List<String>` on
+  /// its own, independent of how Dio encodes a Dart list (its default is
+  /// the bracketed `status[]=` form, which the server's record binder is
+  /// not known to accept).
+  Future<List<Book>> _inProgressBooks({
+    required List<String> fileTypes,
+    required int limit,
+  }) async {
     final resp = await _dio.get(
-      '/app/books/continue-reading',
-      queryParameters: {'limit': limit},
+      '/app/books',
+      queryParameters: {
+        'status': 'READING,RE_READING',
+        'fileType': fileTypes.join(','),
+        'page': 0,
+        // Only this user's in-progress books of these types come back, so
+        // one page comfortably holds every candidate before the cut.
+        'size': 50,
+      },
     );
-    return (resp.data as List)
-        .map((b) => Book.fromJson(b as Map<String, dynamic>))
-        .toList();
+    final books = _extractPageContent(resp.data).map(Book.fromJson);
+    return inProgressOrder(books, limit: limit);
   }
 
   /// `/app/books/recently-added`, not `/app/books/recently` as an earlier

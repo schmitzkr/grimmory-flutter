@@ -90,6 +90,10 @@ abstract class Book with _$Book {
     // currently acts on (a finished-book badge).
     double? readProgress,
     String? readStatus,
+    // When this user last read/listened to the book (any format) — the
+    // ordering key of the Continue Reading/Listening carousels, exactly as
+    // the web dashboard sorts its own.
+    DateTime? lastReadTime,
     // `AppBookDetail.files` only (absent on `AppBookSummary`) — every
     // book-format file attached to this book, with the id the file-level
     // progress API (`UpdateProgressRequest.fileProgress.bookFileId`) is
