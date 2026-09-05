@@ -70,7 +70,7 @@ class AppRelease {
 final updateProvider = FutureProvider<AppRelease?>((ref) async {
   try {
     final info = await PackageInfo.fromPlatform();
-    final current = _parseVersion(info.version);
+    final current = parseVersion(info.version);
     if (current == null) return null;
 
     final response = await _github.get<Map<String, dynamic>>(
@@ -79,8 +79,8 @@ final updateProvider = FutureProvider<AppRelease?>((ref) async {
     if (response.statusCode != 200 || response.data == null) return null;
 
     final release = AppRelease.fromGithubJson(response.data!);
-    final latest = _parseVersion(release.version);
-    if (latest == null || !_isNewer(latest, current)) return null;
+    final latest = parseVersion(release.version);
+    if (latest == null || !isNewerVersion(latest, current)) return null;
     if (release.apkDownloadUrl == null) return null;
 
     return release;
@@ -479,7 +479,9 @@ Future<void> _startUpdate(ScaffoldMessengerState messenger, String url) async {
   }
 }
 
-List<int>? _parseVersion(String v) {
+/// `"0.11.9"` → `[0, 11, 9]`; null for anything that isn't dot-separated
+/// integers (a stray `v` prefix, a build suffix, an empty string).
+List<int>? parseVersion(String v) {
   try {
     return v.split('.').map(int.parse).toList();
   } catch (_) {
@@ -487,7 +489,9 @@ List<int>? _parseVersion(String v) {
   }
 }
 
-bool _isNewer(List<int> latest, List<int> current) {
+/// Component-wise comparison; a longer version with an equal prefix counts
+/// as newer (`1.0.1` > `1.0`), a shorter one does not.
+bool isNewerVersion(List<int> latest, List<int> current) {
   for (var i = 0; i < latest.length && i < current.length; i++) {
     if (latest[i] > current[i]) return true;
     if (latest[i] < current[i]) return false;

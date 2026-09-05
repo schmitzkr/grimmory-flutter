@@ -8,6 +8,7 @@ import 'package:rxdart/rxdart.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
 import '../downloads/download_storage.dart';
+import 'track_timeline.dart';
 
 /// Wraps a single [AudioPlayer] with Grimmory's streaming endpoints and
 /// exposes it as an [AudioHandler] — this is what turns playback into a
@@ -279,14 +280,12 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   /// just_audio's `initialPosition` is relative to whichever track
   /// `initialIndex` points at, so this converts. For a non-folder-based
   /// book, positionMs is already the right absolute stream position.
-  int _toTrackRelativeMs(AudiobookProgress progress) {
-    if (!_folderBased || progress.trackIndex == null)
-      return progress.positionMs;
-    final index = progress.trackIndex!;
-    if (index < 0 || index >= _tracks.length) return progress.positionMs;
-    final relative = progress.positionMs - _tracks[index].cumulativeStartMs;
-    return relative < 0 ? 0 : relative;
-  }
+  int _toTrackRelativeMs(AudiobookProgress progress) => trackRelativeMs(
+    positionMs: progress.positionMs,
+    trackIndex: progress.trackIndex,
+    tracks: _tracks,
+    folderBased: _folderBased,
+  );
 
   Future<void> _loadSource(
     Book book,
@@ -447,14 +446,10 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
     if (bookId == null) return;
 
     final absolutePositionMs = _toAbsoluteMs(_player.position);
-    // 0-100, rounded to one decimal like Grimmory's own player — its
-    // READING/READ thresholds (0.1 / 99.5) are on this scale, so a 0-1
-    // fraction here left every book UNREAD until 10% in and never READ.
-    final percentage = _totalDurationMs > 0
-        ? ((absolutePositionMs / _totalDurationMs * 100).clamp(0.0, 100.0) * 10)
-                  .round() /
-              10
-        : 0.0;
+    final percentage = audiobookPercentage(
+      positionMs: absolutePositionMs,
+      totalDurationMs: _totalDurationMs,
+    );
     final progress = AudiobookProgress(
       positionMs: absolutePositionMs,
       trackIndex: _folderBased ? _player.currentIndex : null,
@@ -489,14 +484,12 @@ class GrimmoryAudioHandler extends BaseAudioHandler with SeekHandler {
   /// Converts the player's current (track-relative, for folder-based books)
   /// position into the book-wide absolute position Grimmory's progress API
   /// expects — the reverse of [_toTrackRelativeMs].
-  int _toAbsoluteMs(Duration playerPosition) {
-    if (!_folderBased) return playerPosition.inMilliseconds;
-    final index = _player.currentIndex;
-    if (index == null || index < 0 || index >= _tracks.length) {
-      return playerPosition.inMilliseconds;
-    }
-    return _tracks[index].cumulativeStartMs + playerPosition.inMilliseconds;
-  }
+  int _toAbsoluteMs(Duration playerPosition) => absoluteMs(
+    trackPositionMs: playerPosition.inMilliseconds,
+    trackIndex: _player.currentIndex,
+    tracks: _tracks,
+    folderBased: _folderBased,
+  );
 
   /// [Bookmark.positionMs] isn't individually confirmed against a live
   /// instance, but `CreateBookMarkRequest`/`BookMark` (Grimmory source) only
