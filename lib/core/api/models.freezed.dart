@@ -4034,6 +4034,570 @@ as bool,
 
 
 /// @nodoc
+mixin _$DashboardScroller {
+
+ String? get id; String get type; String? get title; bool get enabled; int get order; int? get maxItems; int? get magicShelfId;
+/// Create a copy of DashboardScroller
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DashboardScrollerCopyWith<DashboardScroller> get copyWith => _$DashboardScrollerCopyWithImpl<DashboardScroller>(this as DashboardScroller, _$identity);
+
+  /// Serializes this DashboardScroller to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as DashboardScroller;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardScroller&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.enabled, _this.enabled) || other.enabled == _this.enabled)&&(identical(other.order, _this.order) || other.order == _this.order)&&(identical(other.maxItems, _this.maxItems) || other.maxItems == _this.maxItems)&&(identical(other.magicShelfId, _this.magicShelfId) || other.magicShelfId == _this.magicShelfId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as DashboardScroller;
+  return Object.hash(runtimeType,_this.id,_this.type,_this.title,_this.enabled,_this.order,_this.maxItems,_this.magicShelfId);
+}
+
+@override
+String toString() {
+  final _this = this as DashboardScroller;
+  return 'DashboardScroller(id: ${_this.id}, type: ${_this.type}, title: ${_this.title}, enabled: ${_this.enabled}, order: ${_this.order}, maxItems: ${_this.maxItems}, magicShelfId: ${_this.magicShelfId})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $DashboardScrollerCopyWith<$Res>  {
+  factory $DashboardScrollerCopyWith(DashboardScroller value, $Res Function(DashboardScroller) _then) = _$DashboardScrollerCopyWithImpl;
+@useResult
+$Res call({
+ String? id, String type, String? title, bool enabled, int order, int? maxItems, int? magicShelfId
+});
+
+
+
+
+}
+/// @nodoc
+class _$DashboardScrollerCopyWithImpl<$Res>
+    implements $DashboardScrollerCopyWith<$Res> {
+  _$DashboardScrollerCopyWithImpl(this._self, this._then);
+
+  final DashboardScroller _self;
+  final $Res Function(DashboardScroller) _then;
+
+/// Create a copy of DashboardScroller
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? type = null,Object? title = freezed,Object? enabled = null,Object? order = null,Object? maxItems = freezed,Object? magicShelfId = freezed,}) {
+  return _then(DashboardScroller(
+id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String?,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String?,enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
+as bool,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
+as int,maxItems: freezed == maxItems ? _self.maxItems : maxItems // ignore: cast_nullable_to_non_nullable
+as int?,magicShelfId: freezed == magicShelfId ? _self.magicShelfId : magicShelfId // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [DashboardScroller].
+extension DashboardScrollerPatterns on DashboardScroller {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _DashboardScroller value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _DashboardScroller() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _DashboardScroller value)  $default,){
+final _that = this;
+switch (_that) {
+case _DashboardScroller():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _DashboardScroller value)?  $default,){
+final _that = this;
+switch (_that) {
+case _DashboardScroller() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _DashboardScroller() when $default != null:
+return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId)  $default,) {final _that = this;
+switch (_that) {
+case _DashboardScroller():
+return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String type,  String? title,  bool enabled,  int order,  int? maxItems,  int? magicShelfId)?  $default,) {final _that = this;
+switch (_that) {
+case _DashboardScroller() when $default != null:
+return $default(_that.id,_that.type,_that.title,_that.enabled,_that.order,_that.maxItems,_that.magicShelfId);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _DashboardScroller implements DashboardScroller {
+  const _DashboardScroller({this.id, required this.type, this.title, this.enabled = true, this.order = 0, this.maxItems, this.magicShelfId});
+  factory _DashboardScroller.fromJson(Map<String, dynamic> json) => _$DashboardScrollerFromJson(json);
+
+@override final  String? id;
+@override final  String type;
+@override final  String? title;
+@override@JsonKey() final  bool enabled;
+@override@JsonKey() final  int order;
+@override final  int? maxItems;
+@override final  int? magicShelfId;
+
+/// Create a copy of DashboardScroller
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DashboardScrollerCopyWith<_DashboardScroller> get copyWith => __$DashboardScrollerCopyWithImpl<_DashboardScroller>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$DashboardScrollerToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardScroller&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.title, title) || other.title == title)&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.order, order) || other.order == order)&&(identical(other.maxItems, maxItems) || other.maxItems == maxItems)&&(identical(other.magicShelfId, magicShelfId) || other.magicShelfId == magicShelfId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,id,type,title,enabled,order,maxItems,magicShelfId);
+}
+
+@override
+String toString() {
+    return 'DashboardScroller(id: $id, type: $type, title: $title, enabled: $enabled, order: $order, maxItems: $maxItems, magicShelfId: $magicShelfId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$DashboardScrollerCopyWith<$Res> implements $DashboardScrollerCopyWith<$Res> {
+  factory _$DashboardScrollerCopyWith(_DashboardScroller value, $Res Function(_DashboardScroller) _then) = __$DashboardScrollerCopyWithImpl;
+@override @useResult
+$Res call({
+ String? id, String type, String? title, bool enabled, int order, int? maxItems, int? magicShelfId
+});
+
+
+
+
+}
+/// @nodoc
+class __$DashboardScrollerCopyWithImpl<$Res>
+    implements _$DashboardScrollerCopyWith<$Res> {
+  __$DashboardScrollerCopyWithImpl(this._self, this._then);
+
+  final _DashboardScroller _self;
+  final $Res Function(_DashboardScroller) _then;
+
+/// Create a copy of DashboardScroller
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? type = null,Object? title = freezed,Object? enabled = null,Object? order = null,Object? maxItems = freezed,Object? magicShelfId = freezed,}) {
+  return _then(_DashboardScroller(
+id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String?,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String?,enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
+as bool,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
+as int,maxItems: freezed == maxItems ? _self.maxItems : maxItems // ignore: cast_nullable_to_non_nullable
+as int?,magicShelfId: freezed == magicShelfId ? _self.magicShelfId : magicShelfId // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$DashboardConfig {
+
+ List<DashboardScroller> get scrollers;
+/// Create a copy of DashboardConfig
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DashboardConfigCopyWith<DashboardConfig> get copyWith => _$DashboardConfigCopyWithImpl<DashboardConfig>(this as DashboardConfig, _$identity);
+
+  /// Serializes this DashboardConfig to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as DashboardConfig;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardConfig&&const DeepCollectionEquality().equals(other.scrollers, _this.scrollers));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as DashboardConfig;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.scrollers));
+}
+
+@override
+String toString() {
+  final _this = this as DashboardConfig;
+  return 'DashboardConfig(scrollers: ${_this.scrollers})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $DashboardConfigCopyWith<$Res>  {
+  factory $DashboardConfigCopyWith(DashboardConfig value, $Res Function(DashboardConfig) _then) = _$DashboardConfigCopyWithImpl;
+@useResult
+$Res call({
+ List<DashboardScroller> scrollers
+});
+
+
+
+
+}
+/// @nodoc
+class _$DashboardConfigCopyWithImpl<$Res>
+    implements $DashboardConfigCopyWith<$Res> {
+  _$DashboardConfigCopyWithImpl(this._self, this._then);
+
+  final DashboardConfig _self;
+  final $Res Function(DashboardConfig) _then;
+
+/// Create a copy of DashboardConfig
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? scrollers = null,}) {
+  return _then(DashboardConfig(
+scrollers: null == scrollers ? _self.scrollers : scrollers // ignore: cast_nullable_to_non_nullable
+as List<DashboardScroller>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [DashboardConfig].
+extension DashboardConfigPatterns on DashboardConfig {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _DashboardConfig value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _DashboardConfig() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _DashboardConfig value)  $default,){
+final _that = this;
+switch (_that) {
+case _DashboardConfig():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _DashboardConfig value)?  $default,){
+final _that = this;
+switch (_that) {
+case _DashboardConfig() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<DashboardScroller> scrollers)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _DashboardConfig() when $default != null:
+return $default(_that.scrollers);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<DashboardScroller> scrollers)  $default,) {final _that = this;
+switch (_that) {
+case _DashboardConfig():
+return $default(_that.scrollers);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<DashboardScroller> scrollers)?  $default,) {final _that = this;
+switch (_that) {
+case _DashboardConfig() when $default != null:
+return $default(_that.scrollers);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _DashboardConfig implements DashboardConfig {
+  const _DashboardConfig({ List<DashboardScroller> scrollers = const []}): _scrollers = scrollers;
+  factory _DashboardConfig.fromJson(Map<String, dynamic> json) => _$DashboardConfigFromJson(json);
+
+ final  List<DashboardScroller> _scrollers;
+@override@JsonKey() List<DashboardScroller> get scrollers {
+  if (_scrollers is EqualUnmodifiableListView) return _scrollers;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_scrollers);
+}
+
+
+/// Create a copy of DashboardConfig
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DashboardConfigCopyWith<_DashboardConfig> get copyWith => __$DashboardConfigCopyWithImpl<_DashboardConfig>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$DashboardConfigToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardConfig&&const DeepCollectionEquality().equals(other.scrollers, _scrollers));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_scrollers));
+}
+
+@override
+String toString() {
+    return 'DashboardConfig(scrollers: $scrollers)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$DashboardConfigCopyWith<$Res> implements $DashboardConfigCopyWith<$Res> {
+  factory _$DashboardConfigCopyWith(_DashboardConfig value, $Res Function(_DashboardConfig) _then) = __$DashboardConfigCopyWithImpl;
+@override @useResult
+$Res call({
+ List<DashboardScroller> scrollers
+});
+
+
+
+
+}
+/// @nodoc
+class __$DashboardConfigCopyWithImpl<$Res>
+    implements _$DashboardConfigCopyWith<$Res> {
+  __$DashboardConfigCopyWithImpl(this._self, this._then);
+
+  final _DashboardConfig _self;
+  final $Res Function(_DashboardConfig) _then;
+
+/// Create a copy of DashboardConfig
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? scrollers = null,}) {
+  return _then(_DashboardConfig(
+scrollers: null == scrollers ? _self._scrollers : scrollers // ignore: cast_nullable_to_non_nullable
+as List<DashboardScroller>,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$MagicShelf {
 
  int get id; String get name; String? get icon; String? get iconType; bool get publicShelf;

@@ -6,18 +6,18 @@ import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/async_value_view.dart';
-import '../../core/widgets/book_grid.dart';
 import '../../core/widgets/empty_state.dart';
 import 'continue_listening_section.dart';
 import 'continue_reading_section.dart';
+import 'dashboard.dart';
 import 'recently_added_section.dart';
 
 final librariesProvider = FutureProvider<List<Library>>((ref) async {
   return ref.read(apiClientProvider).getLibraries();
 });
 
-/// Which library the Home tab's Recently Added grid is scoped to — `null`
-/// means "All Libraries". Set via the AppBar's library action
+/// Which library the Home tab's Recently Added and Discover rows are scoped
+/// to — `null` means "All Libraries". Set via the AppBar's library action
 /// ([HomeLibraryAction]). In-memory only: resets to "All" on cold start,
 /// same as any other transient screen filter in this app.
 final selectedLibraryFilterProvider =
@@ -33,10 +33,13 @@ class SelectedLibraryFilterNotifier extends Notifier<int?> {
 }
 
 /// Body of the Home tab on [HomeScreen] — the AppBar/BottomNavigationBar
-/// live on the shell, not here. Continue Listening/Continue Reading stay as
-/// header carousels (each renders nothing when empty); Recently Added fills
-/// the rest of the screen as a full grid rather than a small carousel row,
-/// scoped to whichever library is picked from [HomeLibraryAction].
+/// live on the shell, not here. Modelled on Grimmory's web dashboard: the
+/// user's own row layout from their account settings (or the web's
+/// defaults — Continue Listening, Continue Reading, Recently Added,
+/// Discover Something New), each row a titled horizontal strip with the
+/// web's per-row empty/error text. Recently Added and Discover are scoped
+/// to whichever library [HomeLibraryAction] picks; the Continue rows and
+/// magic shelves span every library, as on the web.
 class LibrariesTab extends ConsumerWidget {
   const LibrariesTab({super.key});
 
@@ -44,102 +47,60 @@ class LibrariesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final libraries = ref.watch(librariesProvider);
     final selectedLibraryId = ref.watch(selectedLibraryFilterProvider);
-    final recentlyAdded = ref.watch(recentlyAddedProvider(selectedLibraryId));
 
     return AsyncValueView(
       value: libraries,
       onRetry: () => ref.invalidate(librariesProvider),
       data: (items) {
         if (items.isEmpty) return const EmptyState('No libraries found.');
+        final scrollers = ref.watch(dashboardConfigProvider);
         return RefreshIndicator(
-          // Each refresh fails on its own — one section's error must not
-          // reject the whole gesture (which surfaced as an unhandled error
-          // out of RefreshIndicator).
-          onRefresh: () => Future.wait([
-            for (final refresh in [
-              ref.refresh(librariesProvider.future),
-              ref.refresh(continueListeningProvider.future),
-              ref.refresh(continueReadingProvider.future),
-              ref.refresh(recentlyAddedProvider(selectedLibraryId).future),
-            ])
-              refresh.then<void>((_) {}, onError: (_) {}),
-          ], eagerError: false),
-          child: CustomScrollView(
-            slivers: [
-              const SliverToBoxAdapter(child: ContinueListeningSection()),
-              const SliverToBoxAdapter(child: ContinueReadingSection()),
-              // A header naming this section — it used to be implicit
-              // (RecentlyAddedSection carried its own "Recently Added"
-              // label as a carousel title), lost when this became a plain
-              // grid with no title of its own. Recently Added also caps out
-              // at 30 books, so anyone scoped to a specific library still
-              // needs a way to see everything in it (the full, paginated,
-              // sort/filterable LibraryDetailScreen).
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Recently Added',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                      if (selectedLibraryId != null)
-                        TextButton.icon(
-                          onPressed: () =>
-                              context.push('/libraries/$selectedLibraryId'),
-                          icon: const Icon(Icons.arrow_forward, size: 16),
-                          label: const Text('View full library'),
-                        ),
-                    ],
-                  ),
+          // Each refresh fails on its own — one row's error must not reject
+          // the whole gesture (which surfaced as an unhandled error out of
+          // RefreshIndicator). Magic-shelf rows are family members with ids
+          // only the config knows, so the whole family is invalidated.
+          onRefresh: () {
+            ref.invalidate(magicShelfScrollerProvider);
+            return Future.wait([
+              for (final refresh in [
+                ref.refresh(librariesProvider.future),
+                ref.refresh(dashboardConfigProvider.future),
+                ref.refresh(continueListeningProvider.future),
+                ref.refresh(continueReadingProvider.future),
+                ref.refresh(recentlyAddedProvider(selectedLibraryId).future),
+                ref.refresh(discoverBooksProvider(selectedLibraryId).future),
+              ])
+                refresh.then<void>((_) {}, onError: (_) {}),
+            ], eagerError: false);
+          },
+          // Every branch is a scrollable so pull-to-refresh works in all of
+          // them; the config provider never errors (it falls back to the
+          // defaults), so only loading and data are real.
+          child: scrollers.when(
+            loading: () => ListView(
+              children: const [
+                SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
                 ),
+              ],
+            ),
+            error: (error, _) => ListView(
+              children: [
+                ErrorRetryView(
+                  message: friendlyApiError(error),
+                  onRetry: () => ref.invalidate(dashboardConfigProvider),
+                ),
+              ],
+            ),
+            data: (rows) => ListView.builder(
+              padding: const EdgeInsets.only(bottom: 16),
+              itemCount: rows.length,
+              itemBuilder: (context, index) => DashboardScrollerView(
+                key: ValueKey(rows[index].id ?? '$index'),
+                scroller: rows[index],
               ),
-              ...recentlyAdded.when(
-                data: (books) {
-                  if (books.isEmpty) {
-                    return const [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: EmptyState('No books yet.'),
-                      ),
-                    ];
-                  }
-                  return [
-                    SliverPadding(
-                      padding: const EdgeInsets.all(12),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: 0.62,
-                            ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => BookGridTile(book: books[index]),
-                          childCount: books.length,
-                        ),
-                      ),
-                    ),
-                  ];
-                },
-                loading: () => const [
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                ],
-                error: (error, _) => [
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: EmptyState(friendlyApiError(error)),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -150,8 +111,8 @@ class LibrariesTab extends ConsumerWidget {
 /// AppBar action for the Home tab, alongside Settings — the title itself is
 /// now a persistent search bar ([HomeSearchBar]) rather than this, so this
 /// only needs to be an icon. With more than one library, shows a menu to
-/// re-scope the Recently Added grid to a specific library (or back to "All
-/// Libraries") in place; with exactly one library there's nothing to switch
+/// re-scope the Recently Added and Discover rows to a specific library (or
+/// back to "All Libraries") in place; with exactly one library there's nothing to switch
 /// between, so it instead links straight to that library's own full
 /// contents (`LibraryDetailScreen`, with sort/type/author filters) —
 /// Recently Added alone caps out at 30 books and was never meant to replace
