@@ -2600,6 +2600,282 @@ as double,
 
 
 /// @nodoc
+mixin _$PageProgress {
+
+ int get page; double get percentage; DateTime? get updatedAt;
+/// Create a copy of PageProgress
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PageProgressCopyWith<PageProgress> get copyWith => _$PageProgressCopyWithImpl<PageProgress>(this as PageProgress, _$identity);
+
+  /// Serializes this PageProgress to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as PageProgress;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PageProgress&&(identical(other.page, _this.page) || other.page == _this.page)&&(identical(other.percentage, _this.percentage) || other.percentage == _this.percentage)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as PageProgress;
+  return Object.hash(runtimeType,_this.page,_this.percentage,_this.updatedAt);
+}
+
+@override
+String toString() {
+  final _this = this as PageProgress;
+  return 'PageProgress(page: ${_this.page}, percentage: ${_this.percentage}, updatedAt: ${_this.updatedAt})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PageProgressCopyWith<$Res>  {
+  factory $PageProgressCopyWith(PageProgress value, $Res Function(PageProgress) _then) = _$PageProgressCopyWithImpl;
+@useResult
+$Res call({
+ int page, double percentage, DateTime? updatedAt
+});
+
+
+
+
+}
+/// @nodoc
+class _$PageProgressCopyWithImpl<$Res>
+    implements $PageProgressCopyWith<$Res> {
+  _$PageProgressCopyWithImpl(this._self, this._then);
+
+  final PageProgress _self;
+  final $Res Function(PageProgress) _then;
+
+/// Create a copy of PageProgress
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? page = null,Object? percentage = null,Object? updatedAt = freezed,}) {
+  return _then(PageProgress(
+page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,percentage: null == percentage ? _self.percentage : percentage // ignore: cast_nullable_to_non_nullable
+as double,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [PageProgress].
+extension PageProgressPatterns on PageProgress {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PageProgress value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PageProgress() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PageProgress value)  $default,){
+final _that = this;
+switch (_that) {
+case _PageProgress():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PageProgress value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PageProgress() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int page,  double percentage,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PageProgress() when $default != null:
+return $default(_that.page,_that.percentage,_that.updatedAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int page,  double percentage,  DateTime? updatedAt)  $default,) {final _that = this;
+switch (_that) {
+case _PageProgress():
+return $default(_that.page,_that.percentage,_that.updatedAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int page,  double percentage,  DateTime? updatedAt)?  $default,) {final _that = this;
+switch (_that) {
+case _PageProgress() when $default != null:
+return $default(_that.page,_that.percentage,_that.updatedAt);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _PageProgress implements PageProgress {
+  const _PageProgress({required this.page, required this.percentage, this.updatedAt});
+  factory _PageProgress.fromJson(Map<String, dynamic> json) => _$PageProgressFromJson(json);
+
+@override final  int page;
+@override final  double percentage;
+@override final  DateTime? updatedAt;
+
+/// Create a copy of PageProgress
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PageProgressCopyWith<_PageProgress> get copyWith => __$PageProgressCopyWithImpl<_PageProgress>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$PageProgressToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PageProgress&&(identical(other.page, page) || other.page == page)&&(identical(other.percentage, percentage) || other.percentage == percentage)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,page,percentage,updatedAt);
+}
+
+@override
+String toString() {
+    return 'PageProgress(page: $page, percentage: $percentage, updatedAt: $updatedAt)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PageProgressCopyWith<$Res> implements $PageProgressCopyWith<$Res> {
+  factory _$PageProgressCopyWith(_PageProgress value, $Res Function(_PageProgress) _then) = __$PageProgressCopyWithImpl;
+@override @useResult
+$Res call({
+ int page, double percentage, DateTime? updatedAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$PageProgressCopyWithImpl<$Res>
+    implements _$PageProgressCopyWith<$Res> {
+  __$PageProgressCopyWithImpl(this._self, this._then);
+
+  final _PageProgress _self;
+  final $Res Function(_PageProgress) _then;
+
+/// Create a copy of PageProgress
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? page = null,Object? percentage = null,Object? updatedAt = freezed,}) {
+  return _then(_PageProgress(
+page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,percentage: null == percentage ? _self.percentage : percentage // ignore: cast_nullable_to_non_nullable
+as double,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$Series {
 
  String get seriesName; int get bookCount; List<String> get authors; int? get seriesTotal; int get booksRead; DateTime? get latestAddedOn; List<SeriesCoverBook> get coverBooks;

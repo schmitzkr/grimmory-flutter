@@ -154,6 +154,48 @@ void main() {
       expect(body['epubProgress']['cfi'], 'epubcfi(/6/4!/4/2)');
       expect(body['epubProgress']['percentage'], 3.2);
     });
+
+    // Comics/PDFs store the 1-based page number as the file-level
+    // positionData string — `ReadingProgressService` parses it back with
+    // Integer.parseInt, so it must be exactly the digits, nothing else.
+    test(
+      'comic sends the page number as positionData under cbxProgress',
+      () async {
+        await client.updatePageProgress(
+          9,
+          const PageProgress(page: 12, percentage: 40.0),
+          format: PageFormat.cbx,
+          bookFileId: 90,
+        );
+
+        final request = adapter.requests.single;
+        expect(request.path, '/app/books/9/progress');
+        expect(request.method, 'PUT');
+        final body = request.data as Map<String, dynamic>;
+        expect(body['fileProgress'], {
+          'bookFileId': 90,
+          'positionData': '12',
+          'positionHref': null,
+          'progressPercent': 40.0,
+        });
+        expect(body['cbxProgress'], {'page': 12, 'percentage': 40.0});
+        expect(body.containsKey('pdfProgress'), isFalse);
+      },
+    );
+
+    test('pdf uses the pdfProgress key', () async {
+      await client.updatePageProgress(
+        9,
+        const PageProgress(page: 3, percentage: 10.0),
+        format: PageFormat.pdf,
+        bookFileId: null,
+      );
+
+      final body = adapter.requests.single.data as Map<String, dynamic>;
+      expect(body['pdfProgress'], {'page': 3, 'percentage': 10.0});
+      expect(body.containsKey('cbxProgress'), isFalse);
+      expect(body.containsKey('fileProgress'), isFalse);
+    });
   });
 
   // `/app/books/continue-reading` and `/continue-listening` return [] for
@@ -321,6 +363,51 @@ void main() {
       expect(progress?.cfi, 'epubcfi(/6/50!/4)');
       expect(progress?.href, isNull);
       expect(progress?.percentage, 44.2);
+    });
+
+    test('page progress reads the key for its format only', () async {
+      adapter.handler = (_) => _json({
+        'cbxProgress': {'page': 7, 'percentage': 35.0, 'updatedAt': null},
+        'pdfProgress': null,
+      });
+
+      final comic = await client.getPageProgress(49, PageFormat.cbx);
+      expect(comic?.page, 7);
+      expect(comic?.percentage, 35.0);
+      expect(await client.getPageProgress(49, PageFormat.pdf), isNull);
+    });
+
+    test('page progress treats a hollow row as no progress', () async {
+      adapter.handler = (_) => _json({
+        'cbxProgress': {'page': null, 'percentage': null},
+      });
+      expect(await client.getPageProgress(5, PageFormat.cbx), isNull);
+
+      adapter.handler = (_) => _json({'status': 404}, status: 404);
+      expect(await client.getPageProgress(5, PageFormat.cbx), isNull);
+    });
+  });
+
+  group('comic pages', () {
+    test('lists page numbers filtered by bookType', () async {
+      adapter.handler = (_) => _json([1, 2, 3]);
+      final pages = await client.getComicPages(4, format: PageFormat.cbx);
+      expect(pages, [1, 2, 3]);
+
+      final request = adapter.requests.single;
+      expect(request.path, '/cbx/4/pages');
+      expect(request.queryParameters, {'bookType': 'CBX'});
+    });
+
+    test('page image URL points at the media controller', () {
+      expect(
+        client.comicPageUrl(4, 2),
+        'https://books.test/api/v1/media/book/4/cbx/pages/2',
+      );
+      expect(
+        client.comicPageUrl(4, 2, format: PageFormat.cbx),
+        'https://books.test/api/v1/media/book/4/cbx/pages/2?bookType=CBX',
+      );
     });
   });
 

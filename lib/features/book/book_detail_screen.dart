@@ -68,6 +68,7 @@ class _BookDetailBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isAudiobook = book.primaryFileType == 'AUDIOBOOK';
     final isEpub = book.primaryFileType == 'EPUB';
+    final isComic = book.primaryFileType == 'CBX';
     final audiobookInfo = isAudiobook
         ? ref.watch(audiobookInfoProvider(book.id))
         : null;
@@ -178,27 +179,7 @@ class _BookDetailBody extends ConsumerWidget {
           const SizedBox(height: 8),
           _DownloadButton(book: book),
         ] else if (isEpub) ...[
-          if (book.readStatus == 'READ')
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: Text('Finished'),
-            )
-          else if ((book.normalizedReadProgress ?? 0) > 0)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Column(
-                children: [
-                  Text('${(book.normalizedReadProgress! * 100).round()}% read'),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    width: 160,
-                    child: LinearProgressIndicator(
-                      value: book.normalizedReadProgress,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          _ReadingProgress(book: book),
           FilledButton.icon(
             onPressed: () => context.push('/books/${book.id}/read'),
             icon: const Icon(Icons.menu_book),
@@ -222,6 +203,17 @@ class _BookDetailBody extends ConsumerWidget {
             ),
             icon: const Icon(Icons.bookmark_border),
             label: const Text('Bookmarks'),
+          ),
+        ] else if (isComic) ...[
+          _ReadingProgress(book: book),
+          FilledButton.icon(
+            onPressed: () => context.push('/books/${book.id}/comic'),
+            icon: const Icon(Icons.auto_stories_outlined),
+            label: Text(
+              (book.normalizedReadProgress ?? 0) > 0
+                  ? 'Continue Reading'
+                  : 'Start Reading',
+            ),
           ),
         ] else ...[
           Text(
@@ -285,6 +277,36 @@ class _BookDetailBody extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// "Finished" / "N% read" + bar — the same block for every format that
+/// reports a 0-100 `readProgress` (EPUB, comics, PDFs).
+class _ReadingProgress extends StatelessWidget {
+  const _ReadingProgress({required this.book});
+
+  final Book book;
+
+  @override
+  Widget build(BuildContext context) {
+    if (book.readStatus == 'READ') {
+      return const Padding(
+        padding: EdgeInsets.only(bottom: 8),
+        child: Text('Finished'),
+      );
+    }
+    final progress = book.normalizedReadProgress ?? 0;
+    if (progress <= 0) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        children: [
+          Text('${(progress * 100).round()}% read'),
+          const SizedBox(height: 6),
+          SizedBox(width: 160, child: LinearProgressIndicator(value: progress)),
+        ],
+      ),
     );
   }
 }

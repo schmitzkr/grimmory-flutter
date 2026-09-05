@@ -146,6 +146,18 @@ extension BookProgressX on Book {
     if (ebooks.isEmpty) return null;
     return ebooks.firstWhere((f) => f.isPrimary, orElse: () => ebooks.first).id;
   }
+
+  /// The `bookFileId` to save page-based (comic/PDF) progress against —
+  /// the file of that exact type, preferring the primary one. Same
+  /// resolution as [ebookFileId], narrowed to the one `bookType` the
+  /// `/cbx` and `/pdf` reader endpoints serve for that format.
+  int? fileIdFor(PageFormat format) {
+    final matches = files.where((f) => f.bookType == format.bookType);
+    if (matches.isEmpty) return null;
+    return matches
+        .firstWhere((f) => f.isPrimary, orElse: () => matches.first)
+        .id;
+  }
 }
 
 /// From `AppBookFile` (`AppBookDetail.files`). [bookType] matches
@@ -274,6 +286,42 @@ abstract class EpubProgress with _$EpubProgress {
 
   factory EpubProgress.fromJson(Map<String, dynamic> json) =>
       _$EpubProgressFromJson(json);
+}
+
+/// The two page-based formats Grimmory tracks the same way — `PdfProgress`
+/// and `CbxProgress` are both `{page, percentage}` — differing only in the
+/// key they sit under in the progress response/request and the `bookType`
+/// the reader endpoints take.
+enum PageFormat {
+  cbx('cbxProgress', 'CBX'),
+  pdf('pdfProgress', 'PDF');
+
+  const PageFormat(this.jsonKey, this.bookType);
+
+  /// Field name on `AppBookProgressResponse` / `UpdateProgressRequest`.
+  final String jsonKey;
+
+  /// `BookFileType` value the `/cbx` and `/pdf` reader endpoints filter on.
+  final String bookType;
+}
+
+/// From `AppBookProgressResponse.cbxProgress` / `.pdfProgress`. [page] is
+/// **1-based** (the web reader stores `index + 1`); [percentage] is 0-100,
+/// `(page / pageCount) * 100` rounded to one decimal, as the web reader
+/// computes it. On the save side `ApiClient.updatePageProgress` sends this
+/// as the deprecated per-type field *and* as the file-level `fileProgress`
+/// block (whose `positionData` is the page number as a string — what the
+/// server's own migration writes for these formats).
+@freezed
+abstract class PageProgress with _$PageProgress {
+  const factory PageProgress({
+    required int page,
+    required double percentage,
+    DateTime? updatedAt,
+  }) = _PageProgress;
+
+  factory PageProgress.fromJson(Map<String, dynamic> json) =>
+      _$PageProgressFromJson(json);
 }
 
 /// From `AppSeriesSummary` (`GET /api/v1/app/series`). [bookCount] is how

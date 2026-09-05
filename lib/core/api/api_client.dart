@@ -610,6 +610,73 @@ class ApiClient {
     );
   }
 
+  /// Page-based progress (comics, PDFs): `cbxProgress`/`pdfProgress` on the
+  /// same `GET /app/books/{id}/progress` response the EPUB reader uses.
+  Future<PageProgress?> getPageProgress(int bookId, PageFormat format) async {
+    try {
+      final resp = await _dio.get('/app/books/$bookId/progress');
+      final data = resp.data as Map<String, dynamic>;
+      final progress = data[format.jsonKey];
+      if (progress == null ||
+          (progress as Map<String, dynamic>)['page'] == null) {
+        return null;
+      }
+      return PageProgress.fromJson(progress);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// Same dual write as [updateEpubProgress]: the deprecated per-type field
+  /// plus the file-level block that actually persists. `positionData` is
+  /// the page number as a string — the encoding `ReadingProgressService`
+  /// parses back with `Integer.parseInt` for PDF/CBX.
+  Future<void> updatePageProgress(
+    int bookId,
+    PageProgress progress, {
+    required PageFormat format,
+    required int? bookFileId,
+  }) async {
+    await _dio.put(
+      '/app/books/$bookId/progress',
+      data: {
+        format.jsonKey: {
+          'page': progress.page,
+          'percentage': progress.percentage,
+        },
+        if (bookFileId != null)
+          'fileProgress': {
+            'bookFileId': bookFileId,
+            'positionData': progress.page.toString(),
+            'positionHref': null,
+            'progressPercent': progress.percentage,
+          },
+      },
+    );
+  }
+
+  // ── Comics (CbxReaderController + BookMediaController) ────────────────
+
+  /// `GET /cbx/{bookId}/pages` — the page numbers the server can render,
+  /// in reading order (1-based). [bookType] picks the file on a book that
+  /// has more than one format, same as the web reader passes it.
+  Future<List<int>> getComicPages(int bookId, {PageFormat? format}) async {
+    final resp = await _dio.get(
+      '/cbx/$bookId/pages',
+      queryParameters: {if (format != null) 'bookType': format.bookType},
+    );
+    return (resp.data as List).cast<num>().map((n) => n.toInt()).toList();
+  }
+
+  /// `BookMediaController` — `GET /media/book/{bookId}/cbx/pages/{page}`:
+  /// the server extracts and serves each page image itself, so the app
+  /// never touches the archive. Needs [authHeaders] like every media URL.
+  String comicPageUrl(int bookId, int page, {PageFormat? format}) {
+    final base = '${_dio.options.baseUrl}/media/book/$bookId/cbx/pages/$page';
+    return format == null ? base : '$base?bookType=${format.bookType}';
+  }
+
   // ── Dashboard (UserController + AppBookController) ─────────────────────
 
   /// The user's saved web-dashboard layout, or null when they have never

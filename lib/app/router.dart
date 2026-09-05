@@ -15,6 +15,7 @@ import '../features/library/library_detail_screen.dart';
 import '../features/onboarding/server_url_provider.dart';
 import '../features/onboarding/server_url_screen.dart';
 import '../features/player/player_screen.dart';
+import '../features/reader/comic_reader_screen.dart';
 import '../features/reader/epub_reader_args.dart';
 import '../features/reader/epub_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -112,6 +113,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             jumpToCfi: extra is EpubReaderArgs ? extra.jumpToCfi : null,
           );
         },
+      ),
+      GoRoute(
+        path: '/books/:id/comic',
+        builder: (context, state) =>
+            ComicReaderScreen(bookId: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/settings',
