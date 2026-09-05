@@ -304,6 +304,29 @@ void main() {
     });
   });
 
+  group('public settings', () {
+    test('reads SSO details without a token', () async {
+      adapter.handler = (_) => _json({
+        'oidcEnabled': true,
+        'remoteAuthEnabled': false,
+        'oidcForceOnlyMode': false,
+        'oidcProviderDetails': {
+          'providerName': 'Authentik',
+          'clientId': 'abc',
+          'issuerUri': 'https://auth.example.test/application/o/grimmory/',
+          'scopes': 'openid profile',
+        },
+      });
+
+      final settings = await client.getPublicSettings();
+      final request = adapter.requests.single;
+      expect(request.path, '/public-settings');
+      expect(settings.oidcEnabled, isTrue);
+      expect(settings.oidcProviderDetails?.clientId, 'abc');
+      expect(settings.oidcProviderDetails?.providerName, 'Authentik');
+    });
+  });
+
   group('dashboard', () {
     // The web stores its dashboard layout in the user's settings on
     // /users/me; the phone reads the same field so the two agree.

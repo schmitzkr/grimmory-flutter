@@ -431,6 +431,41 @@ _DashboardConfig _$DashboardConfigFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$DashboardConfigToJson(_DashboardConfig instance) =>
     <String, dynamic>{'scrollers': instance.scrollers};
 
+_PublicSettings _$PublicSettingsFromJson(Map<String, dynamic> json) =>
+    _PublicSettings(
+      oidcEnabled: json['oidcEnabled'] as bool? ?? false,
+      oidcForceOnlyMode: json['oidcForceOnlyMode'] as bool? ?? false,
+      remoteAuthEnabled: json['remoteAuthEnabled'] as bool? ?? false,
+      oidcProviderDetails: json['oidcProviderDetails'] == null
+          ? null
+          : OidcProviderDetails.fromJson(
+              json['oidcProviderDetails'] as Map<String, dynamic>,
+            ),
+    );
+
+Map<String, dynamic> _$PublicSettingsToJson(_PublicSettings instance) =>
+    <String, dynamic>{
+      'oidcEnabled': instance.oidcEnabled,
+      'oidcForceOnlyMode': instance.oidcForceOnlyMode,
+      'remoteAuthEnabled': instance.remoteAuthEnabled,
+      'oidcProviderDetails': instance.oidcProviderDetails,
+    };
+
+_OidcProviderDetails _$OidcProviderDetailsFromJson(Map<String, dynamic> json) =>
+    _OidcProviderDetails(
+      providerName: json['providerName'] as String?,
+      clientId: json['clientId'] as String?,
+      issuerUri: json['issuerUri'] as String?,
+    );
+
+Map<String, dynamic> _$OidcProviderDetailsToJson(
+  _OidcProviderDetails instance,
+) => <String, dynamic>{
+  'providerName': instance.providerName,
+  'clientId': instance.clientId,
+  'issuerUri': instance.issuerUri,
+};
+
 _MagicShelf _$MagicShelfFromJson(Map<String, dynamic> json) => _MagicShelf(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,

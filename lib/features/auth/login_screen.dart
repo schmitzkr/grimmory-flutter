@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
 import '../../core/update_provider.dart';
+import '../../core/providers.dart';
 import '../onboarding/server_url_provider.dart';
 import 'auth_provider.dart';
+import 'oidc_config.dart';
 import 'oidc_login_controller.dart';
+import 'public_settings_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -34,8 +37,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signInWithSso() async {
-    final configured = ref.read(oidcConfigProvider) != null;
-    if (!configured) {
+    // The server publishes its own OIDC issuer and client id; prefer those
+    // over anything typed in by hand (the admin may have changed IdP), and
+    // save them so the manual screen shows what is in use.
+    final fromServer = ref.read(publicSettingsProvider).value?.oidcConfig;
+    if (fromServer != null) {
+      final prefs = ref.read(sharedPrefsProvider);
+      final stored = OidcConfig.load(prefs);
+      if (stored == null ||
+          stored.issuer != fromServer.issuer ||
+          stored.clientId != fromServer.clientId) {
+        await fromServer.save(prefs);
+        ref.invalidate(oidcConfigProvider);
+      }
+    }
+    if (ref.read(oidcConfigProvider) == null) {
+      if (!mounted) return;
       await context.push('/sso-settings');
       return;
     }
@@ -46,7 +63,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final oidcState = ref.watch(oidcLoginControllerProvider);
-    final oidcConfigured = ref.watch(oidcConfigProvider) != null;
+    final publicSettings = ref.watch(publicSettingsProvider).value;
+    final serverSso = publicSettings?.oidcConfig;
+    final oidcConfigured =
+        ref.watch(oidcConfigProvider) != null || serverSso != null;
+    // The server can insist on SSO; the password form is then disabled
+    // rather than hidden, so it is still clear what the screen is.
+    final forceSso = publicSettings?.oidcForceOnlyMode ?? false;
+    final ssoLabel = serverSso != null
+        ? publicSettings!.ssoButtonLabel
+        : (oidcConfigured ? 'Sign in with SSO' : 'Set up SSO');
     final isLoading = authState.isLoading || oidcState.isLoading;
     final serverUrl = ref.watch(serverUrlProvider);
     final serverHost = serverUrl == null
@@ -137,8 +163,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onSubmitted: (_) => _login(),
                     ),
                     const SizedBox(height: 16),
+                    if (forceSso)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'This server only allows single sign-on.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     FilledButton(
-                      onPressed: isLoading ? null : _login,
+                      onPressed: isLoading || forceSso ? null : _login,
                       child: authState.isLoading
                           ? const SizedBox(
                               height: 20,
@@ -161,11 +196,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : Text(
-                                    oidcConfigured
-                                        ? 'Sign in with SSO'
-                                        : 'Set up SSO',
-                                  ),
+                                : Text(ssoLabel),
                           ),
                         ),
                         if (oidcConfigured)

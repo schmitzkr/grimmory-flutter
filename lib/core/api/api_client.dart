@@ -159,6 +159,7 @@ class ApiClient {
   /// behalf — a 401 from them means bad credentials, and the refresh call
   /// itself must not recurse into another refresh.
   static bool _isAuthPath(String path) =>
+      path.contains('/public-settings') ||
       path.contains('/auth/refresh') ||
       path.contains('/auth/login') ||
       path.contains('/auth/register') ||
@@ -723,6 +724,17 @@ class ApiClient {
   String comicPageUrl(int bookId, int page, {PageFormat? format}) {
     final base = '${_dio.options.baseUrl}/media/book/$bookId/cbx/pages/$page';
     return format == null ? base : '$base?bookType=${format.bookType}';
+  }
+
+  /// `GET /public-settings` — no token needed (it is on the server's public
+  /// list), so it works from the login screen; tells the app whether SSO is
+  /// configured and with which issuer/client id.
+  Future<PublicSettings> getPublicSettings() async {
+    final resp = await _dio.get(
+      '/public-settings',
+      options: Options(headers: {'Authorization': null}),
+    );
+    return PublicSettings.fromJson(resp.data as Map<String, dynamic>);
   }
 
   // ── Dashboard (UserController + AppBookController) ─────────────────────
