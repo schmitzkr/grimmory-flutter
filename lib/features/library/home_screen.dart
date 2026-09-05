@@ -43,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const HomeSearchBar(),
         actions: [
           IconButton(
+            tooltip: 'Settings',
             icon: const Icon(Icons.settings),
             onPressed: () => context.push('/settings'),
           ),

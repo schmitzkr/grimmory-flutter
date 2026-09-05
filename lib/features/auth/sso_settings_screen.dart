@@ -71,6 +71,8 @@ class _SsoSettingsScreenState extends ConsumerState<SsoSettingsScreen> {
               controller: _issuerController,
               keyboardType: TextInputType.url,
               autocorrect: false,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'Issuer URL',
                 hintText: 'https://auth.example.com/application/o/grimmory/',

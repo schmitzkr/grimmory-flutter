@@ -95,6 +95,8 @@ class _ServerUrlScreenState extends ConsumerState<ServerUrlScreen> {
               controller: _controller,
               keyboardType: TextInputType.url,
               autocorrect: false,
+              autofocus: true,
+              textInputAction: TextInputAction.go,
               decoration: const InputDecoration(
                 labelText: 'Server URL',
                 hintText: 'https://books.example.com',

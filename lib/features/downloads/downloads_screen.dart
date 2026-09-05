@@ -94,6 +94,9 @@ class _DownloadTile extends ConsumerWidget {
             )
           : Text(subtitle),
       trailing: IconButton(
+        tooltip: record.status == DownloadStatus.downloading
+            ? 'Cancel download'
+            : 'Remove download',
         icon: Icon(
           record.status == DownloadStatus.downloading
               ? Icons.close
