@@ -633,11 +633,7 @@ class ApiClient {
   Future<List<Book>> getRandomBooks({int size = 20, int? libraryId}) async {
     final resp = await _dio.get(
       '/app/books/random',
-      queryParameters: {
-        'page': 0,
-        'size': size,
-        'libraryId': ?libraryId,
-      },
+      queryParameters: {'page': 0, 'size': size, 'libraryId': ?libraryId},
     );
     return _extractPageContent(resp.data).map(Book.fromJson).toList();
   }
