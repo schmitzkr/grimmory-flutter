@@ -55,6 +55,9 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   primaryFileType: json['primaryFileType'] as String?,
   readProgress: (json['readProgress'] as num?)?.toDouble(),
   readStatus: json['readStatus'] as String?,
+  addedOn: json['addedOn'] == null
+      ? null
+      : DateTime.parse(json['addedOn'] as String),
   lastReadTime: json['lastReadTime'] == null
       ? null
       : DateTime.parse(json['lastReadTime'] as String),
@@ -82,6 +85,7 @@ Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'primaryFileType': instance.primaryFileType,
   'readProgress': instance.readProgress,
   'readStatus': instance.readStatus,
+  'addedOn': instance.addedOn?.toIso8601String(),
   'lastReadTime': instance.lastReadTime?.toIso8601String(),
   'files': instance.files,
 };
@@ -325,6 +329,8 @@ _DashboardScroller _$DashboardScrollerFromJson(Map<String, dynamic> json) =>
       order: (json['order'] as num?)?.toInt() ?? 0,
       maxItems: (json['maxItems'] as num?)?.toInt(),
       magicShelfId: (json['magicShelfId'] as num?)?.toInt(),
+      sortField: json['sortField'] as String?,
+      sortDirection: json['sortDirection'] as String?,
     );
 
 Map<String, dynamic> _$DashboardScrollerToJson(_DashboardScroller instance) =>
@@ -336,6 +342,8 @@ Map<String, dynamic> _$DashboardScrollerToJson(_DashboardScroller instance) =>
       'order': instance.order,
       'maxItems': instance.maxItems,
       'magicShelfId': instance.magicShelfId,
+      'sortField': instance.sortField,
+      'sortDirection': instance.sortDirection,
     };
 
 _DashboardConfig _$DashboardConfigFromJson(Map<String, dynamic> json) =>

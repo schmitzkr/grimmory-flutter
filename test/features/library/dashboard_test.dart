@@ -99,6 +99,49 @@ void main() {
     });
   });
 
+  group('sortBooks', () {
+    Book book(
+      int id,
+      String title, {
+      DateTime? added,
+      List<String> authors = const [],
+    }) => Book(id: id, title: title, addedOn: added, authors: authors);
+
+    test('orders titles naturally and case-insensitively', () {
+      final books = [book(1, 'Book 10'), book(2, 'book 2'), book(3, 'Another')];
+      expect(sortBooks(books, 'title', 'asc').map((b) => b.id), [3, 2, 1]);
+      expect(sortBooks(books, 'title', 'desc').map((b) => b.id), [1, 2, 3]);
+    });
+
+    // The web compares null against a value as "after", then flips the
+    // whole result for desc — so blanks lead a descending row.
+    test('puts missing values last ascending and first descending', () {
+      final books = [
+        book(1, 'a', added: DateTime.utc(2026, 1, 1)),
+        book(2, 'b'),
+        book(3, 'c', added: DateTime.utc(2026, 3, 1)),
+      ];
+      expect(sortBooks(books, 'addedOn', 'asc').map((b) => b.id), [1, 3, 2]);
+      expect(sortBooks(books, 'addedOn', 'desc').map((b) => b.id), [2, 3, 1]);
+    });
+
+    test('leaves the order alone for an unknown or unsupported field', () {
+      final books = [book(2, 'b'), book(1, 'a')];
+      expect(sortBooks(books, 'publisher', 'asc'), books);
+      expect(sortBooks(books, null, 'asc'), books);
+      expect(sortBooks(books, '', 'desc'), books);
+    });
+
+    test('sorts by first author', () {
+      final books = [
+        book(1, 'x', authors: ['Zed']),
+        book(2, 'y', authors: ['Abe', 'Zed']),
+        book(3, 'z'),
+      ];
+      expect(sortBooks(books, 'author', 'asc').map((b) => b.id), [2, 1, 3]);
+    });
+  });
+
   group('discoverPick', () {
     Book book(int id, {String? status}) =>
         Book(id: id, title: 'Book $id', readStatus: status);

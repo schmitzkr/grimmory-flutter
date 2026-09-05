@@ -152,18 +152,78 @@ final discoverBooksProvider = FutureProvider.family<List<Book>, int?>((
   return discoverPick(books, max: dashboardMaxItems);
 });
 
-/// A magic shelf pinned to the dashboard. The web applies the row's own
-/// `sortField`/`sortDirection` after evaluating the shelf's rules locally;
-/// the app-namespaced shelf endpoint takes no sort, so rows come in the
-/// shelf's natural order.
+/// A magic shelf pinned to the dashboard. The row's own
+/// `sortField`/`sortDirection` is applied by [sortBooks] at render time,
+/// as the web does after evaluating the shelf's rules locally — the
+/// app-namespaced shelf endpoint takes no sort. The fetch is wider than a
+/// row so the sort has the shelf's whole first page to order, not just
+/// the first twenty in natural order.
 final magicShelfScrollerProvider = FutureProvider.family<List<Book>, int>((
   ref,
   magicShelfId,
 ) async {
   return ref
       .read(apiClientProvider)
-      .getMagicShelfBooks(magicShelfId, size: dashboardMaxItems);
+      .getMagicShelfBooks(magicShelfId, size: dashboardMaxItems * 5);
 });
+
+/// What the web's `SortService.fieldExtractors` read for each field, for
+/// the fields an `AppBookSummary` carries. A field it doesn't (file name,
+/// publisher, ratings, page count, …) returns null for every book, which
+/// [sortBooks] treats as "leave the order alone" — the web logs a warning
+/// and does the same.
+Comparable<Object>? _sortKey(Book book, String field) => switch (field) {
+  'title' => book.title,
+  'addedOn' => book.addedOn,
+  'author' => book.authors.isEmpty ? null : book.authors.first,
+  'seriesName' => book.seriesName,
+  'seriesNumber' => book.seriesNumber,
+  'lastReadTime' => book.lastReadTime,
+  'readStatus' => book.readStatus,
+  'readingProgress' => book.readProgress,
+  'bookType' => book.primaryFileType,
+  _ => null,
+};
+
+/// The web's `SortService.applySort` for one criterion: strings compare
+/// naturally (digit runs by value, so "Book 2" sorts before "Book 10",
+/// case-insensitively), everything else by its own ordering, and a missing
+/// value sorts after a present one before the direction is applied — so
+/// `desc` puts the blanks first, exactly as the web does. A blank or
+/// unknown [field], or one no book has a value for, returns [books]
+/// unchanged.
+List<Book> sortBooks(List<Book> books, String? field, String? direction) {
+  if (field == null || field.isEmpty) return books;
+  final keys = {for (final b in books) b.id: _sortKey(b, field)};
+  if (keys.values.every((k) => k == null)) return books;
+  final sign = direction == 'desc' ? -1 : 1;
+  final sorted = [...books]
+    ..sort((a, b) => sign * _compareKeys(keys[a.id], keys[b.id]));
+  return sorted;
+}
+
+int _compareKeys(Comparable<Object>? a, Comparable<Object>? b) {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  if (a is String && b is String) return naturalCompare(a, b);
+  return a.compareTo(b);
+}
+
+final _chunk = RegExp(r'\d+|\D+');
+
+/// Case-insensitive comparison that orders digit runs by numeric value.
+int naturalCompare(String a, String b) {
+  final ac = _chunk.allMatches(a.toLowerCase()).map((m) => m[0]!).toList();
+  final bc = _chunk.allMatches(b.toLowerCase()).map((m) => m[0]!).toList();
+  for (var i = 0; i < ac.length && i < bc.length; i++) {
+    final x = ac[i], y = bc[i];
+    final xn = int.tryParse(x), yn = int.tryParse(y);
+    final c = (xn != null && yn != null) ? xn.compareTo(yn) : x.compareTo(y);
+    if (c != 0) return c;
+  }
+  return ac.length.compareTo(bc.length);
+}
 
 /// The height every row body takes in all states, so a row loading or
 /// coming back empty never shifts the rows below it.
@@ -193,7 +253,14 @@ class DashboardScrollerView extends ConsumerWidget {
         magicShelfScrollerProvider(scroller.magicShelfId!),
       ),
     };
-    final books = raw.whenData((list) => list.take(max).toList());
+    final books = raw.whenData(
+      (list) =>
+          (kind == ScrollerType.magicShelf
+                  ? sortBooks(list, scroller.sortField, scroller.sortDirection)
+                  : list)
+              .take(max)
+              .toList(),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

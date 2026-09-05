@@ -90,6 +90,9 @@ abstract class Book with _$Book {
     // currently acts on (a finished-book badge).
     double? readProgress,
     String? readStatus,
+    // When the book was added to its library (`AppBookSummary.addedOn`) —
+    // a sort key the web dashboard offers for magic-shelf rows.
+    DateTime? addedOn,
     // When this user last read/listened to the book (any format) — the
     // ordering key of the Continue Reading/Listening carousels, exactly as
     // the web dashboard sorts its own.
@@ -454,6 +457,11 @@ abstract class DashboardScroller with _$DashboardScroller {
     @Default(0) int order,
     int? maxItems,
     int? magicShelfId,
+    // Magic-shelf rows only: one of the web editor's sort fields (`title`,
+    // `addedOn`, `author`, `seriesName`, `seriesNumber`, `lastReadTime`,
+    // `readStatus`, `readingProgress`, `bookType`, …) and `asc`/`desc`.
+    String? sortField,
+    String? sortDirection,
   }) = _DashboardScroller;
 
   factory DashboardScroller.fromJson(Map<String, dynamic> json) =>
