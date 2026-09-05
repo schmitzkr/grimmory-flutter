@@ -610,6 +610,34 @@ class ApiClient {
     );
   }
 
+  // ── Dashboard (UserController + AppBookController) ─────────────────────
+
+  /// The user's saved web-dashboard layout, or null when they have never
+  /// customised it. Read from `GET /users/me` (the general user endpoint —
+  /// the app-namespaced `/app/users/me` only carries a few permission
+  /// flags), which is where the web's `DashboardConfigService` reads and
+  /// writes it too, so the phone shows whatever row order and titles were
+  /// arranged in the browser.
+  Future<DashboardConfig?> getDashboardConfig() async {
+    final resp = await _dio.get('/users/me');
+    final settings = (resp.data as Map<String, dynamic>)['userSettings'];
+    if (settings is! Map<String, dynamic>) return null;
+    final config = settings['dashboardConfig'];
+    if (config is! Map<String, dynamic>) return null;
+    return DashboardConfig.fromJson(config);
+  }
+
+  /// `GET /app/books/random` — a page of [size] books starting at a random
+  /// offset (the server picks the window, not the members), optionally
+  /// scoped to one library. Feeds the "Discover Something New" row.
+  Future<List<Book>> getRandomBooks({int size = 20, int? libraryId}) async {
+    final resp = await _dio.get(
+      '/app/books/random',
+      queryParameters: {'page': 0, 'size': size, 'libraryId': ?libraryId},
+    );
+    return _extractPageContent(resp.data).map(Book.fromJson).toList();
+  }
+
   // ── Series (AppSeriesController) ──────────────────────────────────────
 
   Future<List<Series>> getSeries({int page = 0, int size = 100}) async {

@@ -209,6 +209,69 @@ void main() {
     });
   });
 
+  group('dashboard', () {
+    // The web stores its dashboard layout in the user's settings on
+    // /users/me; the phone reads the same field so the two agree.
+    test('reads the saved layout from the user settings', () async {
+      adapter.handler = (_) => _json({
+        'id': 1,
+        'username': 'someone',
+        'userSettings': {
+          'filterMode': 'and',
+          'dashboardConfig': {
+            'scrollers': [
+              {
+                'id': '2',
+                'type': 'lastRead',
+                'title': 'dashboard.scroller.continueReading',
+                'enabled': true,
+                'order': 1,
+                'maxItems': 12,
+                'magicShelfId': null,
+                'sortField': null,
+                'sortDirection': null,
+              },
+              {
+                'id': 'x1',
+                'type': 'magicShelf',
+                'title': 'Cosy Fantasy',
+                'enabled': true,
+                'order': 2,
+                'maxItems': null,
+                'magicShelfId': 7,
+              },
+            ],
+          },
+        },
+      });
+
+      final config = await client.getDashboardConfig();
+      expect(adapter.requests.single.path, '/users/me');
+      expect(config?.scrollers, hasLength(2));
+      expect(config?.scrollers.first.kind, ScrollerType.lastRead);
+      expect(config?.scrollers.first.maxItems, 12);
+      expect(config?.scrollers.last.magicShelfId, 7);
+      expect(config?.scrollers.last.maxItems, isNull);
+    });
+
+    test('is null until the user has customised the web dashboard', () async {
+      adapter.handler = (_) => _json({'id': 1, 'userSettings': {}});
+      expect(await client.getDashboardConfig(), isNull);
+
+      adapter.handler = (_) => _json({'id': 1, 'userSettings': null});
+      expect(await client.getDashboardConfig(), isNull);
+    });
+
+    test('random books are a scoped page of the random endpoint', () async {
+      adapter.handler = (_) => _json({'content': [], 'page': 0});
+      await client.getRandomBooks(size: 40, libraryId: 3);
+
+      final request = adapter.requests.single;
+      expect(request.path, '/app/books/random');
+      expect(request.queryParameters, {'page': 0, 'size': 40, 'libraryId': 3});
+    });
+  });
+
   group('progress reads', () {
     test('audiobook parses a real row', () async {
       adapter.handler = (_) => _json({
