@@ -65,7 +65,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: /opt/hostedtoolcache/android-sdk
-          key: android-sdk-37-buildtools-36.0.0
+          key: android-sdk-37.0-buildtools-36.0.0
 
       # Point at the same path "Cache Android SDK" above targets, so a cache
       # hit is actually reused instead of setup-android re-downloading into
@@ -78,7 +78,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools platforms;android-37 build-tools;36.0.0'
+          # API 37 only ships as minor-versioned platform packages (37.0,
+          # 37.1, …) — there is no bare `platforms;android-37` id.
+          packages: 'platform-tools platforms;android-37.0 build-tools;36.0.0'
 
       - uses: subosito/flutter-action@v2
         with:
