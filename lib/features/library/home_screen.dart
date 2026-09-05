@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _index = 0;
 
   static const _tabs = [
+    HomeTab(),
     LibrariesTab(),
     SeriesTab(),
     AuthorsTab(),
@@ -41,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const HomeSearchBar(),
         actions: [
-          if (_index == 0) const HomeLibraryAction(),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.push('/settings'),
@@ -68,6 +68,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.home_outlined),
                 selectedIcon: Icon(Icons.home),
                 label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.local_library_outlined),
+                selectedIcon: Icon(Icons.local_library),
+                label: 'Libraries',
               ),
               NavigationDestination(
                 icon: Icon(Icons.collections_bookmark_outlined),

@@ -17,37 +17,19 @@ final librariesProvider = FutureProvider<List<Library>>((ref) async {
   return ref.read(apiClientProvider).getLibraries();
 });
 
-/// Which library the Home tab's Recently Added and Discover rows are scoped
-/// to — `null` means "All Libraries". Set via the AppBar's library action
-/// ([HomeLibraryAction]). In-memory only: resets to "All" on cold start,
-/// same as any other transient screen filter in this app.
-final selectedLibraryFilterProvider =
-    NotifierProvider<SelectedLibraryFilterNotifier, int?>(
-      SelectedLibraryFilterNotifier.new,
-    );
-
-class SelectedLibraryFilterNotifier extends Notifier<int?> {
-  @override
-  int? build() => null;
-
-  void select(int? libraryId) => state = libraryId;
-}
-
 /// Body of the Home tab on [HomeScreen] — the AppBar/BottomNavigationBar
 /// live on the shell, not here. Modelled on Grimmory's web dashboard: the
 /// user's own row layout from their account settings (or the web's
 /// defaults — Continue Listening, Continue Reading, Recently Added,
 /// Discover Something New), each row a titled horizontal strip with the
-/// web's per-row empty/error text. Recently Added and Discover are scoped
-/// to whichever library [HomeLibraryAction] picks; the Continue rows and
-/// magic shelves span every library, as on the web.
-class LibrariesTab extends ConsumerWidget {
-  const LibrariesTab({super.key});
+/// web's per-row empty/error text, spanning every library the account can
+/// see, as on the web. Browsing one library is the [LibrariesTab]'s job.
+class HomeTab extends ConsumerWidget {
+  const HomeTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final libraries = ref.watch(librariesProvider);
-    final selectedLibraryId = ref.watch(selectedLibraryFilterProvider);
 
     return AsyncValueView(
       value: libraries,
@@ -69,8 +51,8 @@ class LibrariesTab extends ConsumerWidget {
                 ref.refresh(dashboardConfigProvider.future),
                 ref.refresh(continueListeningProvider.future),
                 ref.refresh(continueReadingProvider.future),
-                ref.refresh(recentlyAddedProvider(selectedLibraryId).future),
-                ref.refresh(discoverBooksProvider(selectedLibraryId).future),
+                ref.refresh(recentlyAddedProvider(null).future),
+                ref.refresh(discoverBooksProvider(null).future),
               ])
                 refresh.then<void>((_) {}, onError: (_) {}),
             ], eagerError: false);
@@ -110,59 +92,40 @@ class LibrariesTab extends ConsumerWidget {
   }
 }
 
-/// AppBar action for the Home tab, alongside Settings — the title itself is
-/// now a persistent search bar ([HomeSearchBar]) rather than this, so this
-/// only needs to be an icon. With more than one library, shows a menu to
-/// re-scope the Recently Added and Discover rows to a specific library (or
-/// back to "All Libraries") in place; with exactly one library there's nothing to switch
-/// between, so it instead links straight to that library's own full
-/// contents (`LibraryDetailScreen`, with sort/type/author filters) —
-/// Recently Added alone caps out at 30 books and was never meant to replace
-/// browsing a whole library. Renders nothing while libraries haven't loaded
-/// yet or there are none.
-class HomeLibraryAction extends ConsumerWidget {
-  const HomeLibraryAction({super.key});
+/// The Libraries tab: every library the account can see, each opening its
+/// full, paginated, sort/filterable contents (`LibraryDetailScreen`). This
+/// replaces the Home tab's old app-bar library filter — browsing a single
+/// library is its own destination now, one tap from anywhere, rather than
+/// a scope applied to the dashboard rows.
+class LibrariesTab extends ConsumerWidget {
+  const LibrariesTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final libraries = ref.watch(librariesProvider).value ?? [];
-    final selectedId = ref.watch(selectedLibraryFilterProvider);
+    final libraries = ref.watch(librariesProvider);
 
-    if (libraries.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    if (libraries.length == 1) {
-      final library = libraries.single;
-      return IconButton(
-        tooltip: library.name,
-        icon: const Icon(Icons.local_library_outlined),
-        onPressed: () => context.push('/libraries/${library.id}'),
-      );
-    }
-
-    final selectedName = selectedId == null
-        ? 'All Libraries'
-        : libraries
-              .firstWhere(
-                (l) => l.id == selectedId,
-                orElse: () => libraries.first,
-              )
-              .name;
-
-    return PopupMenuButton<int?>(
-      tooltip: selectedName,
-      icon: Icon(
-        selectedId == null ? Icons.local_library_outlined : Icons.local_library,
-      ),
-      initialValue: selectedId,
-      onSelected: (value) =>
-          ref.read(selectedLibraryFilterProvider.notifier).select(value),
-      itemBuilder: (context) => [
-        const PopupMenuItem(value: null, child: Text('All Libraries')),
-        for (final library in libraries)
-          PopupMenuItem(value: library.id, child: Text(library.name)),
-      ],
+    return AsyncValueView(
+      value: libraries,
+      onRetry: () => ref.invalidate(librariesProvider),
+      data: (items) {
+        if (items.isEmpty) return const EmptyState('No libraries found.');
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(librariesProvider.future),
+          child: ListView.separated(
+            itemCount: items.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final library = items[index];
+              return ListTile(
+                leading: const Icon(Icons.local_library_outlined),
+                title: Text(library.name),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/libraries/${library.id}'),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
