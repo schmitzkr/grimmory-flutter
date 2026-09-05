@@ -441,6 +441,63 @@ abstract class Shelf with _$Shelf {
 /// `GET /api/v1/app/shelves/magic/{id}/books` (`ApiClient.getMagicShelfBooks`).
 /// [icon]/[iconType] are the web UI's icon reference (not mapped here);
 /// [publicShelf] as on [Shelf].
+/// The signed-in account, from `GET /users/me` (`BookLoreUser`). [name] is
+/// the optional display name; [username] is what they sign in with (or
+/// what OIDC provisioned). [provisioningMethod] is LOCAL, OIDC or REMOTE.
+/// [userSettings] carries the web dashboard layout, so the same request
+/// feeds both the Settings header and the Home tab.
+@freezed
+abstract class CurrentUser with _$CurrentUser {
+  const factory CurrentUser({
+    required int id,
+    required String username,
+    String? name,
+    String? email,
+    String? provisioningMethod,
+    UserPermissions? permissions,
+    UserSettings? userSettings,
+  }) = _CurrentUser;
+
+  factory CurrentUser.fromJson(Map<String, dynamic> json) =>
+      _$CurrentUserFromJson(json);
+}
+
+extension CurrentUserX on CurrentUser {
+  /// What to call the person on screen: their display name when set, else
+  /// the account name.
+  String get displayName {
+    final n = name?.trim();
+    return (n == null || n.isEmpty) ? username : n;
+  }
+
+  bool get signedInWithSso => provisioningMethod == 'OIDC';
+}
+
+/// `BookLoreUser.UserPermissions` — a Lombok `@Data` class whose
+/// `boolean isAdmin` field serialises as `admin` (Jackson strips the `is`
+/// from the generated getter), like `BookFile.isPrimary` → `primary`.
+@freezed
+abstract class UserPermissions with _$UserPermissions {
+  const factory UserPermissions({
+    @JsonKey(name: 'admin') @Default(false) bool isAdmin,
+    @Default(false) bool canDownload,
+    @Default(false) bool canUpload,
+  }) = _UserPermissions;
+
+  factory UserPermissions.fromJson(Map<String, dynamic> json) =>
+      _$UserPermissionsFromJson(json);
+}
+
+/// The slice of `BookLoreUser.UserSettings` this app reads.
+@freezed
+abstract class UserSettings with _$UserSettings {
+  const factory UserSettings({DashboardConfig? dashboardConfig}) =
+      _UserSettings;
+
+  factory UserSettings.fromJson(Map<String, dynamic> json) =>
+      _$UserSettingsFromJson(json);
+}
+
 /// One row of the web dashboard, from `userSettings.dashboardConfig.scrollers`
 /// on `GET /users/me` (`BookLoreUser.UserSettings.ScrollerConfig`). [type]
 /// is kept as the wire string so an unknown value (a scroller type added

@@ -7,6 +7,7 @@ import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/empty_state.dart';
+import '../auth/current_user_provider.dart';
 import 'continue_listening_section.dart';
 import 'continue_reading_section.dart';
 import 'dashboard.dart';
@@ -64,6 +65,7 @@ class LibrariesTab extends ConsumerWidget {
             return Future.wait([
               for (final refresh in [
                 ref.refresh(librariesProvider.future),
+                ref.refresh(currentUserProvider.future),
                 ref.refresh(dashboardConfigProvider.future),
                 ref.refresh(continueListeningProvider.future),
                 ref.refresh(continueReadingProvider.future),

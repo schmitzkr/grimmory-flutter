@@ -720,13 +720,16 @@ class ApiClient {
   /// flags), which is where the web's `DashboardConfigService` reads and
   /// writes it too, so the phone shows whatever row order and titles were
   /// arranged in the browser.
-  Future<DashboardConfig?> getDashboardConfig() async {
+  Future<DashboardConfig?> getDashboardConfig() async =>
+      (await getCurrentUser()).userSettings?.dashboardConfig;
+
+  /// `GET /users/me` — the signed-in account (the general user endpoint;
+  /// the app-namespaced `/app/users/me` only carries a few permission
+  /// flags). Shown on the Settings screen and the source of
+  /// [getDashboardConfig].
+  Future<CurrentUser> getCurrentUser() async {
     final resp = await _dio.get('/users/me');
-    final settings = (resp.data as Map<String, dynamic>)['userSettings'];
-    if (settings is! Map<String, dynamic>) return null;
-    final config = settings['dashboardConfig'];
-    if (config is! Map<String, dynamic>) return null;
-    return DashboardConfig.fromJson(config);
+    return CurrentUser.fromJson(resp.data as Map<String, dynamic>);
   }
 
   /// `GET /app/books/random` — a page of [size] books starting at a random

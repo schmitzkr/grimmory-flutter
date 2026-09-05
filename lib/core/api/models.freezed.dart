@@ -4313,6 +4313,912 @@ as bool,
 
 
 /// @nodoc
+mixin _$CurrentUser {
+
+ int get id; String get username; String? get name; String? get email; String? get provisioningMethod; UserPermissions? get permissions; UserSettings? get userSettings;
+/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CurrentUserCopyWith<CurrentUser> get copyWith => _$CurrentUserCopyWithImpl<CurrentUser>(this as CurrentUser, _$identity);
+
+  /// Serializes this CurrentUser to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as CurrentUser;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CurrentUser&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.provisioningMethod, _this.provisioningMethod) || other.provisioningMethod == _this.provisioningMethod)&&(identical(other.permissions, _this.permissions) || other.permissions == _this.permissions)&&(identical(other.userSettings, _this.userSettings) || other.userSettings == _this.userSettings));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as CurrentUser;
+  return Object.hash(runtimeType,_this.id,_this.username,_this.name,_this.email,_this.provisioningMethod,_this.permissions,_this.userSettings);
+}
+
+@override
+String toString() {
+  final _this = this as CurrentUser;
+  return 'CurrentUser(id: ${_this.id}, username: ${_this.username}, name: ${_this.name}, email: ${_this.email}, provisioningMethod: ${_this.provisioningMethod}, permissions: ${_this.permissions}, userSettings: ${_this.userSettings})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CurrentUserCopyWith<$Res>  {
+  factory $CurrentUserCopyWith(CurrentUser value, $Res Function(CurrentUser) _then) = _$CurrentUserCopyWithImpl;
+@useResult
+$Res call({
+ int id, String username, String? name, String? email, String? provisioningMethod, UserPermissions? permissions, UserSettings? userSettings
+});
+
+
+$UserPermissionsCopyWith<$Res>? get permissions;$UserSettingsCopyWith<$Res>? get userSettings;
+
+}
+/// @nodoc
+class _$CurrentUserCopyWithImpl<$Res>
+    implements $CurrentUserCopyWith<$Res> {
+  _$CurrentUserCopyWithImpl(this._self, this._then);
+
+  final CurrentUser _self;
+  final $Res Function(CurrentUser) _then;
+
+/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? name = freezed,Object? email = freezed,Object? provisioningMethod = freezed,Object? permissions = freezed,Object? userSettings = freezed,}) {
+  return _then(CurrentUser(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,provisioningMethod: freezed == provisioningMethod ? _self.provisioningMethod : provisioningMethod // ignore: cast_nullable_to_non_nullable
+as String?,permissions: freezed == permissions ? _self.permissions : permissions // ignore: cast_nullable_to_non_nullable
+as UserPermissions?,userSettings: freezed == userSettings ? _self.userSettings : userSettings // ignore: cast_nullable_to_non_nullable
+as UserSettings?,
+  ));
+}
+/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserPermissionsCopyWith<$Res>? get permissions {
+    if (_self.permissions == null) {
+    return null;
+  }
+
+  return $UserPermissionsCopyWith<$Res>(_self.permissions!, (value) {
+    return _then(_self.copyWith(permissions: value));
+  });
+}/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserSettingsCopyWith<$Res>? get userSettings {
+    if (_self.userSettings == null) {
+    return null;
+  }
+
+  return $UserSettingsCopyWith<$Res>(_self.userSettings!, (value) {
+    return _then(_self.copyWith(userSettings: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [CurrentUser].
+extension CurrentUserPatterns on CurrentUser {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CurrentUser value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _CurrentUser() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CurrentUser value)  $default,){
+final _that = this;
+switch (_that) {
+case _CurrentUser():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CurrentUser value)?  $default,){
+final _that = this;
+switch (_that) {
+case _CurrentUser() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String username,  String? name,  String? email,  String? provisioningMethod,  UserPermissions? permissions,  UserSettings? userSettings)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _CurrentUser() when $default != null:
+return $default(_that.id,_that.username,_that.name,_that.email,_that.provisioningMethod,_that.permissions,_that.userSettings);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String username,  String? name,  String? email,  String? provisioningMethod,  UserPermissions? permissions,  UserSettings? userSettings)  $default,) {final _that = this;
+switch (_that) {
+case _CurrentUser():
+return $default(_that.id,_that.username,_that.name,_that.email,_that.provisioningMethod,_that.permissions,_that.userSettings);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String username,  String? name,  String? email,  String? provisioningMethod,  UserPermissions? permissions,  UserSettings? userSettings)?  $default,) {final _that = this;
+switch (_that) {
+case _CurrentUser() when $default != null:
+return $default(_that.id,_that.username,_that.name,_that.email,_that.provisioningMethod,_that.permissions,_that.userSettings);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _CurrentUser implements CurrentUser {
+  const _CurrentUser({required this.id, required this.username, this.name, this.email, this.provisioningMethod, this.permissions, this.userSettings});
+  factory _CurrentUser.fromJson(Map<String, dynamic> json) => _$CurrentUserFromJson(json);
+
+@override final  int id;
+@override final  String username;
+@override final  String? name;
+@override final  String? email;
+@override final  String? provisioningMethod;
+@override final  UserPermissions? permissions;
+@override final  UserSettings? userSettings;
+
+/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CurrentUserCopyWith<_CurrentUser> get copyWith => __$CurrentUserCopyWithImpl<_CurrentUser>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$CurrentUserToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CurrentUser&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.provisioningMethod, provisioningMethod) || other.provisioningMethod == provisioningMethod)&&(identical(other.permissions, permissions) || other.permissions == permissions)&&(identical(other.userSettings, userSettings) || other.userSettings == userSettings));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,id,username,name,email,provisioningMethod,permissions,userSettings);
+}
+
+@override
+String toString() {
+    return 'CurrentUser(id: $id, username: $username, name: $name, email: $email, provisioningMethod: $provisioningMethod, permissions: $permissions, userSettings: $userSettings)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CurrentUserCopyWith<$Res> implements $CurrentUserCopyWith<$Res> {
+  factory _$CurrentUserCopyWith(_CurrentUser value, $Res Function(_CurrentUser) _then) = __$CurrentUserCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String username, String? name, String? email, String? provisioningMethod, UserPermissions? permissions, UserSettings? userSettings
+});
+
+
+@override $UserPermissionsCopyWith<$Res>? get permissions;@override $UserSettingsCopyWith<$Res>? get userSettings;
+
+}
+/// @nodoc
+class __$CurrentUserCopyWithImpl<$Res>
+    implements _$CurrentUserCopyWith<$Res> {
+  __$CurrentUserCopyWithImpl(this._self, this._then);
+
+  final _CurrentUser _self;
+  final $Res Function(_CurrentUser) _then;
+
+/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? name = freezed,Object? email = freezed,Object? provisioningMethod = freezed,Object? permissions = freezed,Object? userSettings = freezed,}) {
+  return _then(_CurrentUser(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,provisioningMethod: freezed == provisioningMethod ? _self.provisioningMethod : provisioningMethod // ignore: cast_nullable_to_non_nullable
+as String?,permissions: freezed == permissions ? _self.permissions : permissions // ignore: cast_nullable_to_non_nullable
+as UserPermissions?,userSettings: freezed == userSettings ? _self.userSettings : userSettings // ignore: cast_nullable_to_non_nullable
+as UserSettings?,
+  ));
+}
+
+/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserPermissionsCopyWith<$Res>? get permissions {
+    if (_self.permissions == null) {
+    return null;
+  }
+
+  return $UserPermissionsCopyWith<$Res>(_self.permissions!, (value) {
+    return _then(_self.copyWith(permissions: value));
+  });
+}/// Create a copy of CurrentUser
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserSettingsCopyWith<$Res>? get userSettings {
+    if (_self.userSettings == null) {
+    return null;
+  }
+
+  return $UserSettingsCopyWith<$Res>(_self.userSettings!, (value) {
+    return _then(_self.copyWith(userSettings: value));
+  });
+}
+}
+
+
+/// @nodoc
+mixin _$UserPermissions {
+
+@JsonKey(name: 'admin') bool get isAdmin; bool get canDownload; bool get canUpload;
+/// Create a copy of UserPermissions
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$UserPermissionsCopyWith<UserPermissions> get copyWith => _$UserPermissionsCopyWithImpl<UserPermissions>(this as UserPermissions, _$identity);
+
+  /// Serializes this UserPermissions to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as UserPermissions;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserPermissions&&(identical(other.isAdmin, _this.isAdmin) || other.isAdmin == _this.isAdmin)&&(identical(other.canDownload, _this.canDownload) || other.canDownload == _this.canDownload)&&(identical(other.canUpload, _this.canUpload) || other.canUpload == _this.canUpload));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as UserPermissions;
+  return Object.hash(runtimeType,_this.isAdmin,_this.canDownload,_this.canUpload);
+}
+
+@override
+String toString() {
+  final _this = this as UserPermissions;
+  return 'UserPermissions(isAdmin: ${_this.isAdmin}, canDownload: ${_this.canDownload}, canUpload: ${_this.canUpload})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $UserPermissionsCopyWith<$Res>  {
+  factory $UserPermissionsCopyWith(UserPermissions value, $Res Function(UserPermissions) _then) = _$UserPermissionsCopyWithImpl;
+@useResult
+$Res call({
+@JsonKey(name: 'admin') bool isAdmin, bool canDownload, bool canUpload
+});
+
+
+
+
+}
+/// @nodoc
+class _$UserPermissionsCopyWithImpl<$Res>
+    implements $UserPermissionsCopyWith<$Res> {
+  _$UserPermissionsCopyWithImpl(this._self, this._then);
+
+  final UserPermissions _self;
+  final $Res Function(UserPermissions) _then;
+
+/// Create a copy of UserPermissions
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? isAdmin = null,Object? canDownload = null,Object? canUpload = null,}) {
+  return _then(UserPermissions(
+isAdmin: null == isAdmin ? _self.isAdmin : isAdmin // ignore: cast_nullable_to_non_nullable
+as bool,canDownload: null == canDownload ? _self.canDownload : canDownload // ignore: cast_nullable_to_non_nullable
+as bool,canUpload: null == canUpload ? _self.canUpload : canUpload // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [UserPermissions].
+extension UserPermissionsPatterns on UserPermissions {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _UserPermissions value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _UserPermissions() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _UserPermissions value)  $default,){
+final _that = this;
+switch (_that) {
+case _UserPermissions():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _UserPermissions value)?  $default,){
+final _that = this;
+switch (_that) {
+case _UserPermissions() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'admin')  bool isAdmin,  bool canDownload,  bool canUpload)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _UserPermissions() when $default != null:
+return $default(_that.isAdmin,_that.canDownload,_that.canUpload);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'admin')  bool isAdmin,  bool canDownload,  bool canUpload)  $default,) {final _that = this;
+switch (_that) {
+case _UserPermissions():
+return $default(_that.isAdmin,_that.canDownload,_that.canUpload);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'admin')  bool isAdmin,  bool canDownload,  bool canUpload)?  $default,) {final _that = this;
+switch (_that) {
+case _UserPermissions() when $default != null:
+return $default(_that.isAdmin,_that.canDownload,_that.canUpload);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _UserPermissions implements UserPermissions {
+  const _UserPermissions({@JsonKey(name: 'admin') this.isAdmin = false, this.canDownload = false, this.canUpload = false});
+  factory _UserPermissions.fromJson(Map<String, dynamic> json) => _$UserPermissionsFromJson(json);
+
+@override@JsonKey(name: 'admin') final  bool isAdmin;
+@override@JsonKey() final  bool canDownload;
+@override@JsonKey() final  bool canUpload;
+
+/// Create a copy of UserPermissions
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UserPermissionsCopyWith<_UserPermissions> get copyWith => __$UserPermissionsCopyWithImpl<_UserPermissions>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$UserPermissionsToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserPermissions&&(identical(other.isAdmin, isAdmin) || other.isAdmin == isAdmin)&&(identical(other.canDownload, canDownload) || other.canDownload == canDownload)&&(identical(other.canUpload, canUpload) || other.canUpload == canUpload));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,isAdmin,canDownload,canUpload);
+}
+
+@override
+String toString() {
+    return 'UserPermissions(isAdmin: $isAdmin, canDownload: $canDownload, canUpload: $canUpload)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UserPermissionsCopyWith<$Res> implements $UserPermissionsCopyWith<$Res> {
+  factory _$UserPermissionsCopyWith(_UserPermissions value, $Res Function(_UserPermissions) _then) = __$UserPermissionsCopyWithImpl;
+@override @useResult
+$Res call({
+@JsonKey(name: 'admin') bool isAdmin, bool canDownload, bool canUpload
+});
+
+
+
+
+}
+/// @nodoc
+class __$UserPermissionsCopyWithImpl<$Res>
+    implements _$UserPermissionsCopyWith<$Res> {
+  __$UserPermissionsCopyWithImpl(this._self, this._then);
+
+  final _UserPermissions _self;
+  final $Res Function(_UserPermissions) _then;
+
+/// Create a copy of UserPermissions
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? isAdmin = null,Object? canDownload = null,Object? canUpload = null,}) {
+  return _then(_UserPermissions(
+isAdmin: null == isAdmin ? _self.isAdmin : isAdmin // ignore: cast_nullable_to_non_nullable
+as bool,canDownload: null == canDownload ? _self.canDownload : canDownload // ignore: cast_nullable_to_non_nullable
+as bool,canUpload: null == canUpload ? _self.canUpload : canUpload // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$UserSettings {
+
+ DashboardConfig? get dashboardConfig;
+/// Create a copy of UserSettings
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$UserSettingsCopyWith<UserSettings> get copyWith => _$UserSettingsCopyWithImpl<UserSettings>(this as UserSettings, _$identity);
+
+  /// Serializes this UserSettings to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as UserSettings;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserSettings&&(identical(other.dashboardConfig, _this.dashboardConfig) || other.dashboardConfig == _this.dashboardConfig));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as UserSettings;
+  return Object.hash(runtimeType,_this.dashboardConfig);
+}
+
+@override
+String toString() {
+  final _this = this as UserSettings;
+  return 'UserSettings(dashboardConfig: ${_this.dashboardConfig})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $UserSettingsCopyWith<$Res>  {
+  factory $UserSettingsCopyWith(UserSettings value, $Res Function(UserSettings) _then) = _$UserSettingsCopyWithImpl;
+@useResult
+$Res call({
+ DashboardConfig? dashboardConfig
+});
+
+
+$DashboardConfigCopyWith<$Res>? get dashboardConfig;
+
+}
+/// @nodoc
+class _$UserSettingsCopyWithImpl<$Res>
+    implements $UserSettingsCopyWith<$Res> {
+  _$UserSettingsCopyWithImpl(this._self, this._then);
+
+  final UserSettings _self;
+  final $Res Function(UserSettings) _then;
+
+/// Create a copy of UserSettings
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? dashboardConfig = freezed,}) {
+  return _then(UserSettings(
+dashboardConfig: freezed == dashboardConfig ? _self.dashboardConfig : dashboardConfig // ignore: cast_nullable_to_non_nullable
+as DashboardConfig?,
+  ));
+}
+/// Create a copy of UserSettings
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DashboardConfigCopyWith<$Res>? get dashboardConfig {
+    if (_self.dashboardConfig == null) {
+    return null;
+  }
+
+  return $DashboardConfigCopyWith<$Res>(_self.dashboardConfig!, (value) {
+    return _then(_self.copyWith(dashboardConfig: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [UserSettings].
+extension UserSettingsPatterns on UserSettings {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _UserSettings value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _UserSettings() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _UserSettings value)  $default,){
+final _that = this;
+switch (_that) {
+case _UserSettings():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _UserSettings value)?  $default,){
+final _that = this;
+switch (_that) {
+case _UserSettings() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DashboardConfig? dashboardConfig)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _UserSettings() when $default != null:
+return $default(_that.dashboardConfig);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DashboardConfig? dashboardConfig)  $default,) {final _that = this;
+switch (_that) {
+case _UserSettings():
+return $default(_that.dashboardConfig);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DashboardConfig? dashboardConfig)?  $default,) {final _that = this;
+switch (_that) {
+case _UserSettings() when $default != null:
+return $default(_that.dashboardConfig);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _UserSettings implements UserSettings {
+  const _UserSettings({this.dashboardConfig});
+  factory _UserSettings.fromJson(Map<String, dynamic> json) => _$UserSettingsFromJson(json);
+
+@override final  DashboardConfig? dashboardConfig;
+
+/// Create a copy of UserSettings
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UserSettingsCopyWith<_UserSettings> get copyWith => __$UserSettingsCopyWithImpl<_UserSettings>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$UserSettingsToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserSettings&&(identical(other.dashboardConfig, dashboardConfig) || other.dashboardConfig == dashboardConfig));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,dashboardConfig);
+}
+
+@override
+String toString() {
+    return 'UserSettings(dashboardConfig: $dashboardConfig)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UserSettingsCopyWith<$Res> implements $UserSettingsCopyWith<$Res> {
+  factory _$UserSettingsCopyWith(_UserSettings value, $Res Function(_UserSettings) _then) = __$UserSettingsCopyWithImpl;
+@override @useResult
+$Res call({
+ DashboardConfig? dashboardConfig
+});
+
+
+@override $DashboardConfigCopyWith<$Res>? get dashboardConfig;
+
+}
+/// @nodoc
+class __$UserSettingsCopyWithImpl<$Res>
+    implements _$UserSettingsCopyWith<$Res> {
+  __$UserSettingsCopyWithImpl(this._self, this._then);
+
+  final _UserSettings _self;
+  final $Res Function(_UserSettings) _then;
+
+/// Create a copy of UserSettings
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? dashboardConfig = freezed,}) {
+  return _then(_UserSettings(
+dashboardConfig: freezed == dashboardConfig ? _self.dashboardConfig : dashboardConfig // ignore: cast_nullable_to_non_nullable
+as DashboardConfig?,
+  ));
+}
+
+/// Create a copy of UserSettings
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DashboardConfigCopyWith<$Res>? get dashboardConfig {
+    if (_self.dashboardConfig == null) {
+    return null;
+  }
+
+  return $DashboardConfigCopyWith<$Res>(_self.dashboardConfig!, (value) {
+    return _then(_self.copyWith(dashboardConfig: value));
+  });
+}
+}
+
+
+/// @nodoc
 mixin _$DashboardScroller {
 
  String? get id; String get type; String? get title; bool get enabled; int get order; int? get maxItems; int? get magicShelfId; String? get sortField; String? get sortDirection;
