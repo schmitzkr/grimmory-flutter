@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart' show DioException;
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
@@ -11,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../book/book_detail_screen.dart' show bookProvider;
 import '../bookmarks/epub_bookmarks_sheet.dart';
 import '../library/progress_refresh.dart';
 import '../player/mini_player.dart';
@@ -63,16 +65,20 @@ final _darkEpubTheme = EpubTheme.custom(
   },
 );
 
+/// Debounce for the passive per-relocate saves — a page turn every second
+/// while skimming collapses into one PUT, and the exit path always makes
+/// the authoritative final save regardless.
+const _saveDebounce = Duration(milliseconds: 1500);
+
+/// Upper bound on how long the exit path may spend asking epub.js where
+/// the reader is before it saves whatever it has — keeps a back press
+/// bounded even for a file the spine estimate couldn't parse.
+const _exitProbeBudget = Duration(seconds: 4);
+
 class EpubReaderScreen extends ConsumerStatefulWidget {
-  const EpubReaderScreen({
-    required this.bookId,
-    required this.title,
-    this.jumpToCfi,
-    super.key,
-  });
+  const EpubReaderScreen({required this.bookId, this.jumpToCfi, super.key});
 
   final int bookId;
-  final String title;
   final String? jumpToCfi;
 
   @override
@@ -104,6 +110,17 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   String? _lastSyncError;
   List<EpubChapter> _chapters = [];
   Object? _error;
+  // A reason the book can't be opened at all (as opposed to a transient
+  // load error worth retrying): the server will only ever hand out the
+  // primary file, or the account can't download. Shown instead of Retry.
+  String? _blockedReason;
+  // Passive-save plumbing: the most recent relocate not yet persisted, the
+  // timer that will persist it, and the save currently on the wire (never
+  // more than one — a second relocate during a save just re-arms the timer,
+  // so saves can't overtake each other and an older CFI can't win).
+  EpubLocation? _pendingLocation;
+  Timer? _saveTimer;
+  Future<void>? _inFlightSave;
   // True from the moment a back gesture/press is accepted until the final
   // progress save lands and the screen pops — drives the saving overlay and
   // makes a second back press during that window a no-op.
@@ -131,6 +148,12 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       _fontSize = prefs.getDouble(_readerFontSizeKey)!;
     }
     _load();
+  }
+
+  @override
+  void dispose() {
+    _saveTimer?.cancel();
+    super.dispose();
   }
 
   void _toggleTheme() {
@@ -220,45 +243,121 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   Future<void> _load() async {
     try {
       final apiClient = ref.read(apiClientProvider);
+
+      // Best-effort: reading still works without the detail (saves just
+      // fall back to the bookId-only shim), but when it *is* available it
+      // both supplies the file id and rules out a book the server can't
+      // serve — `/books/{id}/download` only ever returns the primary file,
+      // and the one per-file download lives under OPDS behind basic auth.
+      Book? book;
+      try {
+        book = await apiClient.getBook(widget.bookId);
+      } catch (_) {}
+      if (book != null && !book.primaryFileIsEbook) {
+        if (!mounted) return;
+        setState(
+          () => _blockedReason =
+              "This book's primary file is a "
+              '${book!.primaryFileType?.toLowerCase() ?? 'non-ebook'} file, '
+              'and Grimmory only serves the primary file to apps. Read it on '
+              'the web, or change the library format priority.',
+        );
+        return;
+      }
+
       final tempDir = await getTemporaryDirectory();
       final path = '${tempDir.path}/epub_${widget.bookId}.epub';
-      await apiClient.downloadBookFile(widget.bookId, path);
-      final bytes = await File(path).readAsBytes();
-      // Off the UI isolate: this inflates the zip's central directory and
-      // two small XML files, cheap but not free on a big book.
-      final spine = await compute(EpubSpineFractions.parse, bytes);
-      final progress = await apiClient.getEpubProgress(widget.bookId);
-      int? bookFileId;
-      try {
-        bookFileId = (await apiClient.getBook(widget.bookId)).ebookFileId;
-      } catch (_) {
-        // Reading still works without it; saves just fall back to the shim.
+      final file = File(path);
+      final spineCache = File('$path.spine.json');
+      // The temp file survives between sessions on most devices; reuse it
+      // rather than pulling the whole book down and re-parsing its spine
+      // on every open. Retry after an error clears both (see build).
+      if (!await file.exists() || await file.length() == 0) {
+        await apiClient.downloadBookFile(widget.bookId, path);
+        if (await spineCache.exists()) await spineCache.delete();
       }
+      final bytes = await file.readAsBytes();
+
+      EpubSpineFractions? spine;
+      if (await spineCache.exists()) {
+        spine = EpubSpineFractions.tryDecode(await spineCache.readAsString());
+      }
+      if (spine == null) {
+        // Off the UI isolate: this inflates the zip's central directory and
+        // two small XML files, cheap but not free on a big book.
+        spine = await compute(EpubSpineFractions.parse, bytes);
+        if (spine != null) await spineCache.writeAsString(spine.encode());
+      }
+
+      final progress = await apiClient.getEpubProgress(widget.bookId);
 
       if (!mounted) return;
       setState(() {
         _bytes = bytes;
         _initialCfi = widget.jumpToCfi ?? progress?.cfi;
         _bestKnownPercentage = progress?.percentage;
-        _bookFileId = bookFileId;
+        _bookFileId = book?.ebookFileId;
         _spine = spine;
       });
     } catch (e) {
       if (!mounted) return;
+      if (e is DioException && e.response?.statusCode == 403) {
+        // The download endpoint is the one place Grimmory gates on the
+        // account's own `canDownload` permission — a generic "no access"
+        // hides that it's a per-user setting an admin can flip.
+        setState(
+          () => _blockedReason =
+              'Your Grimmory account is not allowed to download books, which '
+              'reading in the app needs. Ask an admin to enable downloads '
+              'for your user.',
+        );
+        return;
+      }
       setState(() => _error = e);
     }
   }
 
+  /// Clears the cached file so a Retry re-downloads rather than re-reading
+  /// whatever half-written or stale copy caused the error.
+  Future<void> _retryLoad() async {
+    setState(() => _error = null);
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final path = '${tempDir.path}/epub_${widget.bookId}.epub';
+      for (final f in [File(path), File('$path.spine.json')]) {
+        if (await f.exists()) await f.delete();
+      }
+    } catch (_) {}
+    await _load();
+  }
+
   void _saveProgress(EpubLocation location) {
     _currentCfi = location.startCfi;
-    unawaited(
-      _persistProgress(
-        cfi: location.startCfi,
-        percentage: _percentageFor(location),
-      ).then((ok) {
-        if (!ok) _showSyncFailedSnackBar();
-      }),
-    );
+    _pendingLocation = location;
+    _saveTimer?.cancel();
+    _saveTimer = Timer(_saveDebounce, _flushPendingSave);
+  }
+
+  /// Persists the latest pending relocate, one save on the wire at a time.
+  /// If one is already in flight, the pending location simply waits for
+  /// it — the completion re-checks and flushes again.
+  void _flushPendingSave() {
+    if (_inFlightSave != null) return;
+    final location = _pendingLocation;
+    if (location == null) return;
+    _pendingLocation = null;
+    _inFlightSave =
+        _persistProgress(
+              cfi: location.startCfi,
+              percentage: _percentageFor(location),
+            )
+            .then((ok) {
+              if (!ok) _showSyncFailedSnackBar();
+            })
+            .whenComplete(() {
+              _inFlightSave = null;
+              if (_pendingLocation != null && mounted) _flushPendingSave();
+            });
   }
 
   /// The 0-100 figure to save for [location]. epub.js's own fraction
@@ -336,6 +435,12 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
   /// actually are, not just wherever the last passive event happened to be.
   Future<void> _saveProgressBeforeExit() async {
     if (_bytes == null) return;
+    // Whatever the passive path still had queued is superseded by the live
+    // position read below, but a save already on the wire must land first
+    // so this one can't be overtaken by it.
+    _saveTimer?.cancel();
+    _pendingLocation = null;
+    await _inFlightSave;
     try {
       // epub.js's own `percentage` figure depends on `book.locations
       // .generate()` finishing in the background (it needs a pre-computed
@@ -370,18 +475,24 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       // With a spine-size estimate available (the normal case), a 0 from
       // that first read is answered by the estimate instead, and the timed
       // retries are skipped entirely — they only still run for a file the
-      // fallback couldn't parse.
+      // fallback couldn't parse, and even then within [_exitProbeBudget].
+      final deadline = DateTime.now().add(_exitProbeBudget);
       for (final delayMs in const [0, 400, 800, 1200]) {
         if (delayMs > 0) {
           if (anchorCfi != null) _controller.display(cfi: anchorCfi);
           await Future.delayed(Duration(milliseconds: delayMs));
         }
+        final remaining = deadline.difference(DateTime.now());
+        if (remaining <= Duration.zero) break;
         location = await _controller.getCurrentLocation().timeout(
-          const Duration(seconds: 3),
+          remaining < const Duration(seconds: 3)
+              ? remaining
+              : const Duration(seconds: 3),
         );
         if (location.progress > 0) break;
         if (_spine?.percentageAt(location.startCfi) != null) break;
       }
+      if (location.startCfi.isEmpty) return;
       final ok = await _persistProgress(
         cfi: location.startCfi,
         percentage: _percentageFor(location),
@@ -412,24 +523,35 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Fetched by id rather than passed in, so a deep link or a restored
+    // route gets the real title too; the detail is usually already cached
+    // by the screen that opened the reader.
+    final title = ref.watch(bookProvider(widget.bookId)).value?.title ?? 'Book';
+
+    if (_blockedReason != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(_blockedReason!, textAlign: TextAlign.center),
+          ),
+        ),
+      );
+    }
+
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
+        appBar: AppBar(title: Text(title)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Could not load this book.'),
+                Text(friendlyApiError(_error!), textAlign: TextAlign.center),
                 const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () {
-                    setState(() => _error = null);
-                    _load();
-                  },
-                  child: const Text('Retry'),
-                ),
+                FilledButton(onPressed: _retryLoad, child: const Text('Retry')),
               ],
             ),
           ),
@@ -439,7 +561,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
 
     if (_bytes == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
+        appBar: AppBar(title: Text(title)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -451,7 +573,7 @@ class _EpubReaderScreenState extends ConsumerState<EpubReaderScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.title),
+          title: Text(title),
           actions: [
             IconButton(
               icon: Icon(

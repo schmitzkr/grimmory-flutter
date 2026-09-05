@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../../core/widgets/async_value_view.dart';
 import '../../core/widgets/book_grid.dart';
+import '../../core/widgets/empty_state.dart';
 import '../player/mini_player.dart';
 
 /// A sort choice pairs a server-recognized [sort] key with a [dir]ection —
@@ -51,25 +52,29 @@ typedef LibraryBooksQuery = ({
   LibraryTypeFilter type,
 });
 
-final libraryBooksProvider =
-    FutureProvider.family<List<Book>, LibraryBooksQuery>((ref, query) async {
+/// The server's `BookListRequest` rejects any list filter longer than this
+/// (`@Size(max = 20)`) with a 400.
+const _maxListFilterValues = 20;
+
+final libraryBooksProvider = FutureProvider.autoDispose
+    .family<List<Book>, LibraryBooksQuery>((ref, query) async {
       return ref
           .read(apiClientProvider)
           .getLibraryBooks(
             query.libraryId,
             sort: query.sort.sort,
             dir: query.sort.dir,
-            authors: query.author != null ? [query.author!] : null,
-            fileType: query.type.fileTypes,
+            authors: query.author != null
+                ? [query.author!].take(_maxListFilterValues).toList()
+                : null,
+            fileType: query.type.fileTypes?.take(_maxListFilterValues).toList(),
           );
     });
 
-final filterOptionsProvider = FutureProvider.family<FilterOptions, int>((
-  ref,
-  libraryId,
-) async {
-  return ref.read(apiClientProvider).getFilterOptions(libraryId: libraryId);
-});
+final filterOptionsProvider = FutureProvider.autoDispose
+    .family<FilterOptions, int>((ref, libraryId) async {
+      return ref.read(apiClientProvider).getFilterOptions(libraryId: libraryId);
+    });
 
 class LibraryDetailScreen extends ConsumerStatefulWidget {
   const LibraryDetailScreen({required this.libraryId, super.key});
@@ -140,15 +145,15 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
           ),
         ],
       ),
-      body: books.when(
+      body: AsyncValueView(
+        value: books,
+        onRetry: () => ref.invalidate(libraryBooksProvider(query)),
         data: (items) {
           if (items.isEmpty) {
-            return Center(
-              child: Text(
-                _author != null
-                    ? 'No audiobooks by "$_author" in this library.'
-                    : 'No audiobooks in this library.',
-              ),
+            return EmptyState(
+              _author != null
+                  ? 'No books by "$_author" in this library.'
+                  : 'No books in this library.',
             );
           }
           return RefreshIndicator(
@@ -156,23 +161,6 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
             child: BookGrid(books: items),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(friendlyApiError(error)),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () => ref.invalidate(libraryBooksProvider(query)),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
       bottomNavigationBar: const MiniPlayer(),
     );
@@ -211,11 +199,14 @@ class _AuthorFilterSheet extends ConsumerWidget {
               child: Text('Filter by author', style: TextStyle(fontSize: 18)),
             ),
             Expanded(
-              child: options.when(
+              child: AsyncValueView(
+                value: options,
+                errorMessage: 'Could not load authors.',
+                onRetry: () => ref.invalidate(filterOptionsProvider(libraryId)),
                 data: (data) {
                   final authors = data.authors;
                   if (authors.isEmpty) {
-                    return const Center(child: Text('No authors found.'));
+                    return const EmptyState('No authors found.');
                   }
                   return RadioGroup<String>(
                     groupValue: selected,
@@ -234,9 +225,6 @@ class _AuthorFilterSheet extends ConsumerWidget {
                     ),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) =>
-                    const Center(child: Text('Could not load authors.')),
               ),
             ),
           ],

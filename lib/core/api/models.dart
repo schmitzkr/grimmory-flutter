@@ -3,22 +3,24 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'models.freezed.dart';
 part 'models.g.dart';
 
-// Confirmed against Grimmory's real Java source (github.com/grimmory-tools/
-// grimmory, package org.booklore — Grimmory is a rebrand/fork of BookLore)
-// on 2026-08-31, after the app's original field-name guesses (based on the
-// documented-but-unstable API surface alone) turned out wrong in several
-// ways: entity IDs are numeric (Java `Long`), not strings; a dedicated
-// `/api/v1/app/*` controller namespace exists purpose-built for mobile
-// clients (paginated summary DTOs, continue-listening/recently-added
-// endpoints) that this app now uses in preference to the general
-// `/books`/`/libraries` endpoints the original guesses were based on. See
-// ApiClient's doc comment and docs/plan.md for the fuller writeup.
+// Every model here is checked against Grimmory's Java source (github.com/
+// grimmory-tools/grimmory, package org.booklore — Grimmory is a rebrand of
+// BookLore), most recently v3.3.3 on 2026-09-04: entity IDs are numeric
+// (`Long`); the `/api/v1/app/*` controller namespace is the mobile-facing
+// surface (paginated summary DTOs, continue-reading/listening endpoints)
+// and is used wherever it covers a need; JSON keys follow Jackson's view of
+// the Lombok DTOs, so a `boolean isX` field arrives as `x`. See ApiClient's
+// doc comment for the endpoint-by-endpoint notes.
 
+/// From `AccessTokenDto`. [expires] is the access token's expiry as epoch
+/// milliseconds — lets the client refresh just ahead of it instead of only
+/// after a 401 round-trip.
 @freezed
 abstract class AuthTokens with _$AuthTokens {
   const factory AuthTokens({
     required String accessToken,
     required String refreshToken,
+    int? expires,
   }) = _AuthTokens;
 
   factory AuthTokens.fromJson(Map<String, dynamic> json) =>
@@ -44,15 +46,24 @@ abstract class Library with _$Library {
 }
 
 /// Covers both `AppBookSummary` (library/series/search lists) and
-/// `AppBookDetail` (single-book fetch) — the latter just has a few extra
-/// optional fields (`description`) the former omits, which parses fine
-/// either way since json_serializable treats an absent key on a nullable
-/// field as null rather than an error.
+/// `AppBookDetail` (single-book fetch). The detail adds [description],
+/// [files] and the per-type progress objects; everything the summary lacks
+/// is nullable or defaulted here, so either shape parses.
+///
+/// [coverUpdatedOn]/[audiobookCoverUpdatedOn] are what the cover endpoints
+/// should be cache-busted on (see [BookCoverX.coverVersion]) — the URL
+/// itself never changes when a cover is regenerated. [primaryFileId] is
+/// the id of the file the library's format priority picks, available on
+/// the summary too (unlike [files]).
 @freezed
 abstract class Book with _$Book {
   const factory Book({
     required int id,
     required String title,
+    String? thumbnailUrl,
+    DateTime? coverUpdatedOn,
+    DateTime? audiobookCoverUpdatedOn,
+    int? primaryFileId,
     @Default([]) List<String> authors,
     String? seriesName,
     double? seriesNumber,
@@ -91,6 +102,20 @@ abstract class Book with _$Book {
 
 const _ebookFileTypes = {'EPUB', 'FB2', 'MOBI', 'AZW3'};
 
+extension BookCoverX on Book {
+  /// Cache-busting token for this book's cover URLs — the newer of the two
+  /// cover timestamps, as epoch millis — or null when the server sent
+  /// neither (then the URL is used bare and the image cache decides).
+  String? get coverVersion {
+    final stamps = [coverUpdatedOn, audiobookCoverUpdatedOn].nonNulls;
+    if (stamps.isEmpty) return null;
+    return stamps
+        .reduce((a, b) => a.isAfter(b) ? a : b)
+        .millisecondsSinceEpoch
+        .toString();
+  }
+}
+
 extension BookProgressX on Book {
   /// [readProgress] as a real 0.0-1.0 fraction — safe to feed straight into
   /// a `LinearProgressIndicator` or a percentage display for any book type.
@@ -99,6 +124,13 @@ extension BookProgressX on Book {
     if (raw == null) return null;
     return raw / 100;
   }
+
+  /// Whether the file Grimmory treats as this book's primary one is an
+  /// ebook. `GET /books/{id}/download` only ever serves the primary file
+  /// (the sole per-file download lives under OPDS, behind basic auth the
+  /// app can't use), so on a dual-format book whose library format priority
+  /// puts the audiobook first, the reader has nothing it can open.
+  bool get primaryFileIsEbook => _ebookFileTypes.contains(primaryFileType);
 
   /// The `bookFileId` to save EPUB reading progress against: the primary
   /// file if it's an ebook, else the first ebook-format file. Null when the
@@ -222,14 +254,12 @@ abstract class AudiobookProgress with _$AudiobookProgress {
       _$AudiobookProgressFromJson(json);
 }
 
-/// From `model.dto.progress.EpubProgress`, read via
-/// `AppBookProgressResponse.epubProgress` and saved via the same
-/// (`@Deprecated` but still functional) `epubProgress` field on
-/// `UpdateProgressRequest` — mirrors how [AudiobookProgress] already uses
-/// its own deprecated sibling field rather than the newer unified
-/// `BookFileProgress`, for consistency with the existing pattern here.
-/// [cfi] (a standard EPUB Canonical Fragment Identifier) is what actually
-/// resumes reading at the right spot; [percentage] is 0-100.
+/// From `AppBookProgressResponse.epubProgress` (read side). On the save side
+/// `ApiClient.updateEpubProgress` sends this as the deprecated `epubProgress`
+/// field *and* as the file-level `fileProgress` block that actually
+/// persists — see the progress section of `ApiClient`. [cfi] (a standard
+/// EPUB Canonical Fragment Identifier) is what resumes reading at the right
+/// spot; [percentage] is 0-100.
 @freezed
 abstract class EpubProgress with _$EpubProgress {
   const factory EpubProgress({

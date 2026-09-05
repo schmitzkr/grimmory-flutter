@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,6 +28,14 @@ class ApiClient {
   // In-memory token cache — avoids an async secure-storage read on every
   // request. Warmed at startup via [initialToken].
   String? _token;
+  // From `AccessTokenDto.expires`; unknown for a token restored at startup
+  // (only the string is persisted), in which case the 401 path still covers
+  // expiry.
+  DateTime? _tokenExpiresAt;
+
+  // How close to expiry a request triggers a refresh before being sent,
+  // instead of paying a 401 round-trip first.
+  static const _refreshAhead = Duration(seconds: 60);
 
   // Ensures concurrent 401s share one refresh call instead of racing to use
   // a single-use refresh token simultaneously.
@@ -73,7 +81,16 @@ class ApiClient {
 
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
+          final expiresAt = _tokenExpiresAt;
+          if (_token != null &&
+              expiresAt != null &&
+              !_isAuthPath(options.path) &&
+              expiresAt.difference(DateTime.now()) < _refreshAhead) {
+            // Best-effort: if this fails the request goes out with the old
+            // token and the 401 path below takes over.
+            await _refreshToken();
+          }
           if (_token != null) {
             options.headers['Authorization'] = 'Bearer $_token';
           }
@@ -81,13 +98,7 @@ class ApiClient {
         },
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
-            final path = error.requestOptions.path;
-            final skipRefresh =
-                path.contains('/auth/refresh') ||
-                path.contains('/auth/login') ||
-                path.contains('/auth/register') ||
-                path.contains('/auth/logout') ||
-                path.contains('/auth/oidc');
+            final skipRefresh = _isAuthPath(error.requestOptions.path);
             if (!skipRefresh) {
               final refreshed = await _refreshToken();
               if (refreshed) {
@@ -134,6 +145,16 @@ class ApiClient {
     _prefs.setString('server_url', serverUrl);
   }
 
+  /// The auth endpoints never get a token refresh triggered on their
+  /// behalf — a 401 from them means bad credentials, and the refresh call
+  /// itself must not recurse into another refresh.
+  static bool _isAuthPath(String path) =>
+      path.contains('/auth/refresh') ||
+      path.contains('/auth/login') ||
+      path.contains('/auth/register') ||
+      path.contains('/auth/logout') ||
+      path.contains('/auth/oidc');
+
   Future<bool> _refreshToken() {
     _refreshFuture ??= _doRefresh().whenComplete(() => _refreshFuture = null);
     return _refreshFuture!;
@@ -153,8 +174,8 @@ class ApiClient {
     try {
       final resp = await _dio.post(
         '/auth/refresh',
-        // Confirmed via a live validation error: the field is camelCase
-        // "refreshToken", not "refresh_token" as originally guessed.
+        // camelCase, like every other field on this API (confirmed against
+        // `RefreshTokenRequest` and a live validation error).
         data: {'refreshToken': refreshToken},
         options: Options(headers: {'Authorization': null}),
       );
@@ -169,6 +190,10 @@ class ApiClient {
 
   Future<void> _storeTokens(AuthTokens tokens) async {
     _token = tokens.accessToken;
+    final expires = tokens.expires;
+    _tokenExpiresAt = expires == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(expires);
     await _secureStorage.write(key: 'access_token', value: tokens.accessToken);
     await _secureStorage.write(
       key: 'refresh_token',
@@ -238,9 +263,16 @@ class ApiClient {
     if (refreshToken != null) {
       try {
         await _dio.post('/auth/logout', data: {'refreshToken': refreshToken});
-      } catch (_) {}
+      } catch (e) {
+        // Local sign-out proceeds regardless; only a server-side rejection
+        // (not an unreachable server) is worth a note in the log.
+        final offline =
+            e is DioException && e.type != DioExceptionType.badResponse;
+        if (!offline) debugPrint('logout: server rejected refresh token: $e');
+      }
     }
     _token = null;
+    _tokenExpiresAt = null;
     await _secureStorage.delete(key: 'access_token');
     await _secureStorage.delete(key: 'refresh_token');
     await _prefs.remove('logged_in');
@@ -330,6 +362,27 @@ class ApiClient {
     await _dio.download('/books/$bookId/download', destinationPath);
   }
 
+  /// Streams [url] (absolute — e.g. [streamUrl]/[trackStreamUrl]) to
+  /// [destinationPath] through this client, so the bearer header, the
+  /// 401→refresh→retry path and the connection-error retry all apply — a
+  /// multi-hour audiobook download outlives an access token. The receive
+  /// timeout is lifted for just this call: it's a per-chunk idle timeout in
+  /// Dio, but a large file on a slow link still trips the 20s default.
+  Future<void> downloadFile(
+    String url,
+    String destinationPath, {
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    await _dio.download(
+      url,
+      destinationPath,
+      cancelToken: cancelToken,
+      onReceiveProgress: onReceiveProgress,
+      options: Options(receiveTimeout: Duration.zero),
+    );
+  }
+
   Future<List<Book>> searchBooks(
     String query, {
     int page = 0,
@@ -402,15 +455,24 @@ class ApiClient {
   /// — generated during library scan, or set via the cover
   /// upload/regenerate endpoints — lives in a separate controller
   /// (`BookMediaController`) under `/media/book/{bookId}/audiobook-cover`.
-  String coverUrl(int bookId) =>
-      '${_dio.options.baseUrl}/media/book/$bookId/audiobook-cover';
+  ///
+  /// [version] (see `Book.coverVersion`) is appended as a query parameter
+  /// purely to defeat image caches after a cover is regenerated — the path
+  /// itself never changes, which is how the web client does it too.
+  String coverUrl(int bookId, {String? version}) => _versioned(
+    '${_dio.options.baseUrl}/media/book/$bookId/audiobook-cover',
+    version,
+  );
 
   /// Fallback for a book with no audiobook-specific cover generated yet —
   /// the general book cover `BookMediaController` also serves, which the
   /// real frontend falls back to the same way (`UrlHelperService
   /// .getCoverUrl`, used when `audiobookCoverUpdatedOn` is unset).
-  String fallbackCoverUrl(int bookId) =>
-      '${_dio.options.baseUrl}/media/book/$bookId/cover';
+  String fallbackCoverUrl(int bookId, {String? version}) =>
+      _versioned('${_dio.options.baseUrl}/media/book/$bookId/cover', version);
+
+  static String _versioned(String url, String? version) =>
+      version == null ? url : '$url?v=${Uri.encodeQueryComponent(version)}';
 
   // ── Progress (AppBookController — GET/PUT .../progress) ───────────────
   //

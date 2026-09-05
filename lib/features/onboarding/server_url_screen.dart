@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/api/errors.dart';
-import '../../core/providers.dart';
 import '../../core/server_config.dart';
+import 'server_url_provider.dart';
 
 /// First-run "connect to your server" screen — Grimmory is self-hosted with
 /// no fixed domain, so (unlike a fixed-backend app) every user has to enter
@@ -40,47 +39,43 @@ class _ServerUrlScreenState extends ConsumerState<ServerUrlScreen> {
       _error = null;
     });
 
-    final apiClient = ref.read(apiClientProvider);
-    final prefs = ref.read(sharedPrefsProvider);
-    apiClient.updateBaseUrl(normalized);
-
-    try {
-      // No confirmed unauthenticated health/version endpoint yet (M0) — a
-      // 401 here still proves the server is reachable and speaking the
-      // Grimmory API, so treat it the same as success.
-      await Dio().get('$normalized/api/v1/libraries');
-    } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      if (status == null) {
-        setState(() {
-          _checking = false;
-          _error = friendlyApiError(e);
-        });
-        return;
-      }
-      // Any HTTP response (even 401/403) means the server was reachable.
-    } catch (e) {
+    final failure = await _probe(normalized);
+    if (!mounted) return;
+    if (failure != null) {
       setState(() {
         _checking = false;
-        _error = 'Could not reach that server.';
+        _error = failure;
       });
       return;
     }
 
-    await prefs.setString('server_url', normalized);
+    // Persisting through the notifier is what re-runs the router's
+    // redirect — it moves on to /login by itself once the URL is set.
+    await ref.read(serverUrlProvider.notifier).set(normalized);
     if (!mounted) return;
     setState(() => _checking = false);
-    // GoRouterRefreshStream only listens to authProvider — a plain
-    // SharedPreferences write doesn't notify anything, so without this
-    // explicit navigation the router's redirect never re-runs and this
-    // screen just sits there forever with no error shown (looks like the
-    // "Continue" button silently does nothing). go_router's own redirect
-    // takes over correctly from here on: it'll either let this go through
-    // (not logged in yet) or bounce onward to /libraries (already logged
-    // in, e.g. after "change server" while a stored session is somehow
-    // still valid for the new server, which shouldn't normally happen but
-    // costs nothing to handle correctly).
-    context.go('/login');
+  }
+
+  /// Null when the server answered at all. No confirmed unauthenticated
+  /// health/version endpoint yet (M0) — a 401 here still proves the server
+  /// is reachable and speaking the Grimmory API, so any HTTP response
+  /// counts. Bounded timeouts: a black-holed host used to leave the spinner
+  /// running forever.
+  Future<String?> _probe(String serverUrl) async {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    try {
+      await dio.get('$serverUrl/api/v1/libraries');
+      return null;
+    } on DioException catch (e) {
+      return e.response?.statusCode == null ? friendlyApiError(e) : null;
+    } catch (_) {
+      return 'Could not reach that server.';
+    }
   }
 
   @override

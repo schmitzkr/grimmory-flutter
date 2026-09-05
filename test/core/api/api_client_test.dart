@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -272,6 +273,120 @@ void main() {
       );
       expect(adapter.requests, hasLength(1));
     });
+  });
+
+  group('token expiry', () {
+    test(
+      'refreshes ahead of a known expiry instead of waiting for a 401',
+      () async {
+        adapter.handler = (options) {
+          if (options.path == '/auth/login') {
+            return _json({
+              'accessToken': 'token-short',
+              'refreshToken': 'refresh-1',
+              'expires': DateTime.now()
+                  .add(const Duration(seconds: 30))
+                  .millisecondsSinceEpoch,
+            });
+          }
+          if (options.path == '/auth/refresh') {
+            return _json({
+              'accessToken': 'token-2',
+              'refreshToken': 'refresh-2',
+              'expires': DateTime.now()
+                  .add(const Duration(hours: 1))
+                  .millisecondsSinceEpoch,
+            });
+          }
+          return _json([]);
+        };
+
+        await client.login('user', 'pw');
+        await client.getLibraries();
+
+        expect(adapter.requests.map((r) => r.path), [
+          '/auth/login',
+          '/auth/refresh',
+          '/libraries',
+        ]);
+        expect(
+          adapter.requests.last.headers['Authorization'],
+          'Bearer token-2',
+        );
+        expect(client.token, 'token-2');
+      },
+    );
+
+    test('a token with a distant expiry is used as-is', () async {
+      adapter.handler = (options) {
+        if (options.path == '/auth/login') {
+          return _json({
+            'accessToken': 'token-long',
+            'refreshToken': 'refresh-1',
+            'expires': DateTime.now()
+                .add(const Duration(hours: 2))
+                .millisecondsSinceEpoch,
+          });
+        }
+        return _json([]);
+      };
+
+      await client.login('user', 'pw');
+      await client.getLibraries();
+
+      expect(adapter.requests.map((r) => r.path), [
+        '/auth/login',
+        '/libraries',
+      ]);
+      expect(
+        adapter.requests.last.headers['Authorization'],
+        'Bearer token-long',
+      );
+    });
+  });
+
+  test(
+    'downloadFile streams through the authed client with no receive timeout',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('grimreader_api_');
+      addTearDown(() => dir.delete(recursive: true));
+      final path = '${dir.path}/track_0.mp3';
+      final bytes = List<int>.generate(64, (i) => i);
+      adapter.handler = (_) =>
+          ResponseBody.fromBytes(Uint8List.fromList(bytes), 200);
+
+      var lastProgress = 0;
+      await client.downloadFile(
+        'https://books.test/api/v1/audiobooks/5/track/0/stream',
+        path,
+        onReceiveProgress: (received, _) => lastProgress = received,
+      );
+
+      final request = adapter.requests.single;
+      expect(
+        request.uri.toString(),
+        'https://books.test/api/v1/audiobooks/5/track/0/stream',
+      );
+      expect(request.headers['Authorization'], 'Bearer token-1');
+      expect(request.receiveTimeout, Duration.zero);
+      expect(await File(path).readAsBytes(), bytes);
+      expect(lastProgress, 64);
+    },
+  );
+
+  test('cover URLs carry the version only when one is known', () {
+    expect(
+      client.coverUrl(5),
+      'https://books.test/api/v1/media/book/5/audiobook-cover',
+    );
+    expect(
+      client.coverUrl(5, version: '1725000000000'),
+      'https://books.test/api/v1/media/book/5/audiobook-cover?v=1725000000000',
+    );
+    expect(
+      client.fallbackCoverUrl(5, version: 'a b'),
+      'https://books.test/api/v1/media/book/5/cover?v=a+b',
+    );
   });
 
   test('paginated /app lists are unwrapped from "content"', () async {

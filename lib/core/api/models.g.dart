@@ -9,12 +9,14 @@ part of 'models.dart';
 _AuthTokens _$AuthTokensFromJson(Map<String, dynamic> json) => _AuthTokens(
   accessToken: json['accessToken'] as String,
   refreshToken: json['refreshToken'] as String,
+  expires: (json['expires'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$AuthTokensToJson(_AuthTokens instance) =>
     <String, dynamic>{
       'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
+      'expires': instance.expires,
     };
 
 _Library _$LibraryFromJson(Map<String, dynamic> json) => _Library(
@@ -34,6 +36,14 @@ Map<String, dynamic> _$LibraryToJson(_Library instance) => <String, dynamic>{
 _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
   id: (json['id'] as num).toInt(),
   title: json['title'] as String,
+  thumbnailUrl: json['thumbnailUrl'] as String?,
+  coverUpdatedOn: json['coverUpdatedOn'] == null
+      ? null
+      : DateTime.parse(json['coverUpdatedOn'] as String),
+  audiobookCoverUpdatedOn: json['audiobookCoverUpdatedOn'] == null
+      ? null
+      : DateTime.parse(json['audiobookCoverUpdatedOn'] as String),
+  primaryFileId: (json['primaryFileId'] as num?)?.toInt(),
   authors:
       (json['authors'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
@@ -55,6 +65,11 @@ _Book _$BookFromJson(Map<String, dynamic> json) => _Book(
 Map<String, dynamic> _$BookToJson(_Book instance) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,
+  'thumbnailUrl': instance.thumbnailUrl,
+  'coverUpdatedOn': instance.coverUpdatedOn?.toIso8601String(),
+  'audiobookCoverUpdatedOn': instance.audiobookCoverUpdatedOn
+      ?.toIso8601String(),
+  'primaryFileId': instance.primaryFileId,
   'authors': instance.authors,
   'seriesName': instance.seriesName,
   'seriesNumber': instance.seriesNumber,

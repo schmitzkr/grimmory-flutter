@@ -14,6 +14,19 @@ final sleepTimerProvider = NotifierProvider<SleepTimerNotifier, Duration?>(
 
 class SleepTimerNotifier extends Notifier<Duration?> {
   Timer? _ticker;
+  // The book the running timer was started for — it stops meaning anything
+  // once playback stops or a different book loads, and must not fire a
+  // pause on whatever plays next. Checked on each tick straight off the
+  // handler's own subject rather than through Riverpod: Riverpod 3
+  // deactivates a provider's `ref.listen` subscriptions — and pauses a
+  // StreamProvider's underlying stream — whenever nothing is actively
+  // watching, which is every screen but the player, so both a listener in
+  // build() and a `ref.read(currentMediaItemProvider)` went stale there.
+  int? _startedForBookId;
+
+  int? get _currentBookId =>
+      ref.read(audioHandlerProvider).mediaItem.valueOrNull?.extras?['bookId']
+          as int?;
 
   @override
   Duration? build() {
@@ -23,6 +36,7 @@ class SleepTimerNotifier extends Notifier<Duration?> {
 
   void start(Duration duration) {
     _ticker?.cancel();
+    _startedForBookId = _currentBookId;
     state = duration;
     _scheduleTick();
   }
@@ -30,6 +44,7 @@ class SleepTimerNotifier extends Notifier<Duration?> {
   void cancel() {
     _ticker?.cancel();
     _ticker = null;
+    _startedForBookId = null;
     state = null;
   }
 
@@ -37,8 +52,14 @@ class SleepTimerNotifier extends Notifier<Duration?> {
     _ticker = Timer(const Duration(seconds: 1), () {
       final remaining = state;
       if (remaining == null) return;
+      if (_currentBookId != _startedForBookId) {
+        cancel();
+        return;
+      }
       final next = remaining - const Duration(seconds: 1);
       if (next <= Duration.zero) {
+        _ticker = null;
+        _startedForBookId = null;
         state = null;
         ref.read(audioHandlerProvider).pause();
       } else {

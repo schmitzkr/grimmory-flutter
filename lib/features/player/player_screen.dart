@@ -20,28 +20,24 @@ class PlayerScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mediaItemAsync = ref.watch(currentMediaItemProvider);
-    final playbackStateAsync = ref.watch(playbackStateProvider);
-    final queueAsync = ref.watch(queueProvider);
-    final chaptersAsync = ref.watch(chaptersProvider);
+    final nowPlaying = ref.watch(nowPlayingProvider);
+    final queue = ref.watch(queueProvider).value ?? [];
+    final chapters = ref.watch(chaptersProvider).value ?? [];
     final handler = ref.read(audioHandlerProvider);
 
-    final mediaItem = mediaItemAsync.value;
-    final playbackState = playbackStateAsync.value;
-    final queue = queueAsync.value ?? [];
-    final chapters = chaptersAsync.value ?? [];
-
-    if (mediaItem == null) {
+    if (nowPlaying == null) {
       return const Scaffold(body: Center(child: Text('Nothing playing.')));
     }
 
-    final bookId = mediaItem.extras?['bookId'] as int?;
+    final mediaItem = nowPlaying.mediaItem;
+    final playbackState = nowPlaying.state;
+    final bookId = nowPlaying.bookId;
     // Folder-based books have one queue entry per track; a single-stream
     // book's queue always has exactly one entry (see
     // GrimmoryAudioHandler._loadSource) — chapters, when present, apply to
     // that case instead.
     final isFolderBased = queue.length > 1;
-    final playing = playbackState?.playing ?? false;
+    final playing = nowPlaying.playing;
     final processingState =
         playbackState?.processingState ?? AudioProcessingState.idle;
     final isBuffering =
@@ -98,39 +94,9 @@ class PlayerScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
           const SizedBox(height: 24),
-          StreamBuilder<Duration>(
-            stream: AudioService.position,
-            builder: (context, snapshot) {
-              final position = snapshot.data ?? Duration.zero;
-              final duration = mediaItem.duration ?? Duration.zero;
-              return Column(
-                children: [
-                  Slider(
-                    value: duration.inMilliseconds > 0
-                        ? position.inMilliseconds
-                              .clamp(0, duration.inMilliseconds)
-                              .toDouble()
-                        : 0,
-                    max: duration.inMilliseconds > 0
-                        ? duration.inMilliseconds.toDouble()
-                        : 1,
-                    onChanged: (value) {},
-                    onChangeEnd: (value) =>
-                        handler.seek(Duration(milliseconds: value.round())),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(formatDuration(position)),
-                        Text(formatDuration(duration)),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+          _PositionSlider(
+            duration: mediaItem.duration ?? Duration.zero,
+            onSeek: handler.seek,
           ),
           const SizedBox(height: 8),
           Row(
@@ -207,11 +173,68 @@ class PlayerScreen extends ConsumerWidget {
                 trailing: Text(
                   formatDuration(Duration(milliseconds: chapter.durationMs)),
                 ),
-                onTap: () => handler.seekToChapterStart(chapter.startTimeMs),
+                onTap: () => handler.seekToBookPosition(chapter.startTimeMs),
               ),
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Follows the live position until the thumb is grabbed, then follows the
+/// thumb — otherwise every position tick snaps it back mid-drag and the
+/// slider looks stuck.
+class _PositionSlider extends StatefulWidget {
+  const _PositionSlider({required this.duration, required this.onSeek});
+
+  final Duration duration;
+  final Future<void> Function(Duration) onSeek;
+
+  @override
+  State<_PositionSlider> createState() => _PositionSliderState();
+}
+
+class _PositionSliderState extends State<_PositionSlider> {
+  double? _dragValue;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxMs = widget.duration.inMilliseconds;
+    return StreamBuilder<Duration>(
+      stream: AudioService.position,
+      builder: (context, snapshot) {
+        final position = snapshot.data ?? Duration.zero;
+        final liveMs = maxMs > 0
+            ? position.inMilliseconds.clamp(0, maxMs).toDouble()
+            : 0.0;
+        final shownMs = _dragValue ?? liveMs;
+        return Column(
+          children: [
+            Slider(
+              value: shownMs,
+              max: maxMs > 0 ? maxMs.toDouble() : 1,
+              onChanged: maxMs > 0
+                  ? (value) => setState(() => _dragValue = value)
+                  : null,
+              onChangeEnd: (value) {
+                setState(() => _dragValue = null);
+                widget.onSeek(Duration(milliseconds: value.round()));
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(formatDuration(Duration(milliseconds: shownMs.round()))),
+                  Text(formatDuration(widget.duration)),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -59,9 +59,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen(oidcLoginControllerProvider, (previous, next) {
       final error = next.error;
       if (error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('SSO sign-in failed: $error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('SSO sign-in failed: ${friendlyApiError(error)}'),
+          ),
+        );
       }
     });
 

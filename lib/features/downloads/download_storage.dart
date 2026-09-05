@@ -9,27 +9,37 @@ import 'download_models.dart';
 /// Plain filesystem I/O for offline downloads — no Riverpod dependency, so
 /// [GrimmoryAudioHandler] (constructed outside the widget tree, before
 /// `runApp()`) can check for a local copy of a book without needing access
-/// to provider state. [DownloadManager] uses this same class for the
-/// UI-facing download/cancel/delete flow.
+/// to provider state. [DownloadManager] uses this same instance for the
+/// UI-facing download/cancel/delete flow (see `main()`).
 ///
 /// Layout per book, under `<app documents>/downloads/<bookId>/`:
 /// - `record.json` — [DownloadRecord] (title/authors/status/size), written
-///   only once a download fully completes. Its presence is the source of
-///   truth for "is this book downloaded" — scanned at startup to rebuild
-///   [DownloadManager]'s state, so a download interrupted mid-way (app
-///   killed, etc.) simply doesn't count as complete rather than needing
-///   separate resume/cleanup logic.
+///   only once a download fully completes, and atomically (temp + rename)
+///   so it can never be half-written. Its presence is the source of truth
+///   for "is this book downloaded" — scanned at startup to rebuild
+///   [DownloadManager]'s state; a directory without one is a download that
+///   never finished and is removed by [sweepOrphans] at the next start.
 /// - `info.json` — the cached `AudiobookInfo` response, so offline playback
 ///   needs zero network calls to load a book.
 /// - `track_<index><ext>` (folder-based) or `book` (single-stream) — the
 ///   actual audio file(s). [ext] is taken from `AudiobookTrack.fileName`
-///   where available; a single-stream book gets no extension at all, which
-///   is fine since ExoPlayer/just_audio sniff the container format from
-///   the file's actual contents for local playback, not the extension.
+///   where available; a file with no extension is stored as a bare
+///   `track_<index>`. ExoPlayer/just_audio sniff the container format from
+///   the file's contents for local playback, not the extension.
 class DownloadStorage {
+  /// [documentsDirectory] exists for tests, which have no path_provider
+  /// plugin; the app uses the platform documents directory.
+  DownloadStorage({Future<Directory> Function()? documentsDirectory})
+    : _documentsDirectory =
+          documentsDirectory ?? getApplicationDocumentsDirectory;
+
+  final Future<Directory> Function() _documentsDirectory;
+
+  Future<Directory> _root() async =>
+      Directory('${(await _documentsDirectory()).path}/downloads');
+
   Future<Directory> bookDir(int bookId) async {
-    final docs = await getApplicationDocumentsDirectory();
-    final dir = Directory('${docs.path}/downloads/$bookId');
+    final dir = Directory('${(await _root()).path}/$bookId');
     if (!await dir.exists()) await dir.create(recursive: true);
     return dir;
   }
@@ -50,9 +60,9 @@ class DownloadStorage {
 
   Future<void> writeRecord(DownloadRecord record) async {
     final dir = await bookDir(record.bookId);
-    await File(
-      '${dir.path}/record.json',
-    ).writeAsString(jsonEncode(record.toJson()));
+    final temp = File('${dir.path}/record.json.tmp');
+    await temp.writeAsString(jsonEncode(record.toJson()), flush: true);
+    await temp.rename('${dir.path}/record.json');
   }
 
   Future<AudiobookInfo?> readCachedInfo(int bookId) async {
@@ -75,8 +85,7 @@ class DownloadStorage {
   /// downloads directory — the source [DownloadManager] rebuilds its state
   /// from at startup.
   Future<List<DownloadRecord>> scanCompletedDownloads() async {
-    final docs = await getApplicationDocumentsDirectory();
-    final root = Directory('${docs.path}/downloads');
+    final root = await _root();
     if (!await root.exists()) return [];
 
     final records = <DownloadRecord>[];
@@ -97,6 +106,28 @@ class DownloadStorage {
     return records;
   }
 
+  /// Removes every book directory that has no `record.json` — a download
+  /// the app was killed in the middle of. Partial files are only reused by
+  /// a retry within the same session; across restarts they'd otherwise sit
+  /// invisible and uncounted forever. Returns the number of directories
+  /// removed.
+  Future<int> sweepOrphans() async {
+    final root = await _root();
+    if (!await root.exists()) return 0;
+    var removed = 0;
+    await for (final entry in root.list()) {
+      if (entry is! Directory) continue;
+      if (await File('${entry.path}/record.json').exists()) continue;
+      try {
+        await entry.delete(recursive: true);
+        removed++;
+      } catch (_) {
+        // Best-effort; a directory that won't delete is left for next time.
+      }
+    }
+    return removed;
+  }
+
   String trackFilePath(Directory dir, int trackIndex, String? fileName) {
     final ext = fileName != null && fileName.contains('.')
         ? fileName.substring(fileName.lastIndexOf('.'))
@@ -107,14 +138,14 @@ class DownloadStorage {
   String singleFilePath(Directory dir) => '${dir.path}/book';
 
   /// The local audio file for a track index, or null if not present —
-  /// matches on the `track_<index>.` prefix (not a bare substring check,
-  /// which would wrongly match track 1 against track 10, 11, etc.).
+  /// exactly `track_<index>` or `track_<index>.<ext>` (not a bare prefix
+  /// check, which would wrongly match track 1 against track 10, 11, etc.).
   Future<String?> localTrackPath(int bookId, int trackIndex) async {
     final dir = await bookDir(bookId);
     if (!await dir.exists()) return null;
-    final prefix = 'track_$trackIndex.';
+    final pattern = RegExp('^track_$trackIndex(\\..+)?\$');
     await for (final entry in dir.list()) {
-      if (entry is File && entry.uri.pathSegments.last.startsWith(prefix)) {
+      if (entry is File && pattern.hasMatch(entry.uri.pathSegments.last)) {
         return entry.path;
       }
     }

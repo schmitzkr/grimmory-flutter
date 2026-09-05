@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_links/app_links.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,8 @@ import 'app/router.dart';
 import 'core/api/api_client.dart';
 import 'core/providers.dart';
 import 'features/auth/oidc_login_controller.dart';
+import 'features/downloads/download_manager.dart';
+import 'features/downloads/download_storage.dart';
 import 'features/player/audio_handler.dart';
 import 'features/player/playback_provider.dart';
 import 'features/player/progress_sync.dart';
@@ -21,8 +25,14 @@ void main() async {
   final initialToken = await secureStorage.read(key: 'access_token');
   final apiClient = ApiClient(prefs, secureStorage, initialToken: initialToken);
 
+  // One storage instance for both the handler (offline playback) and the
+  // download manager (UI), so they can't disagree about what's on disk.
+  final downloadStorage = DownloadStorage();
+  unawaited(downloadStorage.sweepOrphans());
+
   final audioHandler = await AudioService.init(
-    builder: () => GrimmoryAudioHandler(apiClient),
+    builder: () =>
+        GrimmoryAudioHandler(apiClient, downloadStorage: downloadStorage),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'is.schmitzkr.grimmory.audio',
       androidNotificationChannelName: 'Audiobook playback',
@@ -37,6 +47,7 @@ void main() async {
         secureStorageProvider.overrideWithValue(secureStorage),
         apiClientProvider.overrideWithValue(apiClient),
         audioHandlerProvider.overrideWithValue(audioHandler),
+        downloadStorageProvider.overrideWithValue(downloadStorage),
       ],
       child: const GrimmoryApp(),
     ),

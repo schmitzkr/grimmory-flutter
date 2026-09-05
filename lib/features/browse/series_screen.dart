@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../../core/widgets/async_value_view.dart';
+import '../../core/widgets/empty_state.dart';
 
 final seriesListProvider = FutureProvider<List<Series>>((ref) async {
   return ref.read(apiClientProvider).getSeries();
@@ -18,11 +19,11 @@ class SeriesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final series = ref.watch(seriesListProvider);
 
-    return series.when(
+    return AsyncValueView(
+      value: series,
+      onRetry: () => ref.invalidate(seriesListProvider),
       data: (items) {
-        if (items.isEmpty) {
-          return const Center(child: Text('No series found.'));
-        }
+        if (items.isEmpty) return const EmptyState('No series found.');
         return RefreshIndicator(
           onRefresh: () => ref.refresh(seriesListProvider.future),
           child: ListView.builder(
@@ -43,23 +44,6 @@ class SeriesTab extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(friendlyApiError(error)),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed: () => ref.invalidate(seriesListProvider),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

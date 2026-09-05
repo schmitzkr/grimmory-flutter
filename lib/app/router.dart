@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/providers.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/sso_settings_screen.dart';
@@ -13,22 +12,24 @@ import '../features/browse/series_detail_screen.dart';
 import '../features/downloads/downloads_screen.dart';
 import '../features/library/home_screen.dart';
 import '../features/library/library_detail_screen.dart';
+import '../features/onboarding/server_url_provider.dart';
 import '../features/onboarding/server_url_screen.dart';
 import '../features/player/player_screen.dart';
 import '../features/reader/epub_reader_args.dart';
 import '../features/reader/epub_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
 
-/// Single app-wide router, redirect-gated on [authProvider] and whether a
-/// server URL has been configured yet — mirrors schmlist-flutter's
-/// router.dart pattern (see the project plan, §2/§3.5).
+/// Single app-wide router, redirect-gated on [authProvider] and
+/// [serverUrlProvider] — mirrors schmlist-flutter's router.dart pattern (see
+/// the project plan, §2/§3.5). Every screen is reachable from its path
+/// alone: `extra` only ever carries optional hints (a bookmark to jump to),
+/// never something a deep link or a restored route would be missing.
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     refreshListenable: GoRouterRefreshStream(ref),
     redirect: (context, state) {
-      final prefs = ref.read(sharedPrefsProvider);
-      final serverUrl = prefs.getString('server_url');
+      final serverUrl = ref.read(serverUrlProvider);
       final authState = ref.read(authProvider);
 
       final onOnboarding = state.matchedLocation == '/onboarding';
@@ -38,7 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // would immediately bounce back to /login.
       final onSsoSettings = state.matchedLocation == '/sso-settings';
 
-      if (serverUrl == null || serverUrl.isEmpty) {
+      if (serverUrl == null) {
         return onOnboarding ? null : '/onboarding';
       }
 
@@ -96,7 +97,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/shelves/magic/:id',
         builder: (context, state) => MagicShelfDetailScreen(
           magicShelfId: int.parse(state.pathParameters['id']!),
-          title: state.extra as String? ?? 'Shelf',
         ),
       ),
       GoRoute(
@@ -109,7 +109,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           final extra = state.extra;
           return EpubReaderScreen(
             bookId: int.parse(state.pathParameters['id']!),
-            title: extra is EpubReaderArgs ? extra.title : 'Book',
             jumpToCfi: extra is EpubReaderArgs ? extra.jumpToCfi : null,
           );
         },
@@ -126,10 +125,11 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-/// Bridges Riverpod's [authProvider] into a [Listenable] so GoRouter
-/// re-evaluates `redirect` whenever auth state changes.
+/// Bridges the two providers the redirect reads into a [Listenable] so
+/// GoRouter re-evaluates `redirect` whenever either changes.
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Ref ref) {
     ref.listen(authProvider, (previous, next) => notifyListeners());
+    ref.listen(serverUrlProvider, (previous, next) => notifyListeners());
   }
 }
