@@ -24,12 +24,14 @@ dependencies:
   shared_preferences: ^2.5.2
 
   # OIDC login (Authentik or any IdP a self-hosted Grimmory instance is wired
-  # to) — only oidc_core's low-level PKCE/request utilities are used (via
-  # `oidc`, which re-exports oidc_core), not the full OidcUserManager, since
-  # Grimmory's /auth/oidc/callback wants the raw PKCE result rather than a
-  # pre-exchanged token. No oidc_default_store — that's only needed to back
-  # OidcUserManager's own session/token store, unused here.
-  oidc: ^0.13.0
+  # to) — only oidc_core's pure-Dart PKCE/request utilities are used, not
+  # the `oidc` Flutter wrapper's OidcUserManager or its native AppAuth/Auth
+  # Tab plugins: Grimmory's /auth/oidc/callback wants the raw PKCE result
+  # rather than a pre-exchanged token, and the browser round-trip is
+  # url_launcher + app_links. Depending on oidc_core directly (rather than
+  # `oidc` 0.13, whose 1.0-4.0 releases rewrote exactly those native parts)
+  # keeps the Android build free of AppAuth's manifest placeholder.
+  oidc_core: ^3.0.0
   app_links: ^7.2.1
   url_launcher: ^6.3.0
 

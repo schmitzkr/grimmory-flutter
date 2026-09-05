@@ -43,24 +43,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-
-        // Required by the oidc package's Android implementation (AppAuth) —
-        // the native AppAuth library's manifest declares a redirect
-        // intent-filter with an unresolved ${appAuthRedirectScheme}
-        // placeholder; the manifest merger fails without a value, even
-        // though this app doesn't actually use AppAuth's own redirect
-        // activity (OIDC login goes through app_links +
-        // DeepLinkOidcUserManager instead, see lib/features/auth/).
-        //
-        // Deliberately a DIFFERENT, unused scheme from the app's real OIDC
-        // redirect URI (is.schmitzkr.grimmory://oidc-callback, registered on
-        // MainActivity — see AndroidManifest.xml). AppAuth's manifest
-        // declares its intent-filter with scheme-only matching (no host
-        // restriction), so if this placeholder were set to the SAME scheme
-        // our own redirect uses, both AppAuth's RedirectUriReceiverActivity
-        // and MainActivity would match the incoming URI and Android would
-        // show a disambiguation "open with" dialog on every OIDC login.
-        manifestPlaceholders["appAuthRedirectScheme"] = "is.schmitzkr.grimmory.unused"
+        // OIDC login is pure Dart (oidc_core + url_launcher + app_links —
+        // see lib/features/auth/oidc_login_controller.dart); the redirect
+        // intent-filter lives on MainActivity in AndroidManifest.xml. No
+        // AppAuth plugin, so no ${appAuthRedirectScheme} placeholder.
     }
 
     signingConfigs {
