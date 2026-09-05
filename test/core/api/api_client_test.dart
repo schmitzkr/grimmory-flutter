@@ -479,29 +479,76 @@ void main() {
   });
 
   group('token expiry', () {
+    // Grimmory's `expires` is the access token's lifetime in SECONDS
+    // (`AccessTokenDto.expires = accessTokenExpirationMs / 1000`, 7200 on
+    // v3.3.3), not a timestamp. v0.11.12–v0.11.14 read it as epoch
+    // milliseconds, so every token looked expired in 1970 and the client
+    // refreshed before every request — each refresh rotates the server's
+    // token, and its limit of five failed refreshes per IP in 15 minutes
+    // turned the Home screen's burst of requests into a forced logout.
+    Map<String, dynamic> tokens(String access, String refresh, int expires) => {
+      'accessToken': access,
+      'refreshToken': refresh,
+      'expires': expires,
+    };
+
     test(
-      'refreshes ahead of a known expiry instead of waiting for a 401',
+      'a fresh two-hour token is used as-is, request after request',
       () async {
-        adapter.handler = (options) {
-          if (options.path == '/auth/login') {
-            return _json({
-              'accessToken': 'token-short',
-              'refreshToken': 'refresh-1',
-              'expires': DateTime.now()
-                  .add(const Duration(seconds: 30))
-                  .millisecondsSinceEpoch,
-            });
-          }
-          if (options.path == '/auth/refresh') {
-            return _json({
-              'accessToken': 'token-2',
-              'refreshToken': 'refresh-2',
-              'expires': DateTime.now()
-                  .add(const Duration(hours: 1))
-                  .millisecondsSinceEpoch,
-            });
-          }
-          return _json([]);
+        adapter.handler = (options) => options.path == '/auth/login'
+            ? _json(tokens('token-long', 'refresh-1', 7200))
+            : _json([]);
+
+        await client.login('user', 'pw');
+        await client.getLibraries();
+        await client.getLibraries();
+
+        expect(adapter.requests.map((r) => r.path), [
+          '/auth/login',
+          '/libraries',
+          '/libraries',
+        ]);
+        expect(
+          adapter.requests.last.headers['Authorization'],
+          'Bearer token-long',
+        );
+      },
+    );
+
+    test(
+      'refreshes ahead of an imminent expiry instead of waiting for a 401',
+      () async {
+        adapter.handler = (options) => switch (options.path) {
+          '/auth/login' => _json(tokens('token-short', 'refresh-1', 30)),
+          '/auth/refresh' => _json(tokens('token-2', 'refresh-2', 7200)),
+          _ => _json([]),
+        };
+
+        await client.login('user', 'pw');
+        await client.getLibraries();
+        await client.getLibraries();
+
+        expect(adapter.requests.map((r) => r.path), [
+          '/auth/login',
+          '/auth/refresh',
+          '/libraries',
+          '/libraries',
+        ]);
+        expect(
+          adapter.requests.last.headers['Authorization'],
+          'Bearer token-2',
+        );
+        expect(client.token, 'token-2');
+      },
+    );
+
+    test(
+      'a rate-limited refresh keeps the session and sends the old token',
+      () async {
+        adapter.handler = (options) => switch (options.path) {
+          '/auth/login' => _json(tokens('token-short', 'refresh-1', 30)),
+          '/auth/refresh' => _json({'status': 429}, status: 429),
+          _ => _json([]),
         };
 
         await client.login('user', 'pw');
@@ -514,38 +561,46 @@ void main() {
         ]);
         expect(
           adapter.requests.last.headers['Authorization'],
-          'Bearer token-2',
+          'Bearer token-short',
         );
-        expect(client.token, 'token-2');
+        expect(
+          await const FlutterSecureStorage().read(key: 'refresh_token'),
+          'refresh-1',
+        );
       },
     );
 
-    test('a token with a distant expiry is used as-is', () async {
-      adapter.handler = (options) {
-        if (options.path == '/auth/login') {
-          return _json({
-            'accessToken': 'token-long',
-            'refreshToken': 'refresh-1',
-            'expires': DateTime.now()
-                .add(const Duration(hours: 2))
-                .millisecondsSinceEpoch,
-          });
-        }
-        return _json([]);
-      };
+    // `/auth/logout` revokes every refresh token the account has, so a
+    // rejected refresh must not call it — it would sign the user out of
+    // the web and any other device at the same time.
+    test(
+      'a rejected refresh clears the session locally, without /auth/logout',
+      () async {
+        adapter.handler = (options) => switch (options.path) {
+          '/auth/login' => _json(tokens('token-short', 'refresh-1', 30)),
+          '/auth/refresh' => _json({'status': 401}, status: 401),
+          _ => _json([]),
+        };
 
-      await client.login('user', 'pw');
-      await client.getLibraries();
+        await client.login('user', 'pw');
+        await client.getLibraries();
 
-      expect(adapter.requests.map((r) => r.path), [
-        '/auth/login',
-        '/libraries',
-      ]);
-      expect(
-        adapter.requests.last.headers['Authorization'],
-        'Bearer token-long',
-      );
-    });
+        expect(adapter.requests.map((r) => r.path), [
+          '/auth/login',
+          '/auth/refresh',
+          '/libraries',
+        ]);
+        expect(
+          adapter.requests.map((r) => r.path),
+          isNot(contains('/auth/logout')),
+        );
+        expect(client.token, isNull);
+        expect(
+          await const FlutterSecureStorage().read(key: 'refresh_token'),
+          isNull,
+        );
+      },
+    );
   });
 
   test(

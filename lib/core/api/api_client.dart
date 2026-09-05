@@ -192,8 +192,18 @@ class ApiClient {
       final tokens = AuthTokens.fromJson(resp.data as Map<String, dynamic>);
       await _storeTokens(tokens);
       return true;
+    } on DioException catch (e) {
+      // Only a definite rejection of the refresh token ends the session,
+      // and then only locally: `/auth/logout` revokes *every* refresh token
+      // the account has (`LogoutService.revokeRefreshToken(user)`), which
+      // used to sign the user out of the web and any other device too. A
+      // rate limit (429), a server error or a dead network leaves the
+      // stored token alone — the request goes out with the old access
+      // token and either works or fails on its own terms.
+      final status = e.response?.statusCode;
+      if (status == 401 || status == 403) await _clearLocalSession();
+      return false;
     } catch (_) {
-      await logout();
       return false;
     }
   }
@@ -201,9 +211,16 @@ class ApiClient {
   Future<void> _storeTokens(AuthTokens tokens) async {
     _token = tokens.accessToken;
     final expires = tokens.expires;
+    // `expires` is the access token's LIFETIME in seconds
+    // (`AccessTokenDto.expires = accessTokenExpirationMs / 1000`, 7200 on
+    // v3.3.3) — not a timestamp. Reading it as epoch milliseconds put every
+    // expiry in 1970, so the proactive refresh above fired before *every*
+    // request; each refresh rotates the server-side token, and the
+    // server's limit of five failed refreshes per IP in 15 minutes then
+    // turned a burst of requests into a forced logout (v0.11.12–v0.11.14).
     _tokenExpiresAt = expires == null
         ? null
-        : DateTime.fromMillisecondsSinceEpoch(expires);
+        : DateTime.now().add(Duration(seconds: expires));
     await _secureStorage.write(key: 'access_token', value: tokens.accessToken);
     await _secureStorage.write(
       key: 'refresh_token',
@@ -268,6 +285,13 @@ class ApiClient {
     await _storeTokens(AuthTokens.fromJson(resp.data as Map<String, dynamic>));
   }
 
+  Future<void> _clearLocalSession() async {
+    _token = null;
+    _tokenExpiresAt = null;
+    await _secureStorage.delete(key: 'access_token');
+    await _secureStorage.delete(key: 'refresh_token');
+  }
+
   Future<void> logout() async {
     final refreshToken = await _secureStorage.read(key: 'refresh_token');
     if (refreshToken != null) {
@@ -281,10 +305,7 @@ class ApiClient {
         if (!offline) debugPrint('logout: server rejected refresh token: $e');
       }
     }
-    _token = null;
-    _tokenExpiresAt = null;
-    await _secureStorage.delete(key: 'access_token');
-    await _secureStorage.delete(key: 'refresh_token');
+    await _clearLocalSession();
     await _prefs.remove('logged_in');
   }
 
