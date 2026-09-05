@@ -5819,6 +5819,585 @@ as List<DashboardScroller>,
 
 
 /// @nodoc
+mixin _$PublicSettings {
+
+ bool get oidcEnabled; bool get oidcForceOnlyMode; bool get remoteAuthEnabled; OidcProviderDetails? get oidcProviderDetails;
+/// Create a copy of PublicSettings
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PublicSettingsCopyWith<PublicSettings> get copyWith => _$PublicSettingsCopyWithImpl<PublicSettings>(this as PublicSettings, _$identity);
+
+  /// Serializes this PublicSettings to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as PublicSettings;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PublicSettings&&(identical(other.oidcEnabled, _this.oidcEnabled) || other.oidcEnabled == _this.oidcEnabled)&&(identical(other.oidcForceOnlyMode, _this.oidcForceOnlyMode) || other.oidcForceOnlyMode == _this.oidcForceOnlyMode)&&(identical(other.remoteAuthEnabled, _this.remoteAuthEnabled) || other.remoteAuthEnabled == _this.remoteAuthEnabled)&&(identical(other.oidcProviderDetails, _this.oidcProviderDetails) || other.oidcProviderDetails == _this.oidcProviderDetails));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as PublicSettings;
+  return Object.hash(runtimeType,_this.oidcEnabled,_this.oidcForceOnlyMode,_this.remoteAuthEnabled,_this.oidcProviderDetails);
+}
+
+@override
+String toString() {
+  final _this = this as PublicSettings;
+  return 'PublicSettings(oidcEnabled: ${_this.oidcEnabled}, oidcForceOnlyMode: ${_this.oidcForceOnlyMode}, remoteAuthEnabled: ${_this.remoteAuthEnabled}, oidcProviderDetails: ${_this.oidcProviderDetails})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PublicSettingsCopyWith<$Res>  {
+  factory $PublicSettingsCopyWith(PublicSettings value, $Res Function(PublicSettings) _then) = _$PublicSettingsCopyWithImpl;
+@useResult
+$Res call({
+ bool oidcEnabled, bool oidcForceOnlyMode, bool remoteAuthEnabled, OidcProviderDetails? oidcProviderDetails
+});
+
+
+$OidcProviderDetailsCopyWith<$Res>? get oidcProviderDetails;
+
+}
+/// @nodoc
+class _$PublicSettingsCopyWithImpl<$Res>
+    implements $PublicSettingsCopyWith<$Res> {
+  _$PublicSettingsCopyWithImpl(this._self, this._then);
+
+  final PublicSettings _self;
+  final $Res Function(PublicSettings) _then;
+
+/// Create a copy of PublicSettings
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? oidcEnabled = null,Object? oidcForceOnlyMode = null,Object? remoteAuthEnabled = null,Object? oidcProviderDetails = freezed,}) {
+  return _then(PublicSettings(
+oidcEnabled: null == oidcEnabled ? _self.oidcEnabled : oidcEnabled // ignore: cast_nullable_to_non_nullable
+as bool,oidcForceOnlyMode: null == oidcForceOnlyMode ? _self.oidcForceOnlyMode : oidcForceOnlyMode // ignore: cast_nullable_to_non_nullable
+as bool,remoteAuthEnabled: null == remoteAuthEnabled ? _self.remoteAuthEnabled : remoteAuthEnabled // ignore: cast_nullable_to_non_nullable
+as bool,oidcProviderDetails: freezed == oidcProviderDetails ? _self.oidcProviderDetails : oidcProviderDetails // ignore: cast_nullable_to_non_nullable
+as OidcProviderDetails?,
+  ));
+}
+/// Create a copy of PublicSettings
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$OidcProviderDetailsCopyWith<$Res>? get oidcProviderDetails {
+    if (_self.oidcProviderDetails == null) {
+    return null;
+  }
+
+  return $OidcProviderDetailsCopyWith<$Res>(_self.oidcProviderDetails!, (value) {
+    return _then(_self.copyWith(oidcProviderDetails: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [PublicSettings].
+extension PublicSettingsPatterns on PublicSettings {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PublicSettings value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PublicSettings() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PublicSettings value)  $default,){
+final _that = this;
+switch (_that) {
+case _PublicSettings():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PublicSettings value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PublicSettings() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool oidcEnabled,  bool oidcForceOnlyMode,  bool remoteAuthEnabled,  OidcProviderDetails? oidcProviderDetails)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PublicSettings() when $default != null:
+return $default(_that.oidcEnabled,_that.oidcForceOnlyMode,_that.remoteAuthEnabled,_that.oidcProviderDetails);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool oidcEnabled,  bool oidcForceOnlyMode,  bool remoteAuthEnabled,  OidcProviderDetails? oidcProviderDetails)  $default,) {final _that = this;
+switch (_that) {
+case _PublicSettings():
+return $default(_that.oidcEnabled,_that.oidcForceOnlyMode,_that.remoteAuthEnabled,_that.oidcProviderDetails);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool oidcEnabled,  bool oidcForceOnlyMode,  bool remoteAuthEnabled,  OidcProviderDetails? oidcProviderDetails)?  $default,) {final _that = this;
+switch (_that) {
+case _PublicSettings() when $default != null:
+return $default(_that.oidcEnabled,_that.oidcForceOnlyMode,_that.remoteAuthEnabled,_that.oidcProviderDetails);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _PublicSettings implements PublicSettings {
+  const _PublicSettings({this.oidcEnabled = false, this.oidcForceOnlyMode = false, this.remoteAuthEnabled = false, this.oidcProviderDetails});
+  factory _PublicSettings.fromJson(Map<String, dynamic> json) => _$PublicSettingsFromJson(json);
+
+@override@JsonKey() final  bool oidcEnabled;
+@override@JsonKey() final  bool oidcForceOnlyMode;
+@override@JsonKey() final  bool remoteAuthEnabled;
+@override final  OidcProviderDetails? oidcProviderDetails;
+
+/// Create a copy of PublicSettings
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PublicSettingsCopyWith<_PublicSettings> get copyWith => __$PublicSettingsCopyWithImpl<_PublicSettings>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$PublicSettingsToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PublicSettings&&(identical(other.oidcEnabled, oidcEnabled) || other.oidcEnabled == oidcEnabled)&&(identical(other.oidcForceOnlyMode, oidcForceOnlyMode) || other.oidcForceOnlyMode == oidcForceOnlyMode)&&(identical(other.remoteAuthEnabled, remoteAuthEnabled) || other.remoteAuthEnabled == remoteAuthEnabled)&&(identical(other.oidcProviderDetails, oidcProviderDetails) || other.oidcProviderDetails == oidcProviderDetails));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,oidcEnabled,oidcForceOnlyMode,remoteAuthEnabled,oidcProviderDetails);
+}
+
+@override
+String toString() {
+    return 'PublicSettings(oidcEnabled: $oidcEnabled, oidcForceOnlyMode: $oidcForceOnlyMode, remoteAuthEnabled: $remoteAuthEnabled, oidcProviderDetails: $oidcProviderDetails)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PublicSettingsCopyWith<$Res> implements $PublicSettingsCopyWith<$Res> {
+  factory _$PublicSettingsCopyWith(_PublicSettings value, $Res Function(_PublicSettings) _then) = __$PublicSettingsCopyWithImpl;
+@override @useResult
+$Res call({
+ bool oidcEnabled, bool oidcForceOnlyMode, bool remoteAuthEnabled, OidcProviderDetails? oidcProviderDetails
+});
+
+
+@override $OidcProviderDetailsCopyWith<$Res>? get oidcProviderDetails;
+
+}
+/// @nodoc
+class __$PublicSettingsCopyWithImpl<$Res>
+    implements _$PublicSettingsCopyWith<$Res> {
+  __$PublicSettingsCopyWithImpl(this._self, this._then);
+
+  final _PublicSettings _self;
+  final $Res Function(_PublicSettings) _then;
+
+/// Create a copy of PublicSettings
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? oidcEnabled = null,Object? oidcForceOnlyMode = null,Object? remoteAuthEnabled = null,Object? oidcProviderDetails = freezed,}) {
+  return _then(_PublicSettings(
+oidcEnabled: null == oidcEnabled ? _self.oidcEnabled : oidcEnabled // ignore: cast_nullable_to_non_nullable
+as bool,oidcForceOnlyMode: null == oidcForceOnlyMode ? _self.oidcForceOnlyMode : oidcForceOnlyMode // ignore: cast_nullable_to_non_nullable
+as bool,remoteAuthEnabled: null == remoteAuthEnabled ? _self.remoteAuthEnabled : remoteAuthEnabled // ignore: cast_nullable_to_non_nullable
+as bool,oidcProviderDetails: freezed == oidcProviderDetails ? _self.oidcProviderDetails : oidcProviderDetails // ignore: cast_nullable_to_non_nullable
+as OidcProviderDetails?,
+  ));
+}
+
+/// Create a copy of PublicSettings
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$OidcProviderDetailsCopyWith<$Res>? get oidcProviderDetails {
+    if (_self.oidcProviderDetails == null) {
+    return null;
+  }
+
+  return $OidcProviderDetailsCopyWith<$Res>(_self.oidcProviderDetails!, (value) {
+    return _then(_self.copyWith(oidcProviderDetails: value));
+  });
+}
+}
+
+
+/// @nodoc
+mixin _$OidcProviderDetails {
+
+ String? get providerName; String? get clientId; String? get issuerUri;
+/// Create a copy of OidcProviderDetails
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OidcProviderDetailsCopyWith<OidcProviderDetails> get copyWith => _$OidcProviderDetailsCopyWithImpl<OidcProviderDetails>(this as OidcProviderDetails, _$identity);
+
+  /// Serializes this OidcProviderDetails to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as OidcProviderDetails;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OidcProviderDetails&&(identical(other.providerName, _this.providerName) || other.providerName == _this.providerName)&&(identical(other.clientId, _this.clientId) || other.clientId == _this.clientId)&&(identical(other.issuerUri, _this.issuerUri) || other.issuerUri == _this.issuerUri));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as OidcProviderDetails;
+  return Object.hash(runtimeType,_this.providerName,_this.clientId,_this.issuerUri);
+}
+
+@override
+String toString() {
+  final _this = this as OidcProviderDetails;
+  return 'OidcProviderDetails(providerName: ${_this.providerName}, clientId: ${_this.clientId}, issuerUri: ${_this.issuerUri})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OidcProviderDetailsCopyWith<$Res>  {
+  factory $OidcProviderDetailsCopyWith(OidcProviderDetails value, $Res Function(OidcProviderDetails) _then) = _$OidcProviderDetailsCopyWithImpl;
+@useResult
+$Res call({
+ String? providerName, String? clientId, String? issuerUri
+});
+
+
+
+
+}
+/// @nodoc
+class _$OidcProviderDetailsCopyWithImpl<$Res>
+    implements $OidcProviderDetailsCopyWith<$Res> {
+  _$OidcProviderDetailsCopyWithImpl(this._self, this._then);
+
+  final OidcProviderDetails _self;
+  final $Res Function(OidcProviderDetails) _then;
+
+/// Create a copy of OidcProviderDetails
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? providerName = freezed,Object? clientId = freezed,Object? issuerUri = freezed,}) {
+  return _then(OidcProviderDetails(
+providerName: freezed == providerName ? _self.providerName : providerName // ignore: cast_nullable_to_non_nullable
+as String?,clientId: freezed == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
+as String?,issuerUri: freezed == issuerUri ? _self.issuerUri : issuerUri // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [OidcProviderDetails].
+extension OidcProviderDetailsPatterns on OidcProviderDetails {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _OidcProviderDetails value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _OidcProviderDetails() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _OidcProviderDetails value)  $default,){
+final _that = this;
+switch (_that) {
+case _OidcProviderDetails():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _OidcProviderDetails value)?  $default,){
+final _that = this;
+switch (_that) {
+case _OidcProviderDetails() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? providerName,  String? clientId,  String? issuerUri)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _OidcProviderDetails() when $default != null:
+return $default(_that.providerName,_that.clientId,_that.issuerUri);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? providerName,  String? clientId,  String? issuerUri)  $default,) {final _that = this;
+switch (_that) {
+case _OidcProviderDetails():
+return $default(_that.providerName,_that.clientId,_that.issuerUri);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? providerName,  String? clientId,  String? issuerUri)?  $default,) {final _that = this;
+switch (_that) {
+case _OidcProviderDetails() when $default != null:
+return $default(_that.providerName,_that.clientId,_that.issuerUri);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _OidcProviderDetails implements OidcProviderDetails {
+  const _OidcProviderDetails({this.providerName, this.clientId, this.issuerUri});
+  factory _OidcProviderDetails.fromJson(Map<String, dynamic> json) => _$OidcProviderDetailsFromJson(json);
+
+@override final  String? providerName;
+@override final  String? clientId;
+@override final  String? issuerUri;
+
+/// Create a copy of OidcProviderDetails
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$OidcProviderDetailsCopyWith<_OidcProviderDetails> get copyWith => __$OidcProviderDetailsCopyWithImpl<_OidcProviderDetails>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$OidcProviderDetailsToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _OidcProviderDetails&&(identical(other.providerName, providerName) || other.providerName == providerName)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.issuerUri, issuerUri) || other.issuerUri == issuerUri));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,providerName,clientId,issuerUri);
+}
+
+@override
+String toString() {
+    return 'OidcProviderDetails(providerName: $providerName, clientId: $clientId, issuerUri: $issuerUri)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$OidcProviderDetailsCopyWith<$Res> implements $OidcProviderDetailsCopyWith<$Res> {
+  factory _$OidcProviderDetailsCopyWith(_OidcProviderDetails value, $Res Function(_OidcProviderDetails) _then) = __$OidcProviderDetailsCopyWithImpl;
+@override @useResult
+$Res call({
+ String? providerName, String? clientId, String? issuerUri
+});
+
+
+
+
+}
+/// @nodoc
+class __$OidcProviderDetailsCopyWithImpl<$Res>
+    implements _$OidcProviderDetailsCopyWith<$Res> {
+  __$OidcProviderDetailsCopyWithImpl(this._self, this._then);
+
+  final _OidcProviderDetails _self;
+  final $Res Function(_OidcProviderDetails) _then;
+
+/// Create a copy of OidcProviderDetails
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? providerName = freezed,Object? clientId = freezed,Object? issuerUri = freezed,}) {
+  return _then(_OidcProviderDetails(
+providerName: freezed == providerName ? _self.providerName : providerName // ignore: cast_nullable_to_non_nullable
+as String?,clientId: freezed == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
+as String?,issuerUri: freezed == issuerUri ? _self.issuerUri : issuerUri // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$MagicShelf {
 
  int get id; String get name; String? get icon; String? get iconType; bool get publicShelf;

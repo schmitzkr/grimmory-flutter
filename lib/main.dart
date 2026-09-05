@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/router.dart';
 import 'core/api/api_client.dart';
 import 'core/providers.dart';
+import 'core/theme_mode_provider.dart';
 import 'features/auth/oidc_login_controller.dart';
 import 'features/downloads/download_manager.dart';
 import 'features/downloads/download_storage.dart';
@@ -104,6 +105,7 @@ class _GrimmoryAppState extends ConsumerState<GrimmoryApp> {
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
+      themeMode: ref.watch(themeModeProvider),
       routerConfig: router,
     );
   }

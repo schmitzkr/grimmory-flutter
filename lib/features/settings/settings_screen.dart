@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/update_provider.dart';
 import '../../core/api/errors.dart';
 import '../../core/api/models.dart';
+import '../../core/theme_mode_provider.dart';
 import '../auth/auth_provider.dart';
 import '../auth/current_user_provider.dart';
 import '../onboarding/server_url_provider.dart';
@@ -45,12 +47,67 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.brightness_6_outlined),
+            title: const Text('Theme'),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SegmentedButton<ThemeMode>(
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    label: Text('System'),
+                    icon: Icon(Icons.brightness_auto_outlined),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    label: Text('Light'),
+                    icon: Icon(Icons.light_mode_outlined),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    label: Text('Dark'),
+                    icon: Icon(Icons.dark_mode_outlined),
+                  ),
+                ],
+                selected: {ref.watch(themeModeProvider)},
+                onSelectionChanged: (s) =>
+                    ref.read(themeModeProvider.notifier).set(s.first),
+              ),
+            ),
+          ),
+          const Divider(),
+          // The Home tab mirrors the web dashboard's saved layout; there is
+          // no editor here yet, so say where the rows come from.
+          ListTile(
+            leading: const Icon(Icons.dashboard_customize_outlined),
+            title: const Text('Home layout'),
+            subtitle: const Text(
+              'Rows and their order follow your dashboard settings on the web',
+            ),
+            trailing: const Icon(Icons.open_in_browser),
+            onTap: serverUrl == null
+                ? null
+                : () => launchUrl(
+                    Uri.parse('$serverUrl/settings'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.battery_alert_outlined),
             title: const Text('Background playback getting interrupted?'),
             subtitle: const Text(
               'Exclude GrimReader from battery optimization',
             ),
             onTap: () => _showBatteryOptimizationDialog(context),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('About GrimReader'),
+            subtitle: const Text('Source code, issues, open-source licences'),
+            onTap: () => _showAbout(context, ref),
           ),
           const Divider(),
           // Signing out and changing server are different intentions: the
@@ -95,6 +152,65 @@ class SettingsScreen extends ConsumerWidget {
       bottomNavigationBar: const MiniPlayer(),
     );
   }
+}
+
+const _repoUrl = 'https://github.com/schmitzkr/grimreader-flutter';
+
+void _showAbout(BuildContext context, WidgetRef ref) {
+  final version = ref.read(installedVersionProvider).value?.label ?? '';
+  showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('GrimReader'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (version.isNotEmpty) Text('Version $version'),
+          const SizedBox(height: 8),
+          const Text(
+            'An unofficial Android app for Grimmory: audiobooks, EPUBs, '
+            'comics and PDFs from your own server.',
+          ),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: () => launchUrl(
+              Uri.parse(_repoUrl),
+              mode: LaunchMode.externalApplication,
+            ),
+            icon: const Icon(Icons.code),
+            label: const Text('Source on GitHub'),
+          ),
+          TextButton.icon(
+            onPressed: () => launchUrl(
+              Uri.parse('$_repoUrl/issues'),
+              mode: LaunchMode.externalApplication,
+            ),
+            icon: const Icon(Icons.bug_report_outlined),
+            label: const Text('Report an issue'),
+          ),
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop();
+              showLicensePage(
+                context: context,
+                applicationName: 'GrimReader',
+                applicationVersion: version,
+              );
+            },
+            icon: const Icon(Icons.description_outlined),
+            label: const Text('Open-source licences'),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
 }
 
 Future<bool> _confirm(

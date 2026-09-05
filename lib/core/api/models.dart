@@ -584,6 +584,35 @@ extension DashboardScrollerX on DashboardScroller {
   ScrollerType? get kind => ScrollerType.fromWire(type);
 }
 
+/// `GET /public-settings` (`PublicAppSetting`) — readable without a token;
+/// the web's login page uses it to decide whether to show its SSO button.
+/// Only the fields this app acts on are modelled; the provider block is
+/// deliberately partial (it also carries fields no client should need).
+@freezed
+abstract class PublicSettings with _$PublicSettings {
+  const factory PublicSettings({
+    @Default(false) bool oidcEnabled,
+    @Default(false) bool oidcForceOnlyMode,
+    @Default(false) bool remoteAuthEnabled,
+    OidcProviderDetails? oidcProviderDetails,
+  }) = _PublicSettings;
+
+  factory PublicSettings.fromJson(Map<String, dynamic> json) =>
+      _$PublicSettingsFromJson(json);
+}
+
+@freezed
+abstract class OidcProviderDetails with _$OidcProviderDetails {
+  const factory OidcProviderDetails({
+    String? providerName,
+    String? clientId,
+    String? issuerUri,
+  }) = _OidcProviderDetails;
+
+  factory OidcProviderDetails.fromJson(Map<String, dynamic> json) =>
+      _$OidcProviderDetailsFromJson(json);
+}
+
 @freezed
 abstract class MagicShelf with _$MagicShelf {
   const factory MagicShelf({
