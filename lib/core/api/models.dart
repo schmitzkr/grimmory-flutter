@@ -110,6 +110,12 @@ abstract class Book with _$Book {
 const _ebookFileTypes = {'EPUB', 'FB2', 'MOBI', 'AZW3'};
 
 extension BookCoverX on Book {
+  /// Width ÷ height of the tile a cover is drawn in — the web's book cards:
+  /// a 2:3 paperback shape for books, square for audiobooks (whose art is
+  /// square). A tile that always squared everything cropped every book
+  /// cover; this draws each cover in its own shape.
+  double get coverAspectRatio => primaryFileType == 'AUDIOBOOK' ? 1 : 2 / 3;
+
   /// Cache-busting token for this book's cover URLs — the newer of the two
   /// cover timestamps, as epoch millis — or null when the server sent
   /// neither (then the URL is used bare and the image cache decides).
